@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+
+{% block title %}Tableau de Bord Marchand - {{ merchant.store_name }} - DjassaPay{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 py-8">
+
+  {% if request.query_params.get('new') %}
+  <div class="mb-6 p-4 rounded-3xl bg-emerald-500 text-white shadow-lg flex items-center justify-between">
+    <div>
+      <h3 class="font-black text-sm">🎉 Bienvenue sur DjassaPay ! Votre boutique est prête à vendre !</h3>
+      <p class="text-xs text-emerald-100 mt-0.5">Les zones de livraison de {{ merchant.city }} ont été pré-configurées. Partagez votre lien public sur TikTok & WhatsApp.</p>
+    </div>
+    <a href="/shop/{{ merchant.store_slug }}" target="_blank" class="px-4 py-2 bg-white text-slate-950 font-bold text-xs rounded-xl shadow-sm shrink-0">
+      Visiter ma boutique
+    </a>
+  </div>
+  {% endif %}
+
+  <!-- Entête Marchand -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200">
+    <div>
+      <div class="flex items-center space-x-2">
+        <span class="text-xs uppercase font-extrabold tracking-wider text-emerald-600">Tableau de Bord Marchand</span>
+        <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">📍 {{ merchant.city }}</span>
+        {% if merchant.subscription_plan in ['PRO', 'BUSINESS'] %}
+        <span class="text-[11px] font-black px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 shadow-sm">PRO ⭐</span>
+        {% else %}
+        <a href="/merchant/subscription" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 hover:bg-emerald-200 transition">
+          ⚡ Passer au Plan Pro
+        </a>
+        {% endif %}
+      </div>
+      <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-0.5">{{ merchant.store_name }}</h1>
+      <p class="text-xs text-slate-500 mt-1">
+        Lien public de votre boutique : 
+        <a href="/shop/{{ merchant.store_slug }}" target="_blank" class="font-bold text-emerald-600 underline hover:text-emerald-700">
+          /shop/{{ merchant.store_slug }}
+        </a>
+      </p>
+    </div>
+
+    <!-- Raccourcis Menu -->
+    <div class="flex flex-wrap items-center gap-2">
+      <a href="/merchant/products" class="px-3.5 py-2 bg-white border border-slate-200 hover:border-slate-300 text-slate-800 text-xs font-bold rounded-xl transition flex items-center space-x-1.5 shadow-sm">
+        <i data-lucide="package" class="w-4 h-4 text-slate-500"></i>
+        <span>Articles</span>
+      </a>
+      <a href="/merchant/subscription" class="px-3.5 py-2 bg-white border border-slate-200 hover:border-slate-300 text-slate-800 text-xs font-bold rounded-xl transition flex items-center space-x-1.5 shadow-sm">
+        <i data-lucide="crown" class="w-4 h-4 text-amber-500"></i>
+        <span>Abonnement</span>
+      </a>
+      <a href="/merchant/settings" class="px-3.5 py-2 bg-white border border-slate-200 hover:border-slate-300 text-slate-800 text-xs font-bold rounded-xl transition flex items-center space-x-1.5 shadow-sm">
+        <i data-lucide="settings" class="w-4 h-4 text-slate-500"></i>
+        <span>Paramètres</span>
+      </a>
+      <a href="/shop/{{ merchant.store_slug }}" target="_blank" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl transition flex items-center space-x-1.5 shadow-sm">
+        <i data-lucide="external-link" class="w-4 h-4"></i>
+        <span>Vitrine</span>
+      </a>
+      <a href="/logout" title="Déconnexion" class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition">
+        <i data-lucide="log-out" class="w-4 h-4"></i>
+      </a>
+    </div>
+  </div>
+
+  <!-- Cartes de Statistiques & Métriques Anti-Lapin -->
+  <div class="mt-6 grid grid-cols-2 lg:grid-cols-4 gap-4">
+    
+    <!-- Chiffre d'Affaires Sécurisé -->
+    <div class="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-sm">
+      <div class="flex items-center justify-between text-slate-400 mb-2">
+        <span class="text-xs font-bold uppercase tracking-wider">Ventes Totales</span>
+        <i data-lucide="wallet" class="w-4 h-4 text-emerald-600"></i>
+      </div>
+      <div class="text-2xl font-black text-slate-900">
+        {{ "{:,}".format(total_revenue) }} <span class="text-xs font-semibold text-slate-500">FCFA</span>
+      </div>
+      <span class="text-[11px] text-slate-400 mt-1 block">Commandes confirmées</span>
+    </div>
+
+    <!-- Acomptes Wave/MoMo Encaissés -->
+    <div class="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-sm">
+      <div class="flex items-center justify-between text-slate-400 mb-2">
+        <span class="text-xs font-bold uppercase tracking-wider">Acomptes Reçus</span>
+        <i data-lucide="shield-check" class="w-4 h-4 text-sky-600"></i>
+      </div>
+      <div class="text-2xl font-black text-emerald-600">
+        {{ "{:,}".format(total_deposits) }} <span class="text-xs font-semibold text-slate-500">FCFA</span>
+      </div>
+      <span class="text-[11px] text-slate-400 mt-1 block">Déjà sur vos comptes Wave/MoMo</span>
+    </div>
+
+    <!-- Lapins Évités -->
+    <div class="bg-gradient-to-br from-emerald-600 to-teal-700 p-5 rounded-3xl text-white shadow-md">
+      <div class="flex items-center justify-between text-emerald-200 mb-2">
+        <span class="text-xs font-black uppercase tracking-wider">Lapins Évités</span>
+        <span class="text-xl">🛡️</span>
+      </div>
+      <div class="text-2xl font-black text-white">
+        {{ lapins_evites }}
+      </div>
+      <span class="text-[11px] text-emerald-100 mt-1 block">Clients engagés par acompte</span>
+    </div>
+
+    <!-- Argent économisé sur les livreurs -->
+    <div class="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-sm">
+      <div class="flex items-center justify-between text-slate-400 mb-2">
+        <span class="text-xs font-bold uppercase tracking-wider">Courses Sauvegardées</span>
+        <i data-lucide="trending-up" class="w-4 h-4 text-amber-500"></i>
+      </div>
+      <div class="text-2xl font-black text-amber-600">
+        {{ "{:,}".format(economie_livraisons) }} <span class="text-xs font-semibold text-slate-500">FCFA</span>
+      </div>
+      <span class="text-[11px] text-slate-400 mt-1 block">Économies sur les faux clients</span>
+    </div>
+
+  </div>
+
+  <!-- Liste des Commandes -->
+  <div class="mt-8 bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
+    <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+      <h2 class="text-base font-extrabold text-slate-900 flex items-center space-x-2">
+        <span>Commandes Récentes</span>
+        <span class="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 font-bold text-slate-600">{{ orders_with_links|length }}</span>
+      </h2>
+    </div>
+
+    {% if orders_with_links %}
+    <div class="divide-y divide-slate-100">
+      {% for item in orders_with_links %}
+      {% set o = item.order %}
+      <div class="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-slate-50/70 transition">
+        
+        <!-- Info Commande & Client -->
+        <div class="space-y-1">
+          <div class="flex items-center space-x-2">
+            <span class="font-extrabold text-sm text-slate-900 font-mono">#{{ o.order_number }}</span>
+            
+            {% if o.payment_status in ['DEPOSIT_PAID', 'FULLY_PAID'] %}
+              <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                Acompte Payé ({{ "{:,}".format(o.deposit_paid) }} F) ✅
+              </span>
+            {% else %}
+              <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                En attente acompte ⏳
+              </span>
+            {% endif %}
+
+            <span class="text-xs text-slate-400">&bull; {{ o.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
+          </div>
+
+          <div class="text-xs text-slate-600">
+            <strong>{{ o.customer_name }}</strong> ({{ o.customer_phone }}) &bull; 
+            <span class="text-slate-500 font-medium">{{ o.delivery_zone_name }}</span>
+          </div>
+
+          <div class="text-xs text-slate-400">
+            {{ o.items|length }} article(s) &bull; Total : <strong class="text-slate-800">{{ "{:,}".format(o.total_amount) }} FCFA</strong> (Reste à encaisser : <span class="font-bold text-emerald-600">{{ "{:,}".format(o.balance_due) }} FCFA</span>)
+          </div>
+        </div>
+
+        <!-- Statut & Actions -->
+        <div class="flex flex-wrap items-center gap-2">
+          
+          <!-- Lien WhatsApp Livreur -->
+          {% if o.deposit_paid > 0 %}
+          <a href="{{ item.rider_link }}" target="_blank" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl transition flex items-center space-x-1.5 shadow-sm">
+            <i data-lucide="bike" class="w-3.5 h-3.5"></i>
+            <span>Envoyer au Livreur (WhatsApp)</span>
+          </a>
+          {% endif %}
+
+          <a href="/orders/{{ o.order_number }}" target="_blank" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-xl transition">
+            Détails
+          </a>
+
+          <!-- Formulaire Changement de Statut -->
+          <form action="/merchant/orders/{{ o.order_number }}/status" method="POST" class="inline-flex">
+            <select name="delivery_status" onchange="this.form.submit()" class="text-xs px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white font-medium text-slate-700 focus:outline-none">
+              <option value="WAITING_DISPATCH" {% if o.delivery_status == 'WAITING_DISPATCH' %}selected{% endif %}>📦 En préparation</option>
+              <option value="DISPATCHED" {% if o.delivery_status == 'DISPATCHED' %}selected{% endif %}>🏍️ Expédié (En route)</option>
+              <option value="DELIVERED" {% if o.delivery_status == 'DELIVERED' %}selected{% endif %}>✅ Livré & Encaissé</option>
+              <option value="RETURNED" {% if o.delivery_status == 'RETURNED' %}selected{% endif %}>❌ Annulé / Retour</option>
+            </select>
+          </form>
+
+        </div>
+
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="p-12 text-center text-slate-400">
+      <i data-lucide="inbox" class="w-10 h-10 mx-auto text-slate-300 mb-2"></i>
+      <p class="text-sm font-semibold">Aucune commande pour le moment.</p>
+      <p class="text-xs mt-1">Partagez le lien de votre vitrine sur vos réseaux sociaux pour recevoir vos premières commandes !</p>
+    </div>
+    {% endif %}
+
+  </div>
+
+</div>
+{% endblock %}

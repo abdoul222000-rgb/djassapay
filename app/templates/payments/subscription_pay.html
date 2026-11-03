@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Paiement de l'Abonnement {{ plan }} - DjassaPay{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto px-4 py-8" x-data="{ isProcessing: false }">
+
+  <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xl text-center relative overflow-hidden">
+    
+    <!-- En-tête Wave -->
+    <div class="bg-[#1BA4D9] -mx-6 -mt-6 p-6 text-white mb-6">
+      <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center mx-auto text-[#1BA4D9] font-black text-xl shadow-md">
+        W
+      </div>
+      <h1 class="text-xl font-extrabold mt-3">Activation Abonnement {{ plan }}</h1>
+      <p class="text-xs text-sky-100">Règlement direct de votre licence SaaS</p>
+    </div>
+
+    <div class="text-xs text-slate-500">Montant de votre forfait mensuel</div>
+    <div class="text-3xl font-black text-slate-900 mt-1">
+      {{ "{:,}".format(amount) }} <span class="text-sm font-bold text-emerald-600">FCFA</span>
+    </div>
+
+    <div class="mt-4 p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-left text-xs space-y-1.5">
+      <div class="flex justify-between">
+        <span class="text-slate-500">Boutique :</span>
+        <span class="font-bold text-slate-800">{{ merchant.store_name }}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-slate-500">Formule :</span>
+        <span class="font-bold text-emerald-700">Plan {{ plan }} Illimité (1 mois)</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-slate-500">Bénéficiaire (Fondateur) :</span>
+        <span class="font-bold text-slate-900">{{ settings.FOUNDER_NAME }}</span>
+      </div>
+      {% if settings.FOUNDER_WAVE_NUMBER %}
+      <div class="flex justify-between pt-1 border-t border-slate-200/60">
+        <span class="text-slate-500">Numéro Wave Réception :</span>
+        <span class="font-bold font-mono text-[#1BA4D9]">{{ settings.FOUNDER_WAVE_NUMBER }}</span>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- QR Code Wave -->
+    <div class="mt-6 border-2 border-dashed border-slate-200 rounded-2xl p-4 bg-slate-50 flex flex-col items-center">
+      <div class="w-32 h-32 bg-white rounded-xl shadow-sm p-2 flex items-center justify-center border border-slate-200">
+        <svg viewBox="0 0 100 100" class="w-full h-full text-slate-800">
+          <rect x="10" y="10" width="25" height="25" rx="4" fill="currentColor"/>
+          <rect x="65" y="10" width="25" height="25" rx="4" fill="currentColor"/>
+          <rect x="10" y="65" width="25" height="25" rx="4" fill="currentColor"/>
+          <rect x="45" y="15" width="10" height="20" fill="currentColor"/>
+          <rect x="45" y="45" width="10" height="10" fill="currentColor"/>
+          <rect x="20" y="45" width="15" height="10" fill="currentColor"/>
+          <rect x="65" y="45" width="25" height="10" fill="currentColor"/>
+          <rect x="45" y="65" width="15" height="25" fill="currentColor"/>
+          <rect x="70" y="65" width="20" height="20" fill="currentColor"/>
+        </svg>
+      </div>
+      <span class="text-[11px] font-medium text-slate-500 mt-2">Scannez ou validez instantanément ci-dessous</span>
+    </div>
+
+    <!-- Formulaire de Confirmation -->
+    <form action="/merchant/subscription/confirm" method="POST" class="mt-6" @submit="isProcessing = true">
+      <input type="hidden" name="plan" value="{{ plan }}">
+      <input type="hidden" name="amount" value="{{ amount }}">
+
+      <button type="submit" :disabled="isProcessing" class="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold rounded-2xl shadow-lg shadow-emerald-600/30 transition transform active:scale-95 flex items-center justify-center space-x-2">
+        <template x-if="!isProcessing">
+          <span class="flex items-center space-x-2">
+            <i data-lucide="check-circle" class="w-5 h-5"></i>
+            <span>Régler {{ "{:,}".format(amount) }} FCFA par Wave</span>
+          </span>
+        </template>
+        <template x-if="isProcessing">
+          <span class="flex items-center space-x-2">
+            <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>Activation en direct...</span>
+          </span>
+        </template>
+      </button>
+    </form>
+
+    <div class="mt-4">
+      <a href="/merchant/subscription" class="text-xs text-slate-400 hover:text-slate-600">
+        Annuler
+      </a>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

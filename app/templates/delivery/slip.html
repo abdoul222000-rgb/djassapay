@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Bordereau Livreur #{{ order.order_number }} - DjassaPay{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto px-4 py-6">
+
+  <!-- Bannière Livreur -->
+  <div class="bg-slate-900 text-white rounded-3xl p-5 shadow-lg relative overflow-hidden">
+    <div class="flex items-center justify-between">
+      <span class="text-xs uppercase tracking-wider font-extrabold text-emerald-400">🏍️ FEUILLE DE ROUTE COURSIER</span>
+      <span class="text-xs font-mono bg-slate-800 px-2.5 py-1 rounded-lg">#{{ order.order_number }}</span>
+    </div>
+
+    <h1 class="text-xl font-black mt-2">Livraison pour {{ merchant.store_name }}</h1>
+    <p class="text-xs text-slate-400 mt-0.5">Contact Boutique : {{ merchant.phone }}</p>
+  </div>
+
+  {% if request.query_params.get('success') %}
+  <div class="mt-4 p-4 rounded-2xl bg-emerald-100 border border-emerald-300 text-emerald-900 text-sm font-bold text-center">
+    ✅ Bravo ! Course enregistrée comme livrée et encaissée avec succès.
+  </div>
+  {% endif %}
+
+  <!-- LE PLUS IMPORTANT : LE MONTANT À ENCAISSER EN CASH -->
+  <div class="mt-4 bg-gradient-to-br from-emerald-600 to-teal-700 rounded-3xl p-6 text-white shadow-xl text-center">
+    <div class="text-xs font-black uppercase tracking-wider text-emerald-200">
+      💵 Montant en Espèces à Récupérer :
+    </div>
+    <div class="text-4xl font-black mt-1">
+      {{ "{:,}".format(order.balance_due) }} <span class="text-lg font-bold">FCFA</span>
+    </div>
+    
+    <div class="mt-3 inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-900/60 text-emerald-200 border border-emerald-400/30">
+      <i data-lucide="check" class="w-3.5 h-3.5 mr-1"></i>
+      L'acompte de {{ "{:,}".format(order.deposit_paid) }} FCFA a déjà été encaissé par la boutique
+    </div>
+  </div>
+
+  <!-- Bouton d'Appel Immédiat du Client -->
+  <div class="mt-4 grid grid-cols-2 gap-3">
+    <a href="tel:{{ order.customer_phone }}" class="py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm rounded-2xl shadow-md flex items-center justify-center space-x-2 transition transform active:scale-95">
+      <i data-lucide="phone-call" class="w-5 h-5"></i>
+      <span>Appeler le client</span>
+    </a>
+    
+    <a href="https://maps.google.com/?q={{ order.delivery_zone_name }}+{{ order.delivery_address }}" target="_blank" class="py-4 bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm rounded-2xl shadow-md flex items-center justify-center space-x-2 transition transform active:scale-95">
+      <i data-lucide="map" class="w-5 h-5"></i>
+      <span>Google Maps</span>
+    </a>
+  </div>
+
+  <!-- Informations Destinataire & Repères -->
+  <div class="mt-4 bg-white rounded-3xl p-5 border border-slate-200/80 shadow-sm space-y-3">
+    <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400">Coordonnées Client</h2>
+
+    <div class="space-y-2 text-sm text-slate-700">
+      <div class="flex items-start space-x-2">
+        <i data-lucide="user" class="w-4 h-4 text-slate-400 mt-0.5 shrink-0"></i>
+        <div>
+          <span class="text-xs text-slate-400 block">Nom du client</span>
+          <span class="font-extrabold text-slate-900">{{ order.customer_name }}</span>
+        </div>
+      </div>
+
+      <div class="flex items-start space-x-2">
+        <i data-lucide="phone" class="w-4 h-4 text-slate-400 mt-0.5 shrink-0"></i>
+        <div>
+          <span class="text-xs text-slate-400 block">Téléphone / WhatsApp</span>
+          <span class="font-extrabold font-mono text-slate-900">{{ order.customer_phone }}</span>
+        </div>
+      </div>
+
+      <div class="flex items-start space-x-2">
+        <i data-lucide="map-pin" class="w-4 h-4 text-emerald-600 mt-0.5 shrink-0"></i>
+        <div>
+          <span class="text-xs text-slate-400 block">Commune & Quartier</span>
+          <span class="font-extrabold text-slate-900">{{ order.delivery_zone_name }}</span>
+        </div>
+      </div>
+
+      <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 leading-relaxed">
+        <strong>Adresse & Repères précis :</strong><br>
+        {{ order.delivery_address }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Articles à livrer -->
+  <div class="mt-4 bg-white rounded-3xl p-5 border border-slate-200/80 shadow-sm">
+    <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Contenu du Colis</h2>
+    <div class="divide-y divide-slate-100">
+      {% for item in order.items %}
+      <div class="py-2 flex justify-between text-xs">
+        <span class="font-bold text-slate-800">{{ item.quantity }} &times; {{ item.product_title }}</span>
+        <span class="text-slate-500 font-semibold">{{ "{:,}".format(item.total_price) }} FCFA</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Bouton de Clôture de Course -->
+  {% if order.delivery_status != 'DELIVERED' %}
+  <form action="/delivery/{{ order.order_number }}/complete" method="POST" class="mt-6">
+    <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm mb-3">
+      <label class="block text-xs font-medium text-slate-600 mb-1">Votre Nom (Livreur) :</label>
+      <input type="text" name="rider_name" placeholder="Ex: Souleymane Coursier" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs">
+    </div>
+
+    <button type="submit" onclick="return confirm('Confirmez-vous avoir remis le colis et encaissé les {{ order.balance_due }} FCFA ?')" class="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm rounded-2xl shadow-lg shadow-emerald-600/30 transition transform active:scale-95 flex items-center justify-center space-x-2">
+      <i data-lucide="check-circle" class="w-5 h-5"></i>
+      <span>Confirmer Colis Livré & Espèces Encaissées</span>
+    </button>
+  </form>
+  {% else %}
+  <div class="mt-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-center text-xs font-bold text-emerald-800">
+    Cette course est déjà terminée et archivée.
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

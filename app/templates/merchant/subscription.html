@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}Mon Abonnement SaaS - {{ merchant.store_name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-8">
+
+  <div class="pb-6 border-b border-slate-200">
+    <a href="/merchant/dashboard" class="text-xs font-semibold text-slate-500 hover:text-slate-900 transition flex items-center mb-1">
+      <i data-lucide="arrow-left" class="w-3.5 h-3.5 mr-1"></i>
+      Retour au Tableau de Bord
+    </a>
+    <h1 class="text-2xl font-black text-slate-900">Mon Forfait & Abonnement</h1>
+    <p class="text-xs text-slate-500">Gérez votre formule DjassaPay et débloquez la puissance maximale de vos ventes.</p>
+  </div>
+
+  {% if request.query_params.get('upgraded') %}
+  <div class="mt-4 p-4 rounded-2xl bg-emerald-100 border border-emerald-300 text-emerald-900 text-xs font-bold flex items-center space-x-2">
+    <span>🎉 Félicitations ! Votre boutique a été passée au statut <strong>PRO Certifié</strong> avec succès.</span>
+  </div>
+  {% endif %}
+
+  <!-- Statut Actuel -->
+  <div class="mt-6 bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <span class="text-xs uppercase font-extrabold tracking-wider text-emerald-400">Statut de votre compte</span>
+        <div class="text-2xl sm:text-3xl font-black mt-1 flex items-center space-x-2">
+          <span>Forfait {{ merchant.subscription_plan }}</span>
+          {% if merchant.subscription_plan in ['PRO', 'BUSINESS'] %}
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-amber-400 text-slate-950">PRO ⭐</span>
+          {% else %}
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-slate-700 text-slate-200">Essai Gratuit</span>
+          {% endif %}
+        </div>
+        <p class="text-xs text-slate-300 mt-1">
+          {% if merchant.subscription_plan == 'STARTER' %}
+            Vous êtes sur le plan de découverte limité à 10 commandes par mois.
+          {% else %}
+            Boutique illimitée active. Zéro restriction de commande.
+          {% endif %}
+        </p>
+      </div>
+
+      {% if merchant.subscription_plan == 'STARTER' %}
+      <a href="#plans" class="px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs rounded-xl transition shadow-lg shadow-emerald-500/25 shrink-0 text-center">
+        ⚡ Passer au Plan Pro (9 900 FCFA)
+      </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Grille des Offres -->
+  <div id="plans" class="mt-10 grid md:grid-cols-2 gap-6">
+
+    <!-- Plan Starter -->
+    <div class="bg-white rounded-3xl p-6 border {% if merchant.subscription_plan == 'STARTER' %}border-emerald-500 ring-2 ring-emerald-500/20{% else %}border-slate-200{% endif %} shadow-sm flex flex-col justify-between">
+      <div>
+        <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Pour démarrer</span>
+        <h3 class="text-xl font-black text-slate-900 mt-1">Plan Starter</h3>
+        <div class="text-3xl font-black text-slate-900 mt-2">
+          0 <span class="text-xs font-semibold text-slate-500">FCFA / mois</span>
+        </div>
+        
+        <ul class="mt-6 space-y-3 text-xs text-slate-600">
+          <li class="flex items-center"><i data-lucide="check" class="w-4 h-4 text-emerald-500 mr-2 shrink-0"></i> Jusqu'à 10 commandes / mois</li>
+          <li class="flex items-center"><i data-lucide="check" class="w-4 h-4 text-emerald-500 mr-2 shrink-0"></i> Verrou Anti-Lapin Wave & MoMo</li>
+          <li class="flex items-center"><i data-lucide="check" class="w-4 h-4 text-emerald-500 mr-2 shrink-0"></i> Catalogue jusqu'à 5 articles</li>
+          <li class="flex items-center"><i data-lucide="check" class="w-4 h-4 text-emerald-500 mr-2 shrink-0"></i> Feuille de route livreur moto</li>
+        </ul>
+      </div>
+
+      <div class="mt-8 pt-4 border-t border-slate-100">
+        {% if merchant.subscription_plan == 'STARTER' %}
+        <span class="block w-full py-2.5 bg-slate-100 text-slate-600 font-bold text-xs rounded-xl text-center">
+          Votre plan actuel
+        </span>
+        {% else %}
+        <span class="block w-full py-2.5 text-slate-400 text-xs text-center">Inclus</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Plan Pro -->
+    <div class="bg-white rounded-3xl p-6 border-2 border-emerald-500 shadow-xl flex flex-col justify-between relative overflow-hidden">
+      <div class="absolute top-0 right-0 bg-emerald-600 text-white text-[10px] font-black uppercase px-4 py-1 rounded-bl-xl tracking-wider">
+        Populaire & Rentable
+      </div>
+
+      <div>
+        <span class="text-xs font-bold uppercase tracking-wider text-emerald-600">Vendeurs Réguliers</span>
+        <h3 class="text-xl font-black text-slate-900 mt-1">Plan PRO Illimité</h3>
+        <div class="text-3xl font-black text-emerald-600 mt-2">
+          9 900 <span class="text-xs font-semibold text-slate-500">FCFA / mois</span>
+        </div>
+        
+        <ul class="mt-6 space-y-3 text-xs text-slate-700">
+          <li class="flex items-center font-bold text-slate-900"><i data-lucide="check" class="w-4 h-4 text-emerald-600 mr-2 shrink-0"></i> Commandes & Ventes ILLIMITÉES</li>
+          <li class="flex items-center font-bold text-slate-900"><i data-lucide="check" class="w-4 h-4 text-emerald-600 mr-2 shrink-0"></i> Articles & Catalogue ILLIMITÉS</li>
+          <li class="flex items-center"><i data-lucide="check" class="w-4 h-4 text-emerald-600 mr-2 shrink-0"></i> Badge Boutique Certifiée Pro ⭐</li>
+          <li class="flex items-center"><i data-lucide="check" class="w-4 h-4 text-emerald-600 mr-2 shrink-0"></i> Automatisation des bordereaux WhatsApp</li>
+          <li class="flex items-center"><i data-lucide="check" class="w-4 h-4 text-emerald-600 mr-2 shrink-0"></i> Support prioritaire direct 7j/7</li>
+        </ul>
+      </div>
+
+      <div class="mt-8 pt-4 border-t border-slate-100">
+        {% if merchant.subscription_plan == 'PRO' %}
+        <span class="block w-full py-2.5 bg-emerald-100 text-emerald-900 font-extrabold text-xs rounded-xl text-center">
+          ✅ Vous bénéficiez du Plan Pro Actif
+        </span>
+        {% else %}
+        <form action="/merchant/subscription/upgrade" method="POST">
+          <input type="hidden" name="plan" value="PRO">
+          <button type="submit" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs rounded-xl shadow-lg shadow-emerald-600/30 transition transform active:scale-95 flex items-center justify-center space-x-1.5">
+            <i data-lucide="zap" class="w-4 h-4"></i>
+            <span>Activer le Plan Pro (9 900 FCFA par Wave)</span>
+          </button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

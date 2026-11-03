@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Paramètres & Wave - {{ merchant.store_name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-8">
+
+  <!-- Entête -->
+  <div class="pb-6 border-b border-slate-200">
+    <a href="/merchant/dashboard" class="text-xs font-semibold text-slate-500 hover:text-slate-900 transition flex items-center mb-1">
+      <i data-lucide="arrow-left" class="w-3.5 h-3.5 mr-1"></i>
+      Retour au Tableau de Bord
+    </a>
+    <h1 class="text-2xl font-extrabold text-slate-900">Paramètres de la Boutique</h1>
+    <p class="text-xs text-slate-500">Configurez vos numéros de réception Wave & MoMo et votre politique Anti-Lapin.</p>
+  </div>
+
+  {% if request.query_params.get('saved') %}
+  <div class="mt-4 p-4 rounded-2xl bg-emerald-100 border border-emerald-300 text-emerald-900 text-xs font-bold">
+    ✅ Vos paramètres ont été enregistrés avec succès.
+  </div>
+  {% endif %}
+
+  <div class="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- Formulaire Principal -->
+    <div class="lg:col-span-2 space-y-6">
+      <form action="/merchant/settings/update" method="POST" class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-5">
+        
+        <h2 class="text-base font-bold text-slate-900 flex items-center space-x-2">
+          <i data-lucide="store" class="w-4 h-4 text-emerald-600"></i>
+          <span>Profil de la Boutique</span>
+        </h2>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Nom public de votre boutique *</label>
+          <input type="text" name="store_name" value="{{ merchant.store_name }}" required class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-500">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Numéro WhatsApp officiel *</label>
+          <input type="tel" name="phone" value="{{ merchant.phone }}" required class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-500 font-mono">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Description / Bio</label>
+          <textarea name="bio" rows="2" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-500">{{ merchant.bio }}</textarea>
+        </div>
+
+        <div class="pt-4 border-t border-slate-100">
+          <h2 class="text-base font-bold text-slate-900 flex items-center space-x-2 mb-3">
+            <i data-lucide="shield-alert" class="w-4 h-4 text-emerald-600"></i>
+            <span>Politique de l'Acompte Anti-Lapin</span>
+          </h2>
+          
+          <div class="space-y-3">
+            <label class="flex items-start space-x-3 p-3 rounded-2xl border border-slate-200 hover:border-emerald-500 cursor-pointer">
+              <input type="radio" name="deposit_policy" value="DELIVERY_FEE_ONLY" {% if merchant.deposit_policy == 'DELIVERY_FEE_ONLY' %}checked{% endif %} class="mt-1 text-emerald-600 focus:ring-emerald-500">
+              <div>
+                <span class="text-xs font-bold text-slate-900 block">Frais de livraison seulement (Très recommandé)</span>
+                <span class="text-[11px] text-slate-500">Le client paie seulement les frais de course d'avance (ex: 1 500 FCFA). Le prix de l'article est payé au livreur. Zéro risque de perte de course !</span>
+              </div>
+            </label>
+
+            <label class="flex items-start space-x-3 p-3 rounded-2xl border border-slate-200 hover:border-emerald-500 cursor-pointer">
+              <input type="radio" name="deposit_policy" value="FULL_PAYMENT" {% if merchant.deposit_policy == 'FULL_PAYMENT' %}checked{% endif %} class="mt-1 text-emerald-600 focus:ring-emerald-500">
+              <div>
+                <span class="text-xs font-bold text-slate-900 block">Paiement 100% Intégral en ligne</span>
+                <span class="text-[11px] text-slate-500">Le client paie la totalité des articles et de la livraison d'avance. Aucun encaissement cash par le livreur.</span>
+              </div>
+            </label>
+
+            <label class="flex items-start space-x-3 p-3 rounded-2xl border border-slate-200 hover:border-emerald-500 cursor-pointer">
+              <input type="radio" name="deposit_policy" value="FIXED_DEPOSIT" {% if merchant.deposit_policy == 'FIXED_DEPOSIT' %}checked{% endif %} class="mt-1 text-emerald-600 focus:ring-emerald-500">
+              <div class="flex-1">
+                <span class="text-xs font-bold text-slate-900 block">Acompte Fixe Obligatoire</span>
+                <span class="text-[11px] text-slate-500">Montant forfaitaire d'acompte exigé sur chaque commande.</span>
+                <div class="mt-2 flex items-center space-x-2">
+                  <input type="number" name="fixed_deposit_amount" value="{{ merchant.fixed_deposit_amount }}" class="w-32 px-2.5 py-1 text-xs rounded-lg border border-slate-200">
+                  <span class="text-xs font-semibold text-slate-500">FCFA</span>
+                </div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="pt-4 border-t border-slate-100">
+          <h2 class="text-base font-bold text-slate-900 flex items-center space-x-2 mb-3">
+            <i data-lucide="credit-card" class="w-4 h-4 text-emerald-600"></i>
+            <span>Comptes Récepteurs (Wave / MoMo)</span>
+          </h2>
+
+          <div class="space-y-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Numéro Wave de la boutique</label>
+              <input type="text" name="wave_number" value="{{ merchant.wave_number or '' }}" placeholder="0708091011" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm font-mono">
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Numéro Orange Money</label>
+              <input type="text" name="orange_money_number" value="{{ merchant.orange_money_number or '' }}" placeholder="0708091011" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm font-mono">
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Numéro MTN Mobile Money</label>
+              <input type="text" name="mtn_momo_number" value="{{ merchant.mtn_momo_number or '' }}" placeholder="0505060708" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm font-mono">
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-3">
+          <button type="submit" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-md transition">
+            Enregistrer les Modifications
+          </button>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- Gestion des Zones de Livraison -->
+    <div class="space-y-4">
+      <div class="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-sm">
+        <h2 class="text-sm font-bold text-slate-900 mb-3 flex items-center space-x-2">
+          <i data-lucide="map-pin" class="w-4 h-4 text-emerald-600"></i>
+          <span>Zones & Tarifs Livraison</span>
+        </h2>
+
+        <!-- Liste des zones -->
+        <div class="divide-y divide-slate-100 max-h-64 overflow-y-auto mb-4">
+          {% for zone in zones %}
+          <div class="py-2.5 flex items-center justify-between text-xs">
+            <div>
+              <div class="font-bold text-slate-800">{{ zone.name }}</div>
+              <div class="text-emerald-600 font-semibold">{{ "{:,}".format(zone.fee) }} FCFA</div>
+            </div>
+            <form action="/merchant/zones/{{ zone.id }}/delete" method="POST" onsubmit="return confirm('Supprimer cette zone ?')">
+              <button type="submit" class="text-slate-400 hover:text-red-600 p-1">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              </button>
+            </form>
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- Formulaire Ajout Zone -->
+        <form action="/merchant/zones/add" method="POST" class="pt-3 border-t border-slate-100 space-y-2">
+          <span class="text-xs font-bold text-slate-700 block">Ajouter une commune :</span>
+          <input type="text" name="name" required placeholder="Ex: Port-Bouët / Vridi" class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs">
+          <input type="number" name="fee" required placeholder="Tarif en FCFA (ex: 2000)" class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs">
+          <button type="submit" class="w-full py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-lg transition">
+            + Ajouter la zone
+          </button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}
