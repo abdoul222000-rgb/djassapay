@@ -57,7 +57,14 @@
     {% for product in products %}
     <div class="bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col">
       <div class="aspect-square w-full bg-slate-100 relative overflow-hidden group">
-        <img src="{{ product.image_url or 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80' }}" alt="{{ product.title }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+        {% if product.is_video %}
+          <video src="{{ product.image_url }}" autoplay loop muted playsinline class="w-full h-full object-cover group-hover:scale-105 transition duration-300"></video>
+          <span class="absolute bottom-2 left-2 bg-slate-900/80 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center space-x-1">
+            <span>▶ Vidéo</span>
+          </span>
+        {% else %}
+          <img src="{{ product.image_url or 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80' }}" alt="{{ product.title }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+        {% endif %}
         
         {% if product.compare_at_price and product.compare_at_price > product.price %}
         <span class="absolute top-3 left-3 bg-red-600 text-white text-[11px] font-extrabold px-2.5 py-1 rounded-full shadow-sm">

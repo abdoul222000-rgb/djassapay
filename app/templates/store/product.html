@@ -52,8 +52,12 @@
 
   <!-- Résumé Produit -->
   <div class="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-sm flex items-start space-x-4">
-    <div class="w-24 h-24 rounded-2xl bg-slate-100 overflow-hidden shrink-0">
-      <img src="{{ product.image_url or 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80' }}" alt="{{ product.title }}" class="w-full h-full object-cover">
+    <div class="w-24 h-24 rounded-2xl bg-slate-900 overflow-hidden shrink-0">
+      {% if product.is_video %}
+        <video src="{{ product.image_url }}" autoplay loop muted playsinline class="w-full h-full object-cover"></video>
+      {% else %}
+        <img src="{{ product.image_url or 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80' }}" alt="{{ product.title }}" class="w-full h-full object-cover">
+      {% endif %}
     </div>
     <div class="flex-1 min-w-0">
       <span class="text-[11px] font-bold text-emerald-600 uppercase tracking-wider">En Stock</span>
