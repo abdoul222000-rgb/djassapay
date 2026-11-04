@@ -109,3 +109,47 @@ def startup_populate_data():
             db.commit()
     finally:
         db.close()
+
+# ==============================================================
+# SEO & INDEXATION GOOGLE (ROBOTS.TXT & SITEMAP.XML)
+# ==============================================================
+from fastapi.responses import PlainTextResponse, Response
+
+@app.get("/robots.txt", response_class=PlainTextResponse)
+def robots_txt():
+    """Autorise Googlebot et les moteurs à indexer tout le site public."""
+    return """User-agent: *
+Allow: /
+Allow: /register
+Allow: /login
+Allow: /pricing
+Allow: /shop/
+Disallow: /admin/
+Disallow: /merchant/
+
+Sitemap: https://djassapay.onrender.com/sitemap.xml
+"""
+
+@app.get("/sitemap.xml")
+def sitemap_xml():
+    """Génère la sitemap officielle XML pour Google Search Console."""
+    db = SessionLocal()
+    try:
+        merchants = db.query(Merchant).all()
+        urls = [
+            ("https://djassapay.onrender.com/", "daily", "1.0"),
+            ("https://djassapay.onrender.com/pricing", "weekly", "0.8"),
+            ("https://djassapay.onrender.com/register", "monthly", "0.9"),
+            ("https://djassapay.onrender.com/login", "monthly", "0.5"),
+        ]
+        for m in merchants:
+            urls.append((f"https://djassapay.onrender.com/shop/{m.store_slug}", "daily", "0.8"))
+
+        xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
+        xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        for loc, changefreq, priority in urls:
+            xml += f"  <url>\n    <loc>{loc}</loc>\n    <changefreq>{changefreq}</changefreq>\n    <priority>{priority}</priority>\n  </url>\n"
+        xml += "</urlset>"
+        return Response(content=xml, media_type="application/xml")
+    finally:
+        db.close()
