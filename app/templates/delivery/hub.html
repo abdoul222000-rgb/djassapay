@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Portail Coursiers & Livraisons - DjassaPay{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 py-8">
+
+  <!-- En-tête Espace Coursier -->
+  <div class="bg-gradient-to-r from-slate-900 to-slate-800 text-white rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden mb-6">
+    <div class="relative z-10">
+      <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold border border-emerald-400/30 mb-3">
+        <span>🏍️ HUB DES COURSIERS & LIVREURS</span>
+      </div>
+      <h1 class="text-2xl sm:text-3xl font-black">Portail des Courses en Attente</h1>
+      <p class="text-xs sm:text-sm text-slate-300 mt-1 max-w-lg">
+        Toutes les commandes avec <strong>Acompte Anti-Lapin validé</strong> prêtes à être expédiées. Choisissez votre course pour ouvrir la feuille de route.
+      </p>
+
+      <!-- Recherche rapide par numéro de commande -->
+      <form action="/delivery/search" method="GET" class="mt-5 flex gap-2 max-w-md">
+        <input type="text" name="code" placeholder="Ex: DJA-3E70A" required class="flex-1 px-4 py-2.5 rounded-xl bg-slate-800/90 border border-slate-700 text-white placeholder-slate-400 text-xs font-mono uppercase focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+        <button type="submit" class="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-xl transition flex items-center space-x-1.5 shadow-sm">
+          <span>Ouvrir</span>
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Liste des Courses Prêtes -->
+  <div class="space-y-4">
+    <div class="flex items-center justify-between">
+      <h2 class="text-base font-extrabold text-slate-900 flex items-center space-x-2">
+        <span>Courses Disponibles</span>
+        <span class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold">{{ orders|length }}</span>
+      </h2>
+    </div>
+
+    {% if orders %}
+    <div class="grid gap-4">
+      {% for order in orders %}
+      <div class="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-sm hover:shadow-md transition flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        
+        <div class="space-y-1.5">
+          <div class="flex items-center space-x-2">
+            <span class="font-black text-sm font-mono text-slate-900">#{{ order.order_number }}</span>
+            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+              Acompte Payé ✅
+            </span>
+            <span class="text-xs text-slate-400">&bull; {{ order.created_at.strftime('%H:%M') }}</span>
+          </div>
+
+          <div class="text-xs text-slate-600">
+            <strong>Client :</strong> {{ order.customer_name }} &bull; <span class="font-mono">{{ order.customer_phone }}</span>
+          </div>
+
+          <div class="text-xs text-slate-600 flex items-center">
+            <i data-lucide="map-pin" class="w-3.5 h-3.5 text-emerald-600 mr-1 shrink-0"></i>
+            <strong>Destination :</strong> <span class="ml-1 text-slate-900 font-semibold">{{ order.delivery_zone_name }}</span>
+          </div>
+
+          <div class="text-xs text-slate-500 line-clamp-1 italic">
+            "{{ order.delivery_address }}"
+          </div>
+        </div>
+
+        <!-- Encadré Espèces & Bouton d'accès -->
+        <div class="sm:text-right shrink-0 pt-3 sm:pt-0 border-t sm:border-t-0 border-slate-100 flex sm:flex-col justify-between sm:justify-center items-center sm:items-end gap-2">
+          <div>
+            <div class="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Espèces à Encaisser</div>
+            <div class="text-xl font-black text-emerald-600">
+              {{ "{:,}".format(order.balance_due) }} <span class="text-xs">FCFA</span>
+            </div>
+          </div>
+
+          <a href="/delivery/{{ order.order_number }}" class="px-4 py-2.5 bg-slate-900 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl transition flex items-center space-x-1.5 shadow-sm">
+            <span>Ouvrir la Course</span>
+            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+          </a>
+        </div>
+
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-white rounded-3xl p-10 text-center border border-dashed border-slate-300">
+      <div class="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto text-slate-400 mb-3 text-xl">
+        🏍️
+      </div>
+      <p class="text-sm font-bold text-slate-800">Aucune course en attente pour le moment</p>
+      <p class="text-xs text-slate-400 mt-1">Dès qu'un client paie l'acompte Anti-Lapin sur une commande, elle s'affiche ici automatiquement.</p>
+    </div>
+    {% endif %}
+
+  </div>
+
+</div>
+{% endblock %}

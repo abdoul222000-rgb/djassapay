@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}{{ merchant.store_name }} - Boutique en ligne officielle{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 py-6">
+
+  <!-- Entête de la Boutique -->
+  <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm text-center relative overflow-hidden">
+    <div class="w-20 h-20 rounded-2xl mx-auto overflow-hidden ring-4 ring-emerald-500/10 shadow-md">
+      <img src="{{ merchant.logo_url or 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80' }}" alt="{{ merchant.store_name }}" class="w-full h-full object-cover">
+    </div>
+
+    <h1 class="text-2xl font-extrabold text-slate-900 mt-3">{{ merchant.store_name }}</h1>
+    
+    {% if merchant.bio %}
+      <p class="text-xs sm:text-sm text-slate-500 max-w-md mx-auto mt-1.5 leading-relaxed">
+        {{ merchant.bio }}
+      </p>
+    {% endif %}
+
+    <div class="mt-4 flex flex-wrap items-center justify-center gap-2">
+      <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+        <i data-lucide="shield-check" class="w-3.5 h-3.5 mr-1 text-emerald-600"></i>
+        Commande & Livraison Sécurisée
+      </span>
+      <a href="https://wa.me/225{{ merchant.phone }}" target="_blank" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 transition">
+        <i data-lucide="message-circle" class="w-3.5 h-3.5 mr-1"></i>
+        Échanger sur WhatsApp
+      </a>
+    </div>
+
+    <!-- Bannière Explicative Acompte -->
+    <div class="mt-5 p-3 rounded-2xl bg-amber-50 border border-amber-200/80 text-left flex items-start space-x-3">
+      <div class="w-8 h-8 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0 font-bold text-sm">
+        💡
+      </div>
+      <div class="text-xs text-amber-900 leading-relaxed">
+        <p class="font-bold">Comment fonctionne la livraison ?</p>
+        <p class="mt-0.5 text-amber-800">
+          Pour bloquer votre colis et envoyer le coursier, <strong>les frais de livraison sont réglés en avance par Wave ou Mobile Money</strong>. Le reste est payé en espèces au livreur à réception.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Titre Catalogue -->
+  <div class="mt-8 flex items-center justify-between">
+    <h2 class="text-lg font-bold text-slate-900 flex items-center space-x-2">
+      <span>Nos Articles Disponibles</span>
+      <span class="text-xs px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 font-semibold">{{ products|length }}</span>
+    </h2>
+  </div>
+
+  <!-- Grille des Produits -->
+  <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+    {% for product in products %}
+    <div class="bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col">
+      <div class="aspect-square w-full bg-slate-100 relative overflow-hidden group">
+        <img src="{{ product.image_url or 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80' }}" alt="{{ product.title }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+        
+        {% if product.compare_at_price and product.compare_at_price > product.price %}
+        <span class="absolute top-3 left-3 bg-red-600 text-white text-[11px] font-extrabold px-2.5 py-1 rounded-full shadow-sm">
+          PROMO
+        </span>
+        {% endif %}
+      </div>
+
+      <div class="p-4 flex-1 flex flex-col justify-between">
+        <div>
+          <h3 class="font-bold text-slate-900 text-base leading-snug">{{ product.title }}</h3>
+          {% if product.description %}
+          <p class="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">{{ product.description }}</p>
+          {% endif %}
+        </div>
+
+        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+          <div>
+            <div class="text-lg font-extrabold text-slate-900">
+              {{ "{:,}".format(product.price) }} <span class="text-xs font-semibold text-emerald-600">FCFA</span>
+            </div>
+            {% if product.compare_at_price and product.compare_at_price > product.price %}
+            <div class="text-xs text-slate-400 line-through">
+              {{ "{:,}".format(product.compare_at_price) }} FCFA
+            </div>
+            {% endif %}
+          </div>
+
+          <a href="/shop/{{ merchant.store_slug }}/product/{{ product.id }}" class="px-4 py-2 bg-slate-900 hover:bg-emerald-600 text-white text-xs font-bold rounded-xl transition flex items-center space-x-1.5 shadow-sm">
+            <span>Commander</span>
+            <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="col-span-2 bg-white rounded-2xl p-8 text-center border border-dashed border-slate-300">
+      <p class="text-slate-500 text-sm">Aucun produit disponible pour le moment.</p>
+    </div>
+    {% endfor %}
+  </div>
+
+</div>
+{% endblock %}

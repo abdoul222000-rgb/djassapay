@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Paiement de l'acompte - {{ method }} - DjassaPay{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto px-4 py-8" x-data="{ isProcessing: false }">
+
+  <!-- Entête de la Passerelle de Paiement -->
+  <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-lg text-center relative overflow-hidden">
+    
+    {% if method == 'WAVE' %}
+    <!-- En-tête Wave -->
+    <div class="bg-[#1BA4D9] -mx-6 -mt-6 p-6 text-white mb-6">
+      <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center mx-auto text-[#1BA4D9] font-black text-xl shadow-md">
+        W
+      </div>
+      <h1 class="text-xl font-extrabold mt-3">Wave Checkout</h1>
+      <p class="text-xs text-sky-100">Paiement sans frais supplémentaires</p>
+    </div>
+    {% elif method == 'ORANGE_MONEY' %}
+    <!-- En-tête Orange Money -->
+    <div class="bg-[#FF6600] -mx-6 -mt-6 p-6 text-white mb-6">
+      <div class="w-12 h-12 bg-black rounded-2xl flex items-center justify-center mx-auto text-[#FF6600] font-black text-xl shadow-md">
+        OM
+      </div>
+      <h1 class="text-xl font-extrabold mt-3">Orange Money</h1>
+      <p class="text-xs text-amber-100">Paiement sécurisé par code secret</p>
+    </div>
+    {% else %}
+    <!-- En-tête MTN MoMo -->
+    <div class="bg-[#FFCC00] -mx-6 -mt-6 p-6 text-slate-950 mb-6">
+      <div class="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center mx-auto text-[#FFCC00] font-black text-xl shadow-md">
+        MTN
+      </div>
+      <h1 class="text-xl font-extrabold mt-3">MTN Mobile Money</h1>
+      <p class="text-xs text-slate-700">Approuvez la demande sur votre mobile</p>
+    </div>
+    {% endif %}
+
+    <!-- Détail du paiement -->
+    <div class="text-xs text-slate-500">Montant de l'Acompte Anti-Lapin</div>
+    <div class="text-3xl font-black text-slate-900 mt-1">
+      {{ "{:,}".format(order.deposit_required) }} <span class="text-sm font-bold text-emerald-600">FCFA</span>
+    </div>
+
+    <div class="mt-4 p-3 rounded-2xl bg-slate-50 border border-slate-200 text-left text-xs space-y-1">
+      <div class="flex justify-between">
+        <span class="text-slate-500">Boutique :</span>
+        <span class="font-bold text-slate-800">{{ merchant.store_name }}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-slate-500">Commande :</span>
+        <span class="font-bold font-mono text-slate-800">#{{ order.order_number }}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-slate-500">Destinataire :</span>
+        <span class="font-medium text-slate-800">{{ order.customer_name }}</span>
+      </div>
+    </div>
+
+    <!-- QR Code / Simulation d'Approbation Mobile -->
+    <div class="mt-6 border-2 border-dashed border-slate-200 rounded-2xl p-4 bg-slate-50 flex flex-col items-center">
+      <div class="w-36 h-36 bg-white rounded-xl shadow-sm p-2 flex items-center justify-center border border-slate-200">
+        <!-- QR Code stylisé -->
+        <svg viewBox="0 0 100 100" class="w-full h-full text-slate-800">
+          <rect x="10" y="10" width="25" height="25" rx="4" fill="currentColor"/>
+          <rect x="65" y="10" width="25" height="25" rx="4" fill="currentColor"/>
+          <rect x="10" y="65" width="25" height="25" rx="4" fill="currentColor"/>
+          <rect x="45" y="15" width="10" height="20" fill="currentColor"/>
+          <rect x="45" y="45" width="10" height="10" fill="currentColor"/>
+          <rect x="20" y="45" width="15" height="10" fill="currentColor"/>
+          <rect x="65" y="45" width="25" height="10" fill="currentColor"/>
+          <rect x="45" y="65" width="15" height="25" fill="currentColor"/>
+          <rect x="70" y="65" width="20" height="20" fill="currentColor"/>
+        </svg>
+      </div>
+      <span class="text-[11px] font-medium text-slate-500 mt-2">Scannez avec votre application ou validez ci-dessous</span>
+    </div>
+
+    <!-- Formulaire de Validation du Paiement -->
+    <form action="/payments/simulate/{{ order.order_number }}/confirm" method="POST" class="mt-6" @submit="isProcessing = true">
+      <input type="hidden" name="method" value="{{ method }}">
+
+      <button type="submit" :disabled="isProcessing" class="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold rounded-2xl shadow-lg shadow-emerald-600/30 transition transform active:scale-95 flex items-center justify-center space-x-2">
+        <template x-if="!isProcessing">
+          <span class="flex items-center space-x-2">
+            <i data-lucide="check-circle" class="w-5 h-5"></i>
+            <span>Confirmer le paiement de {{ "{:,}".format(order.deposit_required) }} FCFA</span>
+          </span>
+        </template>
+        <template x-if="isProcessing">
+          <span class="flex items-center space-x-2">
+            <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>Validation en direct...</span>
+          </span>
+        </template>
+      </button>
+    </form>
+
+    <div class="mt-4">
+      <a href="/orders/{{ order.order_number }}" class="text-xs text-slate-400 hover:text-slate-600">
+        Annuler et revenir à la commande
+      </a>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

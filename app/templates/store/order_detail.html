@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Commande #{{ order.order_number }} - {{ merchant.store_name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto px-4 py-8">
+
+  <!-- Carte d'État de la Commande -->
+  <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm text-center">
+
+    {% if order.payment_status == 'PENDING_DEPOSIT' %}
+      <div class="w-16 h-16 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center mx-auto mb-4 text-2xl font-black">
+        ⏳
+      </div>
+      <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200 mb-2">
+        En attente de règlement de l'acompte
+      </span>
+      <h1 class="text-xl font-extrabold text-slate-900">Commande #{{ order.order_number }}</h1>
+      <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+        Pour éviter les commandes fictives, veuillez régler l'acompte pour que le livreur se mette en route.
+      </p>
+
+      <!-- Encadré du montant de l'acompte à payer -->
+      <div class="mt-6 p-5 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 text-white">
+        <div class="text-xs uppercase tracking-wider text-emerald-400 font-extrabold">Acompte à régler :</div>
+        <div class="text-3xl font-black mt-1 text-emerald-400">
+          {{ "{:,}".format(order.deposit_required) }} <span class="text-sm font-bold text-white">FCFA</span>
+        </div>
+        <div class="text-[11px] text-slate-300 mt-2 border-t border-slate-700 pt-2">
+          (Solde de <strong>{{ "{:,}".format(order.balance_due) }} FCFA</strong> à remettre au livreur en main propre)
+        </div>
+
+        <!-- Bouton de Paiement Direct -->
+        <a href="/payments/simulate/{{ order.order_number }}?method={{ order.payment_method }}" class="mt-5 w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-xl transition flex items-center justify-center space-x-2 shadow-lg shadow-emerald-500/25">
+          <i data-lucide="zap" class="w-5 h-5"></i>
+          <span>Payer {{ "{:,}".format(order.deposit_required) }} FCFA par {{ order.payment_method }}</span>
+        </a>
+      </div>
+
+    {% elif order.payment_status in ['DEPOSIT_PAID', 'FULLY_PAID'] %}
+      <div class="w-16 h-16 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-4 text-2xl font-black">
+        ✅
+      </div>
+      <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 mb-2">
+        Acompte Validé & Colis Réservé !
+      </span>
+      <h1 class="text-xl font-extrabold text-slate-900">Commande #{{ order.order_number }}</h1>
+      <p class="text-xs text-slate-500 mt-1">
+        Votre acompte de <strong>{{ "{:,}".format(order.deposit_paid) }} FCFA</strong> a bien été encaissé par {{ merchant.store_name }}.
+      </p>
+
+      {% if order.delivery_status == 'DELIVERED' %}
+      <div class="mt-4 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-bold">
+        🎉 Colis livré et solde encaissé avec succès !
+      </div>
+      {% else %}
+      <div class="mt-4 p-4 rounded-2xl bg-slate-50 border border-slate-200 text-left space-y-1">
+        <div class="text-xs font-semibold text-slate-500">Statut de la livraison :</div>
+        <div class="text-sm font-extrabold text-slate-900 flex items-center">
+          <i data-lucide="truck" class="w-4 h-4 mr-1.5 text-emerald-600"></i>
+          {{ 'En cours de livraison / En route' if order.delivery_status == 'DISPATCHED' else 'En préparation chez le vendeur' }}
+        </div>
+        <div class="text-xs text-amber-800 font-semibold pt-2 border-t border-slate-200 mt-2">
+          💵 Solde à remettre au livreur à l'arrivée : <span class="text-slate-950 font-black text-sm">{{ "{:,}".format(order.balance_due) }} FCFA</span>
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="mt-6 flex flex-col gap-3">
+        <a href="{{ whatsapp_url }}" target="_blank" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition flex items-center justify-center space-x-2 shadow-sm">
+          <i data-lucide="message-circle" class="w-4 h-4"></i>
+          <span>Confirmer sur WhatsApp avec la boutique</span>
+        </a>
+      </div>
+
+    {% endif %}
+
+  </div>
+
+  <!-- Détails de la Commande -->
+  <div class="mt-6 bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
+    <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400">Détails des Articles</h2>
+    
+    <div class="divide-y divide-slate-100">
+      {% for item in order.items %}
+      <div class="py-3 flex justify-between items-center text-sm">
+        <div>
+          <div class="font-bold text-slate-900">{{ item.product_title }}</div>
+          <div class="text-xs text-slate-400">Qté : {{ item.quantity }} &times; {{ "{:,}".format(item.unit_price) }} FCFA</div>
+        </div>
+        <div class="font-extrabold text-slate-900">{{ "{:,}".format(item.total_price) }} FCFA</div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="pt-3 border-t border-slate-100 space-y-1.5 text-xs text-slate-600">
+      <div class="flex justify-between">
+        <span>Sous-total</span>
+        <span class="font-semibold">{{ "{:,}".format(order.subtotal) }} FCFA</span>
+      </div>
+      <div class="flex justify-between">
+        <span>Frais de livraison ({{ order.delivery_zone_name }})</span>
+        <span class="font-semibold">{{ "{:,}".format(order.delivery_fee) }} FCFA</span>
+      </div>
+      <div class="flex justify-between text-sm font-black text-slate-900 pt-2 border-t border-slate-100">
+        <span>Total Général</span>
+        <span>{{ "{:,}".format(order.total_amount) }} FCFA</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Informations Destinataire -->
+  <div class="mt-6 bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm text-xs space-y-2 text-slate-600">
+    <h2 class="font-bold uppercase tracking-wider text-slate-400 mb-2">Lieu de Livraison</h2>
+    <p><strong>Destinataire :</strong> {{ order.customer_name }} ({{ order.customer_phone }})</p>
+    <p><strong>Zone :</strong> {{ order.delivery_zone_name }}</p>
+    <p><strong>Adresse / Repère :</strong> {{ order.delivery_address }}</p>
+    {% if order.customer_notes %}
+    <p><strong>Note client :</strong> {{ order.customer_notes }}</p>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}
