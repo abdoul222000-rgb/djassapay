@@ -35,6 +35,37 @@
   </div>
   {% endif %}
 
+  <!-- Indicateur de Mode Réel / Mode Essai -->
+  <div class="mt-6 p-4 rounded-3xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 {% if settings.CINETPAY_API_KEY and settings.CINETPAY_SITE_ID %}bg-emerald-50 border-emerald-200 text-emerald-900{% else %}bg-amber-50 border-amber-200 text-amber-900{% endif %}">
+    <div class="flex items-center space-x-3">
+      <div class="w-10 h-10 rounded-2xl flex items-center justify-center font-bold text-lg {% if settings.CINETPAY_API_KEY and settings.CINETPAY_SITE_ID %}bg-emerald-600 text-white shadow-md shadow-emerald-600/30{% else %}bg-amber-500 text-white shadow-md shadow-amber-500/30{% endif %}">
+        {% if settings.CINETPAY_API_KEY and settings.CINETPAY_SITE_ID %}🟢{% else %}🟡{% endif %}
+      </div>
+      <div>
+        <div class="text-xs uppercase tracking-wider font-extrabold flex items-center space-x-2">
+          <span>STATUT DES PAIEMENTS :</span>
+          {% if settings.CINETPAY_API_KEY and settings.CINETPAY_SITE_ID %}
+            <span class="px-2.5 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-black">MODE RÉEL ACTIF (PRODUCTION)</span>
+          {% else %}
+            <span class="px-2.5 py-0.5 rounded-full bg-amber-600 text-white text-[10px] font-black">MODE ESSAI / SIMULATION</span>
+          {% endif %}
+        </div>
+        <p class="text-xs mt-0.5 text-slate-600">
+          {% if settings.CINETPAY_API_KEY and settings.CINETPAY_SITE_ID %}
+            Vos clients paient réellement par Wave, Orange Money, MTN MoMo et Moov Money. L'argent arrive sur vos comptes !
+          {% else %}
+            Les paiements sont actuellement simulés pour vos démos. Dès réception de vos identifiants CinetPay, collez-les ci-dessous pour basculer en argent réel !
+          {% endif %}
+        </p>
+      </div>
+    </div>
+    {% if not (settings.CINETPAY_API_KEY and settings.CINETPAY_SITE_ID) %}
+    <a href="#cinetpay-section" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold rounded-xl transition shadow-sm text-center shrink-0">
+      Activer le Mode Réel
+    </a>
+    {% endif %}
+  </div>
+
   <!-- Cartes des Gains Fondateur -->
   <div class="mt-6 grid grid-cols-2 lg:grid-cols-4 gap-4">
     
@@ -136,7 +167,7 @@
         </div>
 
         <!-- Clés API Professionnelles (Optionnel) -->
-        <div class="pt-6 border-t border-slate-100">
+        <div id="cinetpay-section" class="pt-6 border-t border-slate-100">
           <h2 class="text-base font-bold text-slate-900 flex items-center space-x-2">
             <i data-lucide="key" class="w-4 h-4 text-emerald-600"></i>
             <span>2. Passerelles Automatisées (API Production)</span>

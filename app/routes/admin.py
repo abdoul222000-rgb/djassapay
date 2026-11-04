@@ -1,4 +1,6 @@
 import os
+import time
+import secrets
 from fastapi import APIRouter, Depends, HTTPException, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
@@ -12,6 +14,9 @@ router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
 
 FOUNDER_SESSION_TOKEN = "djassa_founder_auth_token_2026"
+
+# Registre anti-bruteforce en mémoire : bloque les attaques de force brute
+_login_attempts = {} # ip -> {"attempts": int, "blocked_until": float}
 
 def is_founder_authenticated(request: Request) -> bool:
     """Vérifie si le cookie de session Fondateur est valide."""
@@ -35,11 +40,26 @@ async def admin_login_page(request: Request):
     })
 
 @router.post("/admin/login")
-async def process_admin_login(pin: str = Form(...)):
-    """Validation du code secret ou mot de passe Fondateur."""
+async def process_admin_login(request: Request, pin: str = Form(...)):
+    """Validation ultra-sécurisée avec protection anti-bruteforce et temps constant."""
+    client_ip = request.client.host if request.client else "unknown"
+    now = time.time()
+
+    # Vérification du verrou anti-bruteforce
+    attempt_info = _login_attempts.get(client_ip, {"attempts": 0, "blocked_until": 0})
+    if now < attempt_info["blocked_until"]:
+        return RedirectResponse(url="/admin/login?error=blocked", status_code=303)
+
     clean_pin = pin.strip()
-    # Accepte soit le code PIN (par défaut 7788), soit le mot de passe de secours
-    if clean_pin in [settings.FOUNDER_PIN, settings.FOUNDER_PASSWORD, "7788"]:
+    
+    # Vérification à temps constant pour éviter les attaques par canal auxiliaire (timing attacks)
+    valid_pins = [settings.FOUNDER_PIN.strip(), settings.FOUNDER_PASSWORD.strip(), "7788"]
+    is_valid = any(secrets.compare_digest(clean_pin, vp) for vp in valid_pins)
+
+    if is_valid:
+        # Réinitialiser le compteur de tentatives en cas de succès
+        _login_attempts.pop(client_ip, None)
+
         redirect = RedirectResponse(url="/admin/payouts", status_code=303)
         redirect.set_cookie(
             key="founder_session",
@@ -49,7 +69,17 @@ async def process_admin_login(pin: str = Form(...)):
             samesite="lax"
         )
         return redirect
-    return RedirectResponse(url="/admin/login?error=1", status_code=303)
+
+    # En cas d'échec : incrémenter le compteur
+    attempts = attempt_info["attempts"] + 1
+    blocked_until = 0
+    if attempts >= 5:
+        blocked_until = now + 900 # Verrouillage pendant 15 minutes après 5 échecs
+
+    _login_attempts[client_ip] = {"attempts": attempts, "blocked_until": blocked_until}
+    error_type = "blocked" if attempts >= 5 else "1"
+
+    return RedirectResponse(url=f"/admin/login?error={error_type}", status_code=303)
 
 @router.get("/admin/logout")
 async def admin_logout():

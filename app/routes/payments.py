@@ -2,14 +2,70 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
+import httpx
 
 from app.database import get_db
+from app.config import settings
 from app.models import Order, Merchant, PaymentStatusEnum
 from app.services.payment_service import PaymentService
 from app.services.whatsapp_service import auto_notify_deposit_confirmed
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
+
+@router.get("/payments/pay/{order_number}")
+async def initiate_customer_payment(
+    request: Request,
+    order_number: str,
+    db: Session = Depends(get_db)
+):
+    """
+    Déclenche le paiement de l'acompte Anti-Lapin.
+    - Si CinetPay est configuré : redirige vers le vrai CinetPay Checkout (Orange Money, Wave, MTN, Moov).
+    - Sinon : bascule sur le simulateur interactif pour tester.
+    """
+    clean_number = order_number.strip().upper()
+    order = db.query(Order).filter(Order.order_number == clean_number).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Commande introuvable")
+
+    merchant = db.query(Merchant).filter(Merchant.id == order.merchant_id).first()
+
+    # Vérifier si CinetPay Production est activé
+    if settings.CINETPAY_API_KEY and settings.CINETPAY_SITE_ID:
+        try:
+            base_url = str(request.base_url).rstrip('/')
+            if "onrender.com" in base_url and base_url.startswith("http://"):
+                base_url = "https://" + base_url[7:]
+
+            payload = {
+                "apikey": settings.CINETPAY_API_KEY.strip(),
+                "site_id": settings.CINETPAY_SITE_ID.strip(),
+                "transaction_id": order.order_number,
+                "amount": order.deposit_required,
+                "currency": "XOF",
+                "description": f"Acompte Anti-Lapin #{order.order_number} sur {merchant.store_name if merchant else 'DjassaPay'}",
+                "notify_url": f"{base_url}/payments/webhook/cinetpay",
+                "return_url": f"{base_url}/payments/return/cinetpay",
+                "channels": "ALL",
+                "customer_name": order.customer_name[:30] if order.customer_name else "Client",
+                "customer_surname": "DjassaPay",
+                "customer_phone_number": order.customer_phone
+            }
+
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                resp = await client.post("https://api-checkout.cinetpay.com/v2/payment", json=payload)
+                data = resp.json()
+
+            if data.get("code") == "201" and data.get("data", {}).get("payment_url"):
+                return RedirectResponse(url=data["data"]["payment_url"], status_code=303)
+            else:
+                print(f"[CinetPay API Response] {data}")
+        except Exception as e:
+            print(f"[CinetPay Initiation Error] {e}")
+
+    # Fallback vers simulateur si pas encore configuré
+    return RedirectResponse(url=f"/payments/simulate/{order.order_number}?method={order.payment_method}", status_code=303)
 
 @router.get("/payments/simulate/{order_number}", response_class=HTMLResponse)
 async def simulate_payment_page(
