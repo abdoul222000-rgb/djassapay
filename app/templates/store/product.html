@@ -42,12 +42,17 @@
   }
 }">
 
-  <!-- Bouton Retour -->
-  <div class="mb-4">
+  <!-- Bouton Retour & Partage -->
+  <div class="mb-4 flex items-center justify-between">
     <a href="/shop/{{ merchant.store_slug }}" class="inline-flex items-center text-xs font-semibold text-slate-500 hover:text-slate-900 transition">
       <i data-lucide="arrow-left" class="w-4 h-4 mr-1"></i>
-      Retour à la boutique {{ merchant.store_name }}
+      <span>Retour à la boutique</span>
     </a>
+
+    <button type="button" onclick="shareProduct()" class="inline-flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 transition active:scale-95 shadow-sm">
+      <i data-lucide="share-2" class="w-3.5 h-3.5 text-emerald-400"></i>
+      <span>Partager cet article</span>
+    </button>
   </div>
 
   <!-- Résumé Produit -->
@@ -219,4 +224,22 @@
   </form>
 
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function shareProduct() {
+    const shareData = {
+      title: "{{ product.title }} - {{ merchant.store_name }}",
+      text: "Regarde cet article sur {{ merchant.store_name }} : {{ product.title }} ({{ "{:,}".format(product.price) }} FCFA) ! Commande rapide ici :",
+      url: window.location.href
+    };
+    if (navigator.share) {
+      navigator.share(shareData).catch(() => {});
+    } else {
+      const waUrl = "https://api.whatsapp.com/send?text=" + encodeURIComponent(shareData.text + " " + shareData.url);
+      window.open(waUrl, "_blank");
+    }
+  }
+</script>
 {% endblock %}

@@ -34,16 +34,24 @@ async def view_order(request: Request, order_number: str, db: Session = Depends(
 @router.get("/delivery/", response_class=HTMLResponse)
 async def list_deliveries(request: Request, db: Session = Depends(get_db)):
     """
-    Portail général des coursiers : affiche la liste de toutes les courses
-    dont l'acompte a été réglé et qui sont en attente d'expédition ou en cours.
+    Portail sécurisé des coursiers : accès par numéro de course.
+    Si un marchand est connecté, affiche les courses de sa boutique uniquement.
     """
-    orders = db.query(Order).filter(
-        Order.deposit_paid > 0
-    ).order_by(Order.created_at.desc()).all()
+    merchant_id = request.cookies.get("merchant_id")
+    merchant_orders = []
+    if merchant_id:
+        try:
+            merchant_orders = db.query(Order).filter(
+                Order.merchant_id == int(merchant_id),
+                Order.deposit_paid > 0
+            ).order_by(Order.created_at.desc()).all()
+        except Exception:
+            pass
 
     return templates.TemplateResponse("delivery/hub.html", {
         "request": request,
-        "orders": orders
+        "merchant_orders": merchant_orders,
+        "not_found": request.query_params.get("not_found")
     })
 
 @router.get("/delivery/search")

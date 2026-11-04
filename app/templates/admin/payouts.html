@@ -17,10 +17,16 @@
       </p>
     </div>
 
-    <a href="/merchant/dashboard" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition flex items-center space-x-1.5 shadow-sm shrink-0">
-      <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
-      <span>Tableau de Bord Marchand</span>
-    </a>
+    <div class="flex items-center space-x-2 shrink-0">
+      <a href="/admin/logout" class="px-3.5 py-2 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 text-xs font-bold rounded-xl transition flex items-center space-x-1.5 shadow-sm">
+        <i data-lucide="lock" class="w-4 h-4"></i>
+        <span>Verrouiller / Quitter</span>
+      </a>
+      <a href="/merchant/dashboard" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition flex items-center space-x-1.5 shadow-sm">
+        <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+        <span>Tableau de Bord Marchand</span>
+      </a>
+    </div>
   </div>
 
   {% if request.query_params.get('saved') %}
@@ -86,10 +92,15 @@
           </p>
         </div>
 
-        <div class="grid sm:grid-cols-2 gap-4">
+        <div class="grid sm:grid-cols-3 gap-4">
           <div>
             <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Votre Nom ou Raison Sociale *</label>
             <input type="text" name="founder_name" value="{{ settings.FOUNDER_NAME }}" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-500">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Code PIN Secret Fondateur *</label>
+            <input type="text" name="founder_pin" value="{{ settings.FOUNDER_PIN }}" required placeholder="7788" class="w-full px-3.5 py-2.5 rounded-xl border border-amber-300 bg-amber-50/50 text-sm font-mono focus:ring-2 focus:ring-amber-500">
           </div>
 
           <div>

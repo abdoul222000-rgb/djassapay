@@ -11,8 +11,10 @@ class Settings(BaseSettings):
     # Base URL for public links (storefront, delivery slip, webhooks)
     BASE_URL: str = "http://localhost:8000"
     
-    # Coordonnées du Fondateur (Pour recevoir vos abonnements SaaS & commissions)
+    # Coordonnées & Sécurité du Fondateur (Accès Exclusif & Réception des Gains)
     FOUNDER_NAME: str = "Fondateur DjassaPay"
+    FOUNDER_PIN: str = "7788" # Code PIN Secret Fondateur pour accéder à l'espace
+    FOUNDER_PASSWORD: str = "DjassaFondateur2026@" # Mot de passe de secours
     FOUNDER_PHONE: str = ""
     FOUNDER_WAVE_NUMBER: str = ""
     FOUNDER_ORANGE_MONEY_NUMBER: str = ""
