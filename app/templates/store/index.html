@@ -28,6 +28,10 @@
         <i data-lucide="message-circle" class="w-3.5 h-3.5 mr-1"></i>
         Échanger sur WhatsApp
       </a>
+      <button type="button" onclick="shareStore()" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 transition active:scale-95 shadow-sm">
+        <i data-lucide="share-2" class="w-3.5 h-3.5 mr-1 text-emerald-400"></i>
+        <span>Partager la boutique</span>
+      </button>
     </div>
 
     <!-- Bannière Explicative Acompte -->
@@ -108,4 +112,22 @@
   </div>
 
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function shareStore() {
+    const shareData = {
+      title: "{{ merchant.store_name }} - Boutique en ligne",
+      text: "Découvrez les articles de {{ merchant.store_name }} ! Commande facile et livraison sécurisée :",
+      url: window.location.href
+    };
+    if (navigator.share) {
+      navigator.share(shareData).catch(() => {});
+    } else {
+      const waUrl = "https://api.whatsapp.com/send?text=" + encodeURIComponent(shareData.text + " " + shareData.url);
+      window.open(waUrl, "_blank");
+    }
+  }
+</script>
 {% endblock %}

@@ -25,6 +25,10 @@
   <div class="mb-4 p-3.5 rounded-2xl bg-sky-50 border border-sky-200 text-sky-900 text-xs font-semibold text-center">
     ℹ️ Ce numéro possède déjà une boutique. Veuillez entrer votre code PIN pour vous connecter.
   </div>
+  {% elif request.query_params.get('unauthorized') %}
+  <div class="mb-4 p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-semibold text-center">
+    🔒 Veuillez vous connecter pour accéder à votre espace vendeur.
+  </div>
   {% elif request.query_params.get('logged_out') %}
   <div class="mb-4 p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-semibold text-center">
     👋 Vous avez été déconnecté avec succès.
