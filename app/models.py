@@ -43,10 +43,11 @@ class Merchant(Base):
     subscription_status = Column(String(50), default="ACTIVE")
     subscription_paid_amount = Column(Integer, default=0)
     
-    # Numéros de réception directe
+    # Numéros de réception directe (Côte d'Ivoire)
     wave_number = Column(String(30), nullable=True)
     orange_money_number = Column(String(30), nullable=True)
     mtn_momo_number = Column(String(30), nullable=True)
+    moov_money_number = Column(String(30), nullable=True)
     
     # Politique d'acompte Anti-Lapin
     deposit_policy = Column(String(50), default=DepositPolicyEnum.DELIVERY_FEE_ONLY.value)

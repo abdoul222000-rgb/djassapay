@@ -30,7 +30,7 @@
           (Solde de <strong>{{ "{:,}".format(order.balance_due) }} FCFA</strong> à remettre au livreur en main propre)
         </div>
 
-        <!-- Bouton de Paiement Direct (Réel si CinetPay configuré, Simulation sinon) -->
+        <!-- Bouton de Paiement Direct Côte d'Ivoire (Wave, OM, MoMo, Moov) -->
         <a href="/payments/pay/{{ order.order_number }}" class="mt-5 w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-xl transition flex items-center justify-center space-x-2 shadow-lg shadow-emerald-500/25">
           <i data-lucide="zap" class="w-5 h-5"></i>
           <span>Payer {{ "{:,}".format(order.deposit_required) }} FCFA par {{ order.payment_method }}</span>

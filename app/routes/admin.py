@@ -123,11 +123,10 @@ async def update_admin_payouts(
     founder_wave_number: str = Form(""),
     founder_orange_money_number: str = Form(""),
     founder_mtn_momo_number: str = Form(""),
+    founder_moov_money_number: str = Form(""),
     commission_percentage: float = Form(1.5),
     wave_api_key: str = Form(""),
-    wave_webhook_secret: str = Form(""),
-    cinetpay_api_key: str = Form(""),
-    cinetpay_site_id: str = Form("")
+    wave_webhook_secret: str = Form("")
 ):
     """Met à jour les comptes de réception et le code secret du fondateur."""
     if not is_founder_authenticated(request):
@@ -138,11 +137,10 @@ async def update_admin_payouts(
     settings.FOUNDER_WAVE_NUMBER = founder_wave_number
     settings.FOUNDER_ORANGE_MONEY_NUMBER = founder_orange_money_number
     settings.FOUNDER_MTN_MOMO_NUMBER = founder_mtn_momo_number
+    settings.FOUNDER_MOOV_MONEY_NUMBER = founder_moov_money_number
     settings.COMMISSION_PERCENTAGE = commission_percentage
     settings.WAVE_API_KEY = wave_api_key
     settings.WAVE_WEBHOOK_SECRET = wave_webhook_secret
-    settings.CINETPAY_API_KEY = cinetpay_api_key
-    settings.CINETPAY_SITE_ID = cinetpay_site_id
 
     # Sauvegarde dans le fichier .env
     env_content = f"""# ==============================================================
@@ -158,20 +156,17 @@ BASE_URL={settings.BASE_URL}
 FOUNDER_PIN={settings.FOUNDER_PIN}
 FOUNDER_PASSWORD={settings.FOUNDER_PASSWORD}
 
-# 2. Vos Numéros Directs de Réception (Pour recevoir l'argent)
+# 2. Vos Numéros Directs de Réception Côte d'Ivoire (Pour recevoir l'argent)
 FOUNDER_NAME={founder_name}
 FOUNDER_WAVE_NUMBER={founder_wave_number}
 FOUNDER_ORANGE_MONEY_NUMBER={founder_orange_money_number}
 FOUNDER_MTN_MOMO_NUMBER={founder_mtn_momo_number}
+FOUNDER_MOOV_MONEY_NUMBER={founder_moov_money_number}
 COMMISSION_PERCENTAGE={commission_percentage}
 
 # 3. Clés API Wave Business (Optionnel au début, pour encaissements 100% automatiques)
 WAVE_API_KEY={wave_api_key}
 WAVE_WEBHOOK_SECRET={wave_webhook_secret}
-
-# 4. Clés API CinetPay (Pour Orange Money, MTN, Moov, Wave dans 10 pays d'Afrique)
-CINETPAY_API_KEY={cinetpay_api_key}
-CINETPAY_SITE_ID={cinetpay_site_id}
 """
     with open(".env", "w", encoding="utf-8") as f:
         f.write(env_content)

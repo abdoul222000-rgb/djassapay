@@ -10,47 +10,81 @@ from app.models import Merchant, DeliveryZone, Product
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
 
-# Zones de livraison prédéfinies selon la ville choisie
+# ==============================================================
+# TOUTES LES COMMUNES DE CÔTE D'IVOIRE (ABIDJAN & INTÉRIEUR)
+# ==============================================================
+# PRÉSETS 100% CÔTE D'IVOIRE (TOUTES LES COMMUNES & VILLES)
+# ==============================================================
+COMMUNES_ABIDJAN = [
+    ("Cocody (Angré, 2 Plateaux, Riviera, Palmeraie, Danga, Abatta)", 1500, "1h - 2h"),
+    ("Yopougon (Maroc, Niangon, Selmer, Bel Air, Toits Rouges, Gesco)", 2000, "2h - 4h"),
+    ("Marcory (Zone 4, Biétry, Anoumabo, Résidentiel, Hibiscus)", 1500, "1h - 3h"),
+    ("Koumassi (Remblais, Prodomo, Campement, SOPIM, 05)", 1500, "2h - 3h"),
+    ("Treichville (Avenues 1-25, Arras, Belleville, Boulevard de Marseille)", 1500, "1h - 2h"),
+    ("Plateau (Centre des Affaires & Administratif)", 1500, "1h - 2h"),
+    ("Adjamé (220 Logements, Williamsville, Mirador, Liberté)", 1500, "1h - 2h"),
+    ("Abobo (Samaké, N'Dotré, PK18, Avocatier, Belle-Ville, Bocabo)", 2000, "2h - 4h"),
+    ("Port-Bouët (Aéroport, Gonzagueville, Vridi, Phare, Derrière-Wharf)", 2000, "2h - 4h"),
+    ("Attécoubé (Agban, Locodjro, Santé, Boribana)", 1500, "1h - 3h"),
+    ("Bingerville (Feh Kessé, Blanchon, Savane)", 2500, "2h - 4h"),
+    ("Grand-Bassam (Moossou, Quartier France, Rosiers)", 3000, "3h - 5h"),
+    ("Songon (Songon Agban, Kassemblé)", 3000, "3h - 5h"),
+    ("Anyama & Stade Ebimpé", 3000, "2h - 4h"),
+]
+
+VILLES_INTERIEUR_CI = [
+    ("Yamoussoukro (Capitale, Morofé, 220)", 2500, "24h - 48h (Colis)"),
+    ("Bouaké (Air France, Commerce, Nimbo, Broukro)", 2500, "24h - 48h (Colis)"),
+    ("San-Pédro (Centre, Bardot, Balmer, Séwéké)", 3000, "24h - 48h (Colis)"),
+    ("Korhogo (Centre, Koko, Petit Paris)", 3000, "24h - 48h (Colis)"),
+    ("Daloa (Tazibouo, Soleil, Huberson)", 3000, "24h - 48h (Colis)"),
+    ("Gagnoa (Babré, Dioulabougou, Garahio)", 3000, "24h - 48h (Colis)"),
+    ("Man (Grand Gbapleu, Koko, Domoraud)", 3500, "24h - 48h (Colis)"),
+    ("Soubré (Centre-ville & Nawa)", 3500, "24h - 48h (Colis)"),
+    ("Divo (Centre & Dougako)", 3000, "24h - 48h (Colis)"),
+    ("Abengourou (Plateau & Indénié)", 3000, "24h - 48h (Colis)"),
+    ("Agboville (Centre & Samaké)", 2500, "24h - 48h (Colis)"),
+    ("Aboisso & Noé", 3000, "24h - 48h (Colis)"),
+    ("Dabou (Centre & Kpass)", 2500, "2h - 4h"),
+    ("Ferkessédougou", 3500, "24h - 48h (Colis)"),
+    ("Bondoukou & Bouna", 3500, "24h - 48h (Colis)"),
+    ("Toumodi & Tiébissou", 2500, "24h - 48h (Colis)"),
+    ("Daoukro & Dimbokro", 2500, "24h - 48h (Colis)"),
+    ("Séguéla & Worodougou", 3500, "24h - 48h (Colis)"),
+    ("Odienné & Kabadougou", 4000, "24h - 48h (Colis)"),
+]
+
+ALL_CI_ZONES = COMMUNES_ABIDJAN + VILLES_INTERIEUR_CI
+
+# Zones prédéfinies pour les boutiques en Côte d'Ivoire
 PRESET_ZONES = {
-    "Abidjan": [
-        ("Cocody (Angré, Riviera, 2 Plateaux)", 1500, "1h - 3h"),
-        ("Yopougon (Maroc, Selmer, Bel Air)", 2000, "2h - 4h"),
-        ("Marcory & Zone 4 / Biétry", 1500, "1h - 3h"),
-        ("Koumassi & Treichville", 1500, "2h - 3h"),
-        ("Plateau & Adjamé", 1500, "1h - 2h"),
-        ("Bingerville & Bassam", 2500, "3h - 5h"),
-    ],
-    "Dakar": [
-        ("Plateau, Médina, Fann", 1500, "1h - 3h"),
-        ("Almadies, Ngor, Yoff", 2000, "1h - 3h"),
-        ("Ouakam, Mermoz, Sacré-Cœur", 1500, "1h - 2h"),
-        ("Parcelles Assainies & Guédiawaye", 2000, "2h - 4h"),
-        ("Pikine & Rufisque", 2500, "3h - 5h"),
-    ],
-    "Douala": [
-        ("Akwa & Bonanjo (Centre-ville)", 1500, "1h - 2h"),
-        ("Bonapriso & Bali", 1500, "1h - 3h"),
-        ("Deido, Bépanda, Ndokoti", 2000, "2h - 4h"),
-        ("Bonabéri & Yassa", 2500, "3h - 5h"),
-    ],
-    "Yaoundé": [
-        ("Bastos & Centre administratif", 1500, "1h - 3h"),
-        ("Biyem-Assi & Mendong", 2000, "2h - 4h"),
-        ("Mvan & Nsam", 2000, "2h - 4h"),
-        ("Ngoa-Ekélé & Melen", 1500, "1h - 3h"),
-    ],
-    "Bamako": [
-        ("ACI 2000 & Hamdallaye", 1500, "1h - 3h"),
-        ("Badalabougou & Badala Est", 1500, "1h - 3h"),
-        ("Sébénikoro & Djicoroni", 2000, "2h - 4h"),
-        ("Yirimadio & Faladié", 2500, "3h - 5h"),
-    ],
-    "Ouagadougou": [
-        ("Ouaga 2000", 1500, "1h - 3h"),
-        ("Centre-ville & Koulouba", 1500, "1h - 3h"),
-        ("Patte d'Oie & Dassasgho", 2000, "2h - 4h"),
-        ("Tampouy & Tanghin", 2000, "2h - 4h"),
-    ]
+    "Abidjan (Toutes les 14 Communes)": ALL_CI_ZONES,
+    "Cocody (Abidjan)": ALL_CI_ZONES,
+    "Yopougon (Abidjan)": ALL_CI_ZONES,
+    "Marcory (Abidjan)": ALL_CI_ZONES,
+    "Koumassi (Abidjan)": ALL_CI_ZONES,
+    "Treichville (Abidjan)": ALL_CI_ZONES,
+    "Plateau (Abidjan)": ALL_CI_ZONES,
+    "Adjamé (Abidjan)": ALL_CI_ZONES,
+    "Abobo (Abidjan)": ALL_CI_ZONES,
+    "Port-Bouët (Abidjan)": ALL_CI_ZONES,
+    "Attécoubé (Abidjan)": ALL_CI_ZONES,
+    "Bingerville": ALL_CI_ZONES,
+    "Grand-Bassam": ALL_CI_ZONES,
+    "Songon & Dabou": ALL_CI_ZONES,
+    "Anyama": ALL_CI_ZONES,
+    "Yamoussoukro": ALL_CI_ZONES,
+    "Bouaké": ALL_CI_ZONES,
+    "San-Pédro": ALL_CI_ZONES,
+    "Korhogo": ALL_CI_ZONES,
+    "Daloa": ALL_CI_ZONES,
+    "Gagnoa": ALL_CI_ZONES,
+    "Man": ALL_CI_ZONES,
+    "Soubré": ALL_CI_ZONES,
+    "Divo": ALL_CI_ZONES,
+    "Abengourou": ALL_CI_ZONES,
+    "Agboville": ALL_CI_ZONES,
+    "Aboisso": ALL_CI_ZONES,
 }
 
 def slugify(text: str) -> str:
@@ -117,8 +151,8 @@ async def process_register(
     db.commit()
     db.refresh(merchant)
 
-    # Initialisation des zones de livraison adaptées à la ville
-    city_zones = PRESET_ZONES.get(city, PRESET_ZONES["Abidjan"])
+    # Initialisation des zones de livraison adaptées à la ville (Côte d'Ivoire)
+    city_zones = PRESET_ZONES.get(city, ALL_CI_ZONES)
     for z_name, fee, eta in city_zones:
         zone = DeliveryZone(
             merchant_id=merchant.id,

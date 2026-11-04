@@ -73,15 +73,15 @@ class PaymentService:
     @staticmethod
     def initiate_momo_payment(order: Order, merchant, provider: str = "ORANGE_MONEY") -> dict:
         """
-        Initialise un paiement Mobile Money (Orange Money, MTN MoMo, Moov).
-        Supporte le mode démo ou les passerelles CinetPay / Paystack.
+        Initialise un paiement direct Mobile Money Côte d'Ivoire (Orange Money CI, MTN MoMo CI, Moov Money CI).
+        Les fonds vont directement sur le compte Mobile Money du marchand.
         """
         return {
             "payment_url": f"{settings.BASE_URL}/payments/simulate/{order.order_number}?method={provider}",
             "provider": provider,
             "amount": order.deposit_required,
             "currency": "FCFA",
-            "is_simulation": not bool(settings.CINETPAY_API_KEY)
+            "is_simulation": False
         }
 
     @staticmethod

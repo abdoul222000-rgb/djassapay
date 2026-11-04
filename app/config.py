@@ -19,19 +19,12 @@ class Settings(BaseSettings):
     FOUNDER_WAVE_NUMBER: str = ""
     FOUNDER_ORANGE_MONEY_NUMBER: str = ""
     FOUNDER_MTN_MOMO_NUMBER: str = ""
+    FOUNDER_MOOV_MONEY_NUMBER: str = ""
     COMMISSION_PERCENTAGE: float = 1.5 # 1.5% de commission plateforme
     
-    # Payment Gateway Configuration (Production)
-    # Wave Business API credentials
+    # Passerelle Wave Business (Optionnel)
     WAVE_API_KEY: str = ""
     WAVE_WEBHOOK_SECRET: str = ""
-    
-    # CinetPay credentials (supports Orange Money, MTN MoMo, Moov, Wave)
-    CINETPAY_API_KEY: str = ""
-    CINETPAY_SITE_ID: str = ""
-    
-    # Paystack credentials
-    PAYSTACK_SECRET_KEY: str = ""
 
     # WhatsApp Cloud API (Meta Official)
     WHATSAPP_TOKEN: str = "" # Bearer Token Meta

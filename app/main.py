@@ -67,14 +67,11 @@ def startup_populate_data():
             db.commit()
             db.refresh(demo_merchant)
 
-            # Zones de livraison à Abidjan
+            # Zones de livraison complètes en Côte d'Ivoire (Abidjan & Intérieur)
+            from app.routes.auth import ALL_CI_ZONES
             zones = [
-                DeliveryZone(merchant_id=demo_merchant.id, name="Cocody (Angré, Riviera, 2 Plateaux)", fee=1500, estimated_time="1h - 3h"),
-                DeliveryZone(merchant_id=demo_merchant.id, name="Yopougon (Maroc, Selmer, Bel Air)", fee=2000, estimated_time="2h - 4h"),
-                DeliveryZone(merchant_id=demo_merchant.id, name="Marcory & Zone 4 / Bietry", fee=1500, estimated_time="1h - 3h"),
-                DeliveryZone(merchant_id=demo_merchant.id, name="Koumassi & Treichville", fee=1500, estimated_time="2h - 3h"),
-                DeliveryZone(merchant_id=demo_merchant.id, name="Plateau & Adjamé", fee=1500, estimated_time="1h - 2h"),
-                DeliveryZone(merchant_id=demo_merchant.id, name="Bingerville & Bassam", fee=2500, estimated_time="3h - 5h"),
+                DeliveryZone(merchant_id=demo_merchant.id, name=z[0], fee=z[1], estimated_time=z[2])
+                for z in ALL_CI_ZONES
             ]
             db.add_all(zones)
 
