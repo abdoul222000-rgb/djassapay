@@ -68,27 +68,10 @@ def startup_populate_data():
             db.refresh(demo_merchant)
 
             # Zones de livraison complètes en Côte d'Ivoire (Abidjan & Intérieur)
+            from app.routes.auth import ALL_CI_ZONES
             zones = [
-                DeliveryZone(merchant_id=demo_merchant.id, name="Cocody (Angré, 2 Plateaux, Riviera, Palmeraie)", fee=1500, estimated_time="1h - 2h"),
-                DeliveryZone(merchant_id=demo_merchant.id, name="Yopougon (Maroc, Niangon, Selmer, Bel Air)", fee=2000, estimated_time="2h - 4h"),
-                DeliveryZone(merchant_id=demo_merchant.id, name="Marcory (Zone 4, Biétry, Anoumabo, Résidentiel)", fee=1500, estimated_time="1h - 3h"),
-                DeliveryZone(merchant_id=demo_merchant.id, name="Koumassi (Remblais, Prodomo, Campement)", fee=1500, estimated_time="2h - 3h"),
-                DeliveryZone(merchant_id=demo_merchant.id, name="Treichville (Avenues, Belleville, Arras)", fee=1500, estimated_time="1h - 2h"),
-                DeliveryZone(merchant_id=demo_merchant.id, name="Plateau (Centre des Affaires & Administratif)", fee=1500, estimated_time="1h - 2h"),
-                DeliveryZone(merchant_id=demo_merchant.id, name="Adjamé (220 Logements, Williamsville, Mirador)", fee=1500, estimated_time="1h - 2h"),
-                DeliveryZone(merchant_id=demo_merchant.id, name="Abobo (Samaké, N'Dotré, PK18, Avocatier)", fee=2000, estimated_time="2h - 4h"),
-                DeliveryZone(merchant_id=demo_merchant.id, name="Port-Bouët (Aéroport, Gonzagueville, Vridi)", fee=2000, estimated_time="2h - 4h"),
-                DeliveryZone(merchant_id=demo_merchant.id, name="Attécoubé (Agban, Locodjro, Santé)", fee=1500, estimated_time="1h - 3h"),
-                DeliveryZone(merchant_id=demo_merchant.id, name="Bingerville & Feh Kessé", fee=2500, estimated_time="2h - 4h"),
-                DeliveryZone(merchant_id=demo_merchant.id, name="Grand-Bassam", fee=3000, estimated_time="3h - 5h"),
-                DeliveryZone(merchant_id=demo_merchant.id, name="Songon & Dabou", fee=3000, estimated_time="3h - 5h"),
-                DeliveryZone(merchant_id=demo_merchant.id, name="Anyama & Stade Ebimpé", fee=3000, estimated_time="2h - 4h"),
-                DeliveryZone(merchant_id=demo_merchant.id, name="Yamoussoukro", fee=2500, estimated_time="24h - 48h (Colis)"),
-                DeliveryZone(merchant_id=demo_merchant.id, name="Bouaké", fee=2500, estimated_time="24h - 48h (Colis)"),
-                DeliveryZone(merchant_id=demo_merchant.id, name="San-Pédro", fee=3000, estimated_time="24h - 48h (Colis)"),
-                DeliveryZone(merchant_id=demo_merchant.id, name="Korhogo", fee=3000, estimated_time="24h - 48h (Colis)"),
-                DeliveryZone(merchant_id=demo_merchant.id, name="Daloa", fee=3000, estimated_time="24h - 48h (Colis)"),
-                DeliveryZone(merchant_id=demo_merchant.id, name="Man, Gagnoa, Soubré", fee=3500, estimated_time="24h - 48h (Colis)"),
+                DeliveryZone(merchant_id=demo_merchant.id, name=z[0], fee=z[1], estimated_time=z[2])
+                for z in ALL_CI_ZONES
             ]
             db.add_all(zones)
 

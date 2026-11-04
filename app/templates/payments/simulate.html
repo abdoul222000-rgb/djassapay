@@ -43,19 +43,19 @@
       <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">
         Choisissez votre moyen de paiement :
       </label>
-      <div class="grid grid-cols-3 gap-2">
+      <div class="grid grid-cols-4 gap-1.5">
         
         <!-- Option Wave CI -->
         <button 
           type="button" 
           @click="currentMethod = 'WAVE'"
           :class="currentMethod === 'WAVE' ? 'border-[#1BA4D9] bg-sky-50 ring-2 ring-[#1BA4D9]' : 'border-slate-200 hover:border-slate-300 bg-white'"
-          class="p-2.5 rounded-2xl border text-center transition flex flex-col items-center justify-center space-y-1 shadow-sm"
+          class="p-2 rounded-2xl border text-center transition flex flex-col items-center justify-center space-y-1 shadow-sm"
         >
-          <div class="w-8 h-8 rounded-xl bg-[#1BA4D9] text-white font-black text-sm flex items-center justify-center shadow-sm">
+          <div class="w-7 h-7 rounded-lg bg-[#1BA4D9] text-white font-black text-xs flex items-center justify-center shadow-sm">
             W
           </div>
-          <span class="text-[11px] font-bold text-slate-800">Wave CI</span>
+          <span class="text-[10px] font-bold text-slate-800">Wave</span>
         </button>
 
         <!-- Option Orange Money CI -->
@@ -63,12 +63,12 @@
           type="button" 
           @click="currentMethod = 'ORANGE_MONEY'"
           :class="currentMethod === 'ORANGE_MONEY' ? 'border-[#FF6600] bg-orange-50 ring-2 ring-[#FF6600]' : 'border-slate-200 hover:border-slate-300 bg-white'"
-          class="p-2.5 rounded-2xl border text-center transition flex flex-col items-center justify-center space-y-1 shadow-sm"
+          class="p-2 rounded-2xl border text-center transition flex flex-col items-center justify-center space-y-1 shadow-sm"
         >
-          <div class="w-8 h-8 rounded-xl bg-[#FF6600] text-white font-black text-xs flex items-center justify-center shadow-sm">
+          <div class="w-7 h-7 rounded-lg bg-[#FF6600] text-white font-black text-[10px] flex items-center justify-center shadow-sm">
             OM
           </div>
-          <span class="text-[11px] font-bold text-slate-800">Orange</span>
+          <span class="text-[10px] font-bold text-slate-800">Orange</span>
         </button>
 
         <!-- Option MTN MoMo CI -->
@@ -76,12 +76,25 @@
           type="button" 
           @click="currentMethod = 'MTN_MOMO'"
           :class="currentMethod === 'MTN_MOMO' ? 'border-[#FFCC00] bg-yellow-50 ring-2 ring-[#FFCC00]' : 'border-slate-200 hover:border-slate-300 bg-white'"
-          class="p-2.5 rounded-2xl border text-center transition flex flex-col items-center justify-center space-y-1 shadow-sm"
+          class="p-2 rounded-2xl border text-center transition flex flex-col items-center justify-center space-y-1 shadow-sm"
         >
-          <div class="w-8 h-8 rounded-xl bg-[#FFCC00] text-slate-950 font-black text-xs flex items-center justify-center shadow-sm">
+          <div class="w-7 h-7 rounded-lg bg-[#FFCC00] text-slate-950 font-black text-[10px] flex items-center justify-center shadow-sm">
             MTN
           </div>
-          <span class="text-[11px] font-bold text-slate-800">MTN MoMo</span>
+          <span class="text-[10px] font-bold text-slate-800">MTN</span>
+        </button>
+
+        <!-- Option Moov Money CI -->
+        <button 
+          type="button" 
+          @click="currentMethod = 'MOOV'"
+          :class="currentMethod === 'MOOV' ? 'border-blue-600 bg-blue-50 ring-2 ring-blue-600' : 'border-slate-200 hover:border-slate-300 bg-white'"
+          class="p-2 rounded-2xl border text-center transition flex flex-col items-center justify-center space-y-1 shadow-sm"
+        >
+          <div class="w-7 h-7 rounded-lg bg-blue-600 text-white font-black text-[10px] flex items-center justify-center shadow-sm">
+            MOOV
+          </div>
+          <span class="text-[10px] font-bold text-slate-800">Moov</span>
         </button>
 
       </div>
@@ -178,6 +191,35 @@
 
           <div class="text-[11px] text-slate-500 leading-relaxed">
             💡 <strong>Code USSD direct :</strong> Composez <code>*133#</code> pour envoyer <strong>{{ "{:,}".format(order.deposit_required) }} FCFA</strong>.
+          </div>
+        </div>
+      </template>
+
+      <!-- 4. CAS MOOV MONEY CI -->
+      <template x-if="currentMethod === 'MOOV'">
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-slate-500 font-medium">Envoyez sur le compte Moov Money :</span>
+            <span class="text-[10px] font-bold bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">Moov Money CI</span>
+          </div>
+
+          <div class="p-3 bg-white rounded-xl border border-slate-200 flex items-center justify-between">
+            <div>
+              <span class="text-[10px] text-slate-400 uppercase font-bold block">Numéro Moov Money</span>
+              <span class="text-base font-black text-slate-900 font-mono tracking-wider">{{ merchant.moov_money_number or merchant.phone }}</span>
+            </div>
+            <button 
+              type="button" 
+              @click="copyToClipboard('{{ merchant.moov_money_number or merchant.phone }}')"
+              class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition flex items-center space-x-1"
+            >
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+              <span x-text="copied ? 'Copié ! ✅' : 'Copier'"></span>
+            </button>
+          </div>
+
+          <div class="text-[11px] text-slate-500 leading-relaxed">
+            💡 <strong>Code USSD direct :</strong> Composez <code>*155#</code> pour envoyer <strong>{{ "{:,}".format(order.deposit_required) }} FCFA</strong>.
           </div>
         </div>
       </template>

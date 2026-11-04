@@ -52,6 +52,12 @@
         <span class="font-bold font-mono text-yellow-600">{{ settings.FOUNDER_MTN_MOMO_NUMBER }}</span>
       </div>
       {% endif %}
+      {% if settings.FOUNDER_MOOV_MONEY_NUMBER %}
+      <div class="flex justify-between">
+        <span class="text-slate-500">Moov Money CI :</span>
+        <span class="font-bold font-mono text-blue-600">{{ settings.FOUNDER_MOOV_MONEY_NUMBER }}</span>
+      </div>
+      {% endif %}
     </div>
 
     <!-- QR Code Wave -->
