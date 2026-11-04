@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, Form
+import os
+from fastapi import APIRouter, Depends, HTTPException, Request, Form, UploadFile, File
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
@@ -161,18 +162,44 @@ async def add_product(
     price: int = Form(...),
     compare_at_price: int = Form(None),
     image_url: str = Form(""),
+    media_file: UploadFile = File(None),
     stock: int = Form(10),
     db: Session = Depends(get_db)
 ):
-    """Ajout d'un nouveau produit au catalogue."""
+    """Ajout d'un nouveau produit au catalogue avec photo directe, galerie ou vidéo."""
     merchant = get_current_merchant(db, request)
+
+    final_media_url = image_url.strip() if image_url else ""
+
+    # Traitement du fichier uploadé (Appareil photo smartphone, galerie ou vidéo)
+    if media_file and media_file.filename:
+        try:
+            os.makedirs("app/static/uploads", exist_ok=True)
+            # Récupérer l'extension
+            ext = os.path.splitext(media_file.filename)[1].lower()
+            if ext not in [".jpg", ".jpeg", ".png", ".webp", ".gif", ".mp4", ".mov", ".webm", ".m4v"]:
+                ext = ".jpg"
+            unique_name = f"media_{uuid.uuid4().hex[:12]}{ext}"
+            filepath = os.path.join("app/static/uploads", unique_name)
+
+            contents = await media_file.read()
+            if len(contents) > 0:
+                with open(filepath, "wb") as f:
+                    f.write(contents)
+                final_media_url = f"/static/uploads/{unique_name}"
+        except Exception as e:
+            print(f"[Upload Error] Échec de sauvegarde du média : {e}")
+
+    if not final_media_url:
+        final_media_url = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80"
+
     product = Product(
         merchant_id=merchant.id,
         title=title,
         description=description,
         price=price,
         compare_at_price=compare_at_price if compare_at_price else None,
-        image_url=image_url or "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80",
+        image_url=final_media_url,
         stock=stock
     )
     db.add(product)

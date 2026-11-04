@@ -87,6 +87,13 @@ class Product(Base):
     merchant = relationship("Merchant", back_populates="products")
     order_items = relationship("OrderItem", back_populates="product")
 
+    @property
+    def is_video(self) -> bool:
+        if not self.image_url:
+            return False
+        lower = self.image_url.lower()
+        return any(lower.endswith(ext) for ext in [".mp4", ".mov", ".webm", ".m4v"])
+
 class Order(Base):
     __tablename__ = "orders"
 
