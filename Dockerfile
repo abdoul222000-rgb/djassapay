@@ -16,5 +16,5 @@ COPY . .
 # Port par défaut
 EXPOSE 8000
 
-# Commande de démarrage
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Commande de démarrage compatible dynamique Render ($PORT)
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
