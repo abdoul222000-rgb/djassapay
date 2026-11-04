@@ -193,6 +193,7 @@ async def update_settings(
     wave_number: str = Form(""),
     orange_money_number: str = Form(""),
     mtn_momo_number: str = Form(""),
+    moov_money_number: str = Form(""),
     deposit_policy: str = Form(...),
     fixed_deposit_amount: int = Form(2000),
     db: Session = Depends(get_db)
@@ -208,6 +209,7 @@ async def update_settings(
     merchant.wave_number = wave_number
     merchant.orange_money_number = orange_money_number
     merchant.mtn_momo_number = mtn_momo_number
+    merchant.moov_money_number = moov_money_number
     merchant.deposit_policy = deposit_policy
     merchant.fixed_deposit_amount = fixed_deposit_amount
     db.commit()

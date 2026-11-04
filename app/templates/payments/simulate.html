@@ -1,91 +1,214 @@
 {% extends "base.html" %}
 
-{% block title %}Paiement de l'acompte - {{ method }} - DjassaPay{% endblock %}
+{% block title %}Paiement de l'acompte Anti-Lapin - DjassaPay Côte d'Ivoire{% endblock %}
 
 {% block content %}
-<div class="max-w-md mx-auto px-4 py-8" x-data="{ isProcessing: false }">
+<div class="max-w-md mx-auto px-4 py-8" x-data="{ 
+  currentMethod: '{{ method }}' || 'WAVE', 
+  copied: false, 
+  isProcessing: false,
+  copyToClipboard(text) {
+    navigator.clipboard.writeText(text);
+    this.copied = true;
+    setTimeout(() => this.copied = false, 2500);
+  }
+}">
 
-  <!-- Entête de la Passerelle de Paiement -->
-  <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-lg text-center relative overflow-hidden">
+  <!-- Carte Principale de Paiement Direct Côte d'Ivoire -->
+  <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xl relative overflow-hidden">
     
-    {% if method == 'WAVE' %}
-    <!-- En-tête Wave -->
-    <div class="bg-[#1BA4D9] -mx-6 -mt-6 p-6 text-white mb-6">
-      <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center mx-auto text-[#1BA4D9] font-black text-xl shadow-md">
-        W
+    <!-- Entête dynamique selon moyen choisi -->
+    <div class="text-center pb-5 border-b border-slate-100">
+      <div class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 text-[11px] font-bold border border-emerald-200 mb-2">
+        <span>🇨🇮 PAIEMENT DIRECT CÔTE D'IVOIRE</span>
       </div>
-      <h1 class="text-xl font-extrabold mt-3">Wave Checkout</h1>
-      <p class="text-xs text-sky-100">Paiement sans frais supplémentaires</p>
-    </div>
-    {% elif method == 'ORANGE_MONEY' %}
-    <!-- En-tête Orange Money -->
-    <div class="bg-[#FF6600] -mx-6 -mt-6 p-6 text-white mb-6">
-      <div class="w-12 h-12 bg-black rounded-2xl flex items-center justify-center mx-auto text-[#FF6600] font-black text-xl shadow-md">
-        OM
-      </div>
-      <h1 class="text-xl font-extrabold mt-3">Orange Money</h1>
-      <p class="text-xs text-amber-100">Paiement sécurisé par code secret</p>
-    </div>
-    {% else %}
-    <!-- En-tête MTN MoMo -->
-    <div class="bg-[#FFCC00] -mx-6 -mt-6 p-6 text-slate-950 mb-6">
-      <div class="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center mx-auto text-[#FFCC00] font-black text-xl shadow-md">
-        MTN
-      </div>
-      <h1 class="text-xl font-extrabold mt-3">MTN Mobile Money</h1>
-      <p class="text-xs text-slate-700">Approuvez la demande sur votre mobile</p>
-    </div>
-    {% endif %}
+      <h1 class="text-xl font-black text-slate-900">Régler l'Acompte de Livraison</h1>
+      <p class="text-xs text-slate-500 mt-1 max-w-xs mx-auto">
+        Envoyez l'acompte Anti-Lapin directement à la boutique pour débloquer votre coursier moto.
+      </p>
 
-    <!-- Détail du paiement -->
-    <div class="text-xs text-slate-500">Montant de l'Acompte Anti-Lapin</div>
-    <div class="text-3xl font-black text-slate-900 mt-1">
-      {{ "{:,}".format(order.deposit_required) }} <span class="text-sm font-bold text-emerald-600">FCFA</span>
-    </div>
-
-    <div class="mt-4 p-3 rounded-2xl bg-slate-50 border border-slate-200 text-left text-xs space-y-1">
-      <div class="flex justify-between">
-        <span class="text-slate-500">Boutique :</span>
-        <span class="font-bold text-slate-800">{{ merchant.store_name }}</span>
-      </div>
-      <div class="flex justify-between">
-        <span class="text-slate-500">Commande :</span>
-        <span class="font-bold font-mono text-slate-800">#{{ order.order_number }}</span>
-      </div>
-      <div class="flex justify-between">
-        <span class="text-slate-500">Destinataire :</span>
-        <span class="font-medium text-slate-800">{{ order.customer_name }}</span>
+      <div class="mt-4 p-4 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 text-white">
+        <div class="text-[11px] uppercase tracking-wider text-emerald-400 font-extrabold">Acompte à régler maintenant :</div>
+        <div class="text-3xl font-black text-emerald-400 mt-0.5">
+          {{ "{:,}".format(order.deposit_required) }} <span class="text-sm font-bold text-white">FCFA</span>
+        </div>
+        <div class="text-[11px] text-slate-300 mt-1">
+          (Solde de <strong>{{ "{:,}".format(order.balance_due) }} FCFA</strong> à remettre au livreur à l'arrivée)
+        </div>
       </div>
     </div>
 
-    <!-- QR Code / Simulation d'Approbation Mobile -->
-    <div class="mt-6 border-2 border-dashed border-slate-200 rounded-2xl p-4 bg-slate-50 flex flex-col items-center">
-      <div class="w-36 h-36 bg-white rounded-xl shadow-sm p-2 flex items-center justify-center border border-slate-200">
-        <!-- QR Code stylisé -->
-        <svg viewBox="0 0 100 100" class="w-full h-full text-slate-800">
-          <rect x="10" y="10" width="25" height="25" rx="4" fill="currentColor"/>
-          <rect x="65" y="10" width="25" height="25" rx="4" fill="currentColor"/>
-          <rect x="10" y="65" width="25" height="25" rx="4" fill="currentColor"/>
-          <rect x="45" y="15" width="10" height="20" fill="currentColor"/>
-          <rect x="45" y="45" width="10" height="10" fill="currentColor"/>
-          <rect x="20" y="45" width="15" height="10" fill="currentColor"/>
-          <rect x="65" y="45" width="25" height="10" fill="currentColor"/>
-          <rect x="45" y="65" width="15" height="25" fill="currentColor"/>
-          <rect x="70" y="65" width="20" height="20" fill="currentColor"/>
-        </svg>
+    <!-- Sélecteur de Moyen de Paiement Ivoirien -->
+    <div class="mt-5">
+      <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">
+        Choisissez votre moyen de paiement :
+      </label>
+      <div class="grid grid-cols-3 gap-2">
+        
+        <!-- Option Wave CI -->
+        <button 
+          type="button" 
+          @click="currentMethod = 'WAVE'"
+          :class="currentMethod === 'WAVE' ? 'border-[#1BA4D9] bg-sky-50 ring-2 ring-[#1BA4D9]' : 'border-slate-200 hover:border-slate-300 bg-white'"
+          class="p-2.5 rounded-2xl border text-center transition flex flex-col items-center justify-center space-y-1 shadow-sm"
+        >
+          <div class="w-8 h-8 rounded-xl bg-[#1BA4D9] text-white font-black text-sm flex items-center justify-center shadow-sm">
+            W
+          </div>
+          <span class="text-[11px] font-bold text-slate-800">Wave CI</span>
+        </button>
+
+        <!-- Option Orange Money CI -->
+        <button 
+          type="button" 
+          @click="currentMethod = 'ORANGE_MONEY'"
+          :class="currentMethod === 'ORANGE_MONEY' ? 'border-[#FF6600] bg-orange-50 ring-2 ring-[#FF6600]' : 'border-slate-200 hover:border-slate-300 bg-white'"
+          class="p-2.5 rounded-2xl border text-center transition flex flex-col items-center justify-center space-y-1 shadow-sm"
+        >
+          <div class="w-8 h-8 rounded-xl bg-[#FF6600] text-white font-black text-xs flex items-center justify-center shadow-sm">
+            OM
+          </div>
+          <span class="text-[11px] font-bold text-slate-800">Orange</span>
+        </button>
+
+        <!-- Option MTN MoMo CI -->
+        <button 
+          type="button" 
+          @click="currentMethod = 'MTN_MOMO'"
+          :class="currentMethod === 'MTN_MOMO' ? 'border-[#FFCC00] bg-yellow-50 ring-2 ring-[#FFCC00]' : 'border-slate-200 hover:border-slate-300 bg-white'"
+          class="p-2.5 rounded-2xl border text-center transition flex flex-col items-center justify-center space-y-1 shadow-sm"
+        >
+          <div class="w-8 h-8 rounded-xl bg-[#FFCC00] text-slate-950 font-black text-xs flex items-center justify-center shadow-sm">
+            MTN
+          </div>
+          <span class="text-[11px] font-bold text-slate-800">MTN MoMo</span>
+        </button>
+
       </div>
-      <span class="text-[11px] font-medium text-slate-500 mt-2">Scannez avec votre application ou validez ci-dessous</span>
+    </div>
+
+    <!-- Instructions Détaillées selon le moyen -->
+    <div class="mt-5 p-4 rounded-2xl bg-slate-50 border border-slate-200">
+      
+      <!-- 1. CAS WAVE CI -->
+      <template x-if="currentMethod === 'WAVE'">
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-slate-500 font-medium">Envoyez sur le compte Wave :</span>
+            <span class="text-[10px] font-bold bg-[#1BA4D9]/10 text-[#1BA4D9] px-2 py-0.5 rounded-full">Sans frais (1%)</span>
+          </div>
+
+          <div class="p-3 bg-white rounded-xl border border-slate-200 flex items-center justify-between">
+            <div>
+              <span class="text-[10px] text-slate-400 uppercase font-bold block">Numéro Wave Boutique</span>
+              <span class="text-base font-black text-slate-900 font-mono tracking-wider">{{ merchant.wave_number or merchant.phone }}</span>
+            </div>
+            <button 
+              type="button" 
+              @click="copyToClipboard('{{ merchant.wave_number or merchant.phone }}')"
+              class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition flex items-center space-x-1"
+            >
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+              <span x-text="copied ? 'Copié ! ✅' : 'Copier'"></span>
+            </button>
+          </div>
+
+          <a 
+            href="https://pay.wave.com/c/ci?recipient={{ merchant.wave_number or merchant.phone }}&amount={{ order.deposit_required }}" 
+            target="_blank"
+            class="w-full py-2.5 bg-[#1BA4D9] hover:bg-[#158bb9] text-white font-extrabold text-xs rounded-xl transition flex items-center justify-center space-x-2 shadow-sm"
+          >
+            <i data-lucide="external-link" class="w-4 h-4"></i>
+            <span>Ouvrir l'application Wave</span>
+          </a>
+        </div>
+      </template>
+
+      <!-- 2. CAS ORANGE MONEY CI -->
+      <template x-if="currentMethod === 'ORANGE_MONEY'">
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-slate-500 font-medium">Envoyez sur le numéro Orange Money :</span>
+            <span class="text-[10px] font-bold bg-[#FF6600]/10 text-[#FF6600] px-2 py-0.5 rounded-full">Orange CI</span>
+          </div>
+
+          <div class="p-3 bg-white rounded-xl border border-slate-200 flex items-center justify-between">
+            <div>
+              <span class="text-[10px] text-slate-400 uppercase font-bold block">Numéro Orange Money</span>
+              <span class="text-base font-black text-slate-900 font-mono tracking-wider">{{ merchant.orange_money_number or merchant.phone }}</span>
+            </div>
+            <button 
+              type="button" 
+              @click="copyToClipboard('{{ merchant.orange_money_number or merchant.phone }}')"
+              class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition flex items-center space-x-1"
+            >
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+              <span x-text="copied ? 'Copié ! ✅' : 'Copier'"></span>
+            </button>
+          </div>
+
+          <div class="text-[11px] text-slate-500 leading-relaxed">
+            💡 <strong>Code USSD direct :</strong> Composez <code>#144#</code> ou ouvrez l'application <strong>Orange Max it</strong> pour envoyer <strong>{{ "{:,}".format(order.deposit_required) }} FCFA</strong>.
+          </div>
+        </div>
+      </template>
+
+      <!-- 3. CAS MTN MOMO CI -->
+      <template x-if="currentMethod === 'MTN_MOMO'">
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-slate-500 font-medium">Envoyez sur le compte MTN MoMo :</span>
+            <span class="text-[10px] font-bold bg-[#FFCC00]/20 text-yellow-800 px-2 py-0.5 rounded-full">MTN MoMo CI</span>
+          </div>
+
+          <div class="p-3 bg-white rounded-xl border border-slate-200 flex items-center justify-between">
+            <div>
+              <span class="text-[10px] text-slate-400 uppercase font-bold block">Numéro MTN MoMo</span>
+              <span class="text-base font-black text-slate-900 font-mono tracking-wider">{{ merchant.mtn_momo_number or merchant.phone }}</span>
+            </div>
+            <button 
+              type="button" 
+              @click="copyToClipboard('{{ merchant.mtn_momo_number or merchant.phone }}')"
+              class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition flex items-center space-x-1"
+            >
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+              <span x-text="copied ? 'Copié ! ✅' : 'Copier'"></span>
+            </button>
+          </div>
+
+          <div class="text-[11px] text-slate-500 leading-relaxed">
+            💡 <strong>Code USSD direct :</strong> Composez <code>*133#</code> pour envoyer <strong>{{ "{:,}".format(order.deposit_required) }} FCFA</strong>.
+          </div>
+        </div>
+      </template>
+
     </div>
 
     <!-- Formulaire de Validation du Paiement -->
-    <form action="/payments/simulate/{{ order.order_number }}/confirm" method="POST" class="mt-6" @submit="isProcessing = true">
-      <input type="hidden" name="method" value="{{ method }}">
+    <form action="/payments/simulate/{{ order.order_number }}/confirm" method="POST" class="mt-6 space-y-4" @submit="isProcessing = true">
+      <input type="hidden" name="method" :value="currentMethod">
 
-      <button type="submit" :disabled="isProcessing" class="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold rounded-2xl shadow-lg shadow-emerald-600/30 transition transform active:scale-95 flex items-center justify-center space-x-2">
+      <div>
+        <label class="block text-xs font-bold text-slate-700 mb-1">
+          Votre numéro d'envoi ou Référence SMS (Optionnel) :
+        </label>
+        <input 
+          type="text" 
+          name="transaction_ref" 
+          placeholder="Ex: 07 12 34 56 78 ou Réf SMS" 
+          class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+        >
+      </div>
+
+      <button 
+        type="submit" 
+        :disabled="isProcessing" 
+        class="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-sm rounded-2xl shadow-lg shadow-emerald-600/30 transition transform active:scale-95 flex items-center justify-center space-x-2"
+      >
         <template x-if="!isProcessing">
           <span class="flex items-center space-x-2">
             <i data-lucide="check-circle" class="w-5 h-5"></i>
-            <span>Confirmer le paiement de {{ "{:,}".format(order.deposit_required) }} FCFA</span>
+            <span>J'ai envoyé les {{ "{:,}".format(order.deposit_required) }} FCFA (Valider)</span>
           </span>
         </template>
         <template x-if="isProcessing">
@@ -94,15 +217,19 @@
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            <span>Validation en direct...</span>
+            <span>Validation & Déblocage de la course...</span>
           </span>
         </template>
       </button>
+
+      <p class="text-center text-[11px] text-slate-400">
+        🔒 Dès validation, la boutique prépare votre colis et transmet le bordereau au coursier moto.
+      </p>
     </form>
 
-    <div class="mt-4">
-      <a href="/orders/{{ order.order_number }}" class="text-xs text-slate-400 hover:text-slate-600">
-        Annuler et revenir à la commande
+    <div class="mt-4 text-center">
+      <a href="/orders/{{ order.order_number }}" class="text-xs text-slate-400 hover:text-slate-600 transition">
+        &larr; Annuler et revenir à la commande
       </a>
     </div>
 

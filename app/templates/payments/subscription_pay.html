@@ -36,8 +36,20 @@
       </div>
       {% if settings.FOUNDER_WAVE_NUMBER %}
       <div class="flex justify-between pt-1 border-t border-slate-200/60">
-        <span class="text-slate-500">Numéro Wave Réception :</span>
+        <span class="text-slate-500">Wave Côte d'Ivoire :</span>
         <span class="font-bold font-mono text-[#1BA4D9]">{{ settings.FOUNDER_WAVE_NUMBER }}</span>
+      </div>
+      {% endif %}
+      {% if settings.FOUNDER_ORANGE_MONEY_NUMBER %}
+      <div class="flex justify-between">
+        <span class="text-slate-500">Orange Money CI :</span>
+        <span class="font-bold font-mono text-[#FF6600]">{{ settings.FOUNDER_ORANGE_MONEY_NUMBER }}</span>
+      </div>
+      {% endif %}
+      {% if settings.FOUNDER_MTN_MOMO_NUMBER %}
+      <div class="flex justify-between">
+        <span class="text-slate-500">MTN MoMo CI :</span>
+        <span class="font-bold font-mono text-yellow-600">{{ settings.FOUNDER_MTN_MOMO_NUMBER }}</span>
       </div>
       {% endif %}
     </div>
