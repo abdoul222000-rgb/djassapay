@@ -42,12 +42,11 @@ class PaymentService:
         Sinon, bascule automatiquement en mode simulation interactive ultra réaliste.
         """
         if settings.WAVE_API_KEY:
-            # Appel API Wave réelle (https://api.wave.com/v1/checkout/sessions)
+            # Appel officiel API Wave Checkout Sessions (https://api.wave.com/v1/checkout/sessions)
             try:
-                # Wave Checkout Sessions API
                 url = "https://api.wave.com/v1/checkout/sessions"
                 headers = {
-                    "Authorization": f"Bearer {settings.WAVE_API_KEY}",
+                    "Authorization": f"Bearer {settings.WAVE_API_KEY.strip()}",
                     "Content-Type": "application/json"
                 }
                 payload = {
@@ -57,11 +56,23 @@ class PaymentService:
                     "success_url": f"{settings.BASE_URL}/orders/{order.order_number}?status=success",
                     "client_reference": order.order_number
                 }
-                # Pourrait être appelé via httpx
+                with httpx.Client(timeout=10.0) as client:
+                    resp = client.post(url, json=payload, headers=headers)
+                    if resp.status_code in [200, 201]:
+                        wave_data = resp.json()
+                        wave_launch_url = wave_data.get("wave_launch_url")
+                        if wave_launch_url:
+                            return {
+                                "payment_url": wave_launch_url,
+                                "provider": "WAVE",
+                                "amount": order.deposit_required,
+                                "currency": "FCFA",
+                                "is_simulation": False
+                            }
             except Exception as e:
-                pass
+                print(f"[Wave API Error, fallback to Direct Transfer] {e}")
 
-        # Mode Local / Démo / Simulation
+        # Mode Transfert Direct Wave Côte d'Ivoire (Sans API ou en attente d'approbation)
         return {
             "payment_url": f"{settings.BASE_URL}/payments/simulate/{order.order_number}?method=WAVE",
             "provider": "WAVE",

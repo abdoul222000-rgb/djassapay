@@ -28,6 +28,14 @@ async def initiate_customer_payment(
     if not order:
         raise HTTPException(status_code=404, detail="Commande introuvable")
 
+    merchant = db.query(Merchant).filter(Merchant.id == order.merchant_id).first()
+
+    # Si Wave avec Clé API Wave Business configurée, rediriger vers Wave Checkout officiel
+    if order.payment_method == "WAVE" and settings.WAVE_API_KEY:
+        wave_res = PaymentService.initiate_wave_payment(order, merchant)
+        if wave_res.get("payment_url") and not wave_res.get("is_simulation"):
+            return RedirectResponse(url=wave_res["payment_url"], status_code=303)
+
     return RedirectResponse(url=f"/payments/simulate/{order.order_number}?method={order.payment_method}", status_code=303)
 
 @router.get("/payments/simulate/{order_number}", response_class=HTMLResponse)
