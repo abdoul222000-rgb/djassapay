@@ -12,13 +12,13 @@ class Settings(BaseSettings):
     BASE_URL: str = "http://localhost:8000"
     
     # Coordonnées & Sécurité du Fondateur (Accès Exclusif & Réception des Gains)
-    FOUNDER_NAME: str = "Fondateur DjassaPay"
+    FOUNDER_NAME: str = "Diabagate Assouman (Djassapay)"
     FOUNDER_PIN: str = "7788" # Code PIN Secret Fondateur pour accéder à l'espace
     FOUNDER_PASSWORD: str = "DjassaFondateur2026@" # Mot de passe de secours
-    FOUNDER_PHONE: str = ""
-    FOUNDER_WAVE_NUMBER: str = ""
-    FOUNDER_ORANGE_MONEY_NUMBER: str = ""
-    FOUNDER_MTN_MOMO_NUMBER: str = ""
+    FOUNDER_PHONE: str = "0595094159"
+    FOUNDER_WAVE_NUMBER: str = "0595094159"
+    FOUNDER_ORANGE_MONEY_NUMBER: str = "0595094159"
+    FOUNDER_MTN_MOMO_NUMBER: str = "0595094159"
     FOUNDER_MOOV_MONEY_NUMBER: str = ""
     COMMISSION_PERCENTAGE: float = 1.5 # 1.5% de commission plateforme
     
