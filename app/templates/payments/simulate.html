@@ -6,11 +6,60 @@
 <div class="max-w-md mx-auto px-4 py-8" x-data="{ 
   currentMethod: ('{{ method }}' === 'ORANGE_MONEY' || '{{ method }}' === 'MOOV') ? 'WAVE' : ('{{ method }}' || 'WAVE'), 
   copied: false, 
+  waveToast: false,
   isProcessing: false,
   copyToClipboard(text) {
-    navigator.clipboard.writeText(text);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text);
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
     this.copied = true;
     setTimeout(() => this.copied = false, 2500);
+  },
+  openWaveApp(phone, amount) {
+    this.copyToClipboard(phone);
+    this.waveToast = true;
+
+    const cleanDigits = (phone || '').replace(/[^0-9]/g, '');
+    let localPhone = cleanDigits;
+    if (cleanDigits.startsWith('225') && cleanDigits.length > 3) {
+      localPhone = '0' + cleanDigits.slice(3);
+    } else if (!cleanDigits.startsWith('0') && cleanDigits.length === 8) {
+      localPhone = '07' + cleanDigits;
+    }
+
+    const waveSendUrl = 'wave://send?phone=' + encodeURIComponent(localPhone) + '&amount=' + amount;
+    const waveAppUrl = 'wave://';
+    const androidIntent = 'intent://send?phone=' + encodeURIComponent(localPhone) + '&amount=' + amount + '#Intent;scheme=wave;package=com.wave.personal;end';
+
+    const ua = navigator.userAgent || '';
+    const isAndroid = /android/i.test(ua);
+    const isIOS = /iphone|ipad|ipod/i.test(ua);
+
+    if (isAndroid) {
+      window.location.href = waveSendUrl;
+      setTimeout(() => {
+        window.location.href = androidIntent;
+      }, 500);
+    } else if (isIOS) {
+      window.location.href = waveSendUrl;
+      setTimeout(() => {
+        window.location.href = waveAppUrl;
+      }, 500);
+    } else {
+      window.location.href = waveSendUrl;
+      setTimeout(() => {
+        window.location.href = waveAppUrl;
+      }, 600);
+    }
   }
 }">
 
@@ -79,7 +128,6 @@
         ⚠️ Orange Money & Moov Money sont temporairement suspendus.
       </div>
     </div>
-    </div>
 
     <!-- Instructions Détaillées selon le moyen -->
     <div class="mt-5 p-4 rounded-2xl bg-slate-50 border border-slate-200">
@@ -88,11 +136,11 @@
       <template x-if="currentMethod === 'WAVE'">
         <div class="space-y-3">
           <div class="flex items-center justify-between">
-            <span class="text-xs text-slate-500 font-medium">Envoyez sur le compte Wave :</span>
+            <span class="text-xs text-slate-500 font-medium">Envoyez sur le compte Wave boutique :</span>
             <span class="text-[10px] font-bold bg-[#1BA4D9]/10 text-[#1BA4D9] px-2 py-0.5 rounded-full">Sans frais (1%)</span>
           </div>
 
-          <div class="p-3 bg-white rounded-xl border border-slate-200 flex items-center justify-between">
+          <div class="p-3 bg-white rounded-xl border border-slate-200 flex items-center justify-between shadow-sm">
             <div>
               <span class="text-[10px] text-slate-400 uppercase font-bold block">Numéro Wave Boutique</span>
               <span class="text-base font-black text-slate-900 font-mono tracking-wider">{{ merchant.wave_number or merchant.phone }}</span>
@@ -100,21 +148,48 @@
             <button 
               type="button" 
               @click="copyToClipboard('{{ merchant.wave_number or merchant.phone }}')"
-              class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition flex items-center space-x-1"
+              class="px-3 py-1.5 bg-sky-50 hover:bg-sky-100 text-[#1BA4D9] text-xs font-bold rounded-lg transition flex items-center space-x-1 border border-sky-200"
             >
               <i data-lucide="copy" class="w-3.5 h-3.5"></i>
               <span x-text="copied ? 'Copié ! ✅' : 'Copier'"></span>
             </button>
           </div>
 
-          <a 
-            href="https://pay.wave.com/c/ci?recipient={{ merchant.wave_number or merchant.phone }}&amount={{ order.deposit_required }}" 
-            target="_blank"
-            class="w-full py-2.5 bg-[#1BA4D9] hover:bg-[#158bb9] text-white font-extrabold text-xs rounded-xl transition flex items-center justify-center space-x-2 shadow-sm"
+          <!-- Notification Toast d'ouverture Wave -->
+          <div x-show="waveToast" x-cloak class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-900 text-xs font-semibold flex items-start space-x-2">
+            <i data-lucide="check-circle" class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5"></i>
+            <div>
+              <strong>Numéro copié !</strong> L'application Wave s'ouvre. Collez le numéro et confirmez l'envoi de <strong>{{ "{:,}".format(order.deposit_required) }} FCFA</strong>.
+            </div>
+          </div>
+
+          <!-- Bouton Bleu Principal Ouvrir Wave -->
+          <button 
+            type="button" 
+            @click="openWaveApp('{{ merchant.wave_number or merchant.phone }}', '{{ order.deposit_required }}')"
+            class="w-full py-3.5 bg-[#1BA4D9] hover:bg-[#158bb9] active:scale-[0.98] text-white font-black text-sm rounded-xl transition flex items-center justify-center space-x-2 shadow-lg shadow-[#1BA4D9]/30 cursor-pointer"
           >
-            <i data-lucide="external-link" class="w-4 h-4"></i>
+            <i data-lucide="smartphone" class="w-4 h-4"></i>
             <span>Ouvrir l'application Wave</span>
-          </a>
+          </button>
+
+          <!-- Guide rapide -->
+          <div class="p-3 rounded-xl bg-white border border-slate-200 text-[11px] text-slate-600 space-y-1.5">
+            <div class="font-bold text-slate-800 flex items-center space-x-1">
+              <i data-lucide="info" class="w-3.5 h-3.5 text-[#1BA4D9]"></i>
+              <span>Paiement en 3 étapes simples :</span>
+            </div>
+            <ol class="list-decimal list-inside space-y-1 text-slate-500 pl-1">
+              <li>Cliquez sur le bouton bleu ci-dessus pour lancer Wave.</li>
+              <li>Dans Wave, collez le numéro copié et envoyez <strong>{{ "{:,}".format(order.deposit_required) }} FCFA</strong>.</li>
+              <li>Revenez ici et cliquez sur <strong>« J'ai envoyé les {{ "{:,}".format(order.deposit_required) }} FCFA »</strong> ci-dessous.</li>
+            </ol>
+            <div class="pt-1.5 border-t border-slate-100 text-center">
+              <a :href="'wave://send?phone=' + ('{{ merchant.wave_number or merchant.phone }}').replace(/[^0-9]/g, '') + '&amount={{ order.deposit_required }}'" class="text-[#1BA4D9] font-bold text-[10px] hover:underline">
+                Wave ne s'est pas ouvert ? Cliquez ici pour forcer l'ouverture Wave
+              </a>
+            </div>
+          </div>
         </div>
       </template>
 
@@ -249,6 +324,13 @@
         🔒 Dès validation, la boutique prépare votre colis et transmet le bordereau au coursier moto.
       </p>
     </form>
+
+    <div class="mt-4 p-3 bg-emerald-50 rounded-2xl border border-emerald-100 text-center">
+      <a href="{{ whatsapp_url }}" target="_blank" class="inline-flex items-center space-x-1.5 text-xs font-bold text-emerald-800 hover:text-emerald-900 transition">
+        <i data-lucide="message-circle" class="w-4 h-4 text-[#25D366]"></i>
+        <span>Besoin d'aide ? Échanger avec {{ merchant.store_name }} sur WhatsApp</span>
+      </a>
+    </div>
 
     <div class="mt-4 text-center">
       <a href="/orders/{{ order.order_number }}" class="text-xs text-slate-400 hover:text-slate-600 transition">

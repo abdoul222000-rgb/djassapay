@@ -98,18 +98,49 @@ async def auto_notify_deposit_confirmed(order, merchant):
     return await send_whatsapp_cloud_message(merchant.phone, msg_merchant)
 
 def generate_customer_order_whatsapp(order, merchant) -> str:
-    """Génère le lien de secours 1-clic wa.me pour le client."""
-    phone = clean_phone_number(order.customer_phone)
-    msg = (
-        f"Bonjour {order.customer_name} ! 👋\n\n"
-        f"Votre commande #{order.order_number} chez *{merchant.store_name}* est enregistrée !\n"
-        f"📦 Total : {order.total_amount:,} FCFA\n"
-        f"🔒 Acompte Anti-Lapin : {order.deposit_paid:,} FCFA ({'Reçu ✅' if order.deposit_paid >= order.deposit_required else 'En attente ⏳'})\n"
-        f"💵 Reste à payer au livreur : {order.balance_due:,} FCFA\n\n"
-        f"📍 Livraison : {order.delivery_zone_name} - {order.delivery_address}\n"
-        f"🔗 Suivi en direct : {settings.BASE_URL}/orders/{order.order_number}\n\n"
-        f"Merci pour votre confiance !"
-    )
+    """
+    Génère le lien 1-clic wa.me permettant au client de causer directement avec le vendeur
+    sur WhatsApp après ou pendant sa commande.
+    Le message est adressé au vendeur et pré-rempli avec les détails de la commande.
+    """
+    # Numéro de destination : celui du MARCHAND (vendeur)
+    seller_phone = merchant.phone or merchant.wave_number or "0595094159"
+    phone = clean_phone_number(seller_phone)
+
+    # Détails des articles
+    items_desc = []
+    if hasattr(order, "items") and order.items:
+        for it in order.items:
+            items_desc.append(f"• {it.quantity}x {it.product_title}")
+    items_str = "\n".join(items_desc) if items_desc else "Articles commandés"
+
+    deposit_paid = getattr(order, "deposit_paid", 0) or 0
+    is_paid = (order.payment_status in ["DEPOSIT_PAID", "FULLY_PAID"]) or (deposit_paid > 0)
+
+    if is_paid:
+        msg = (
+            f"Bonjour {merchant.store_name} ! 👋\n\n"
+            f"Je viens de régler mon acompte Wave de *{deposit_paid:,} FCFA* pour ma commande *#{order.order_number}*.\n\n"
+            f"📦 *Articles :*\n{items_str}\n\n"
+            f"💰 *Montant Total :* {order.total_amount:,} FCFA\n"
+            f"💵 *Solde restant à remettre au livreur :* {order.balance_due:,} FCFA\n\n"
+            f"📍 *Mon adresse de livraison :*\n"
+            f"{order.delivery_zone_name} - {order.delivery_address}\n"
+            f"👤 *Client :* {order.customer_name} ({order.customer_phone})\n\n"
+            f"Pouvez-vous me confirmer la bonne réception et l'expédition du colis avec le coursier moto ? Merci !"
+        )
+    else:
+        msg = (
+            f"Bonjour {merchant.store_name} ! 👋\n\n"
+            f"Je souhaite échanger avec vous concernant ma commande *#{order.order_number}* chez *{merchant.store_name}*.\n\n"
+            f"📦 *Articles :*\n{items_str}\n"
+            f"💰 *Total :* {order.total_amount:,} FCFA\n"
+            f"🔒 *Acompte prévu :* {order.deposit_required:,} FCFA\n"
+            f"📍 *Destination :* {order.delivery_zone_name} - {order.delivery_address}\n"
+            f"👤 *Client :* {order.customer_name} ({order.customer_phone})\n\n"
+            f"Pouvez-vous me donner des précisions pour la livraison ? Merci !"
+        )
+
     encoded = urllib.parse.quote(msg)
     return f"https://wa.me/{phone}?text={encoded}"
 

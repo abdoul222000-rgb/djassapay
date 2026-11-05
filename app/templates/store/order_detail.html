@@ -35,6 +35,13 @@
           <i data-lucide="zap" class="w-5 h-5"></i>
           <span>Payer {{ "{:,}".format(order.deposit_required) }} FCFA par {{ order.payment_method }}</span>
         </a>
+
+        <div class="mt-4 pt-3 border-t border-slate-700/60 text-center">
+          <a href="{{ whatsapp_url }}" target="_blank" class="inline-flex items-center space-x-1.5 text-xs text-slate-300 hover:text-white transition">
+            <i data-lucide="message-circle" class="w-4 h-4 text-[#25D366]"></i>
+            <span>Une question avant de payer ? Échanger sur WhatsApp avec la boutique</span>
+          </a>
+        </div>
       </div>
 
     {% elif order.payment_status in ['DEPOSIT_PAID', 'FULLY_PAID'] %}
@@ -66,11 +73,34 @@
       </div>
       {% endif %}
 
-      <div class="mt-6 flex flex-col gap-3">
-        <a href="{{ whatsapp_url }}" target="_blank" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition flex items-center justify-center space-x-2 shadow-sm">
-          <i data-lucide="message-circle" class="w-4 h-4"></i>
-          <span>Confirmer sur WhatsApp avec la boutique</span>
+      <!-- Bloc Échange Direct WhatsApp Vendeur -->
+      <div class="mt-6 p-5 rounded-3xl bg-gradient-to-br from-emerald-50 via-teal-50 to-emerald-100/60 border-2 border-emerald-300 text-center space-y-3 shadow-md">
+        <div class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-emerald-600 text-white text-[11px] font-black uppercase tracking-wider shadow-sm">
+          <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
+          <span>Acompte Encaissé avec Succès</span>
+        </div>
+        
+        <h3 class="text-base font-black text-slate-900">
+          Avertissez le vendeur pour lancer la livraison !
+        </h3>
+        
+        <p class="text-xs text-slate-600 max-w-sm mx-auto">
+          Cliquez sur le bouton vert ci-dessous pour discuter directement sur WhatsApp avec <strong>{{ merchant.store_name }}</strong>. Vos informations de commande et votre reçu sont déjà pré-remplis !
+        </p>
+
+        <a 
+          href="{{ whatsapp_url }}" 
+          target="_blank" 
+          class="w-full py-4 bg-[#25D366] hover:bg-[#20bd5a] text-white font-black text-sm rounded-2xl transition transform hover:scale-[1.02] active:scale-95 flex items-center justify-center space-x-2 shadow-lg shadow-emerald-600/30 ring-4 ring-emerald-200/50"
+        >
+          <i data-lucide="message-circle" class="w-5 h-5"></i>
+          <span>Causer avec le vendeur sur WhatsApp</span>
         </a>
+
+        <div class="text-[11px] text-slate-500 flex items-center justify-center space-x-1 pt-1">
+          <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-600"></i>
+          <span>Vendeur vérifié Côte d'Ivoire ({{ merchant.phone }})</span>
+        </div>
       </div>
 
     {% endif %}

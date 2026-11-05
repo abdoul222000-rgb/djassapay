@@ -8,7 +8,7 @@ from app.database import get_db
 from app.config import settings
 from app.models import Order, Merchant, PaymentStatusEnum
 from app.services.payment_service import PaymentService
-from app.services.whatsapp_service import auto_notify_deposit_confirmed
+from app.services.whatsapp_service import auto_notify_deposit_confirmed, generate_customer_order_whatsapp
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
@@ -54,12 +54,14 @@ async def simulate_payment_page(
         raise HTTPException(status_code=404, detail="Commande introuvable")
 
     merchant = db.query(Merchant).filter(Merchant.id == order.merchant_id).first()
+    whatsapp_url = generate_customer_order_whatsapp(order, merchant)
 
     return templates.TemplateResponse("payments/simulate.html", {
         "request": request,
         "order": order,
         "merchant": merchant,
-        "method": method.upper()
+        "method": method.upper(),
+        "whatsapp_url": whatsapp_url
     })
 
 @router.post("/payments/simulate/{order_number}/confirm")
