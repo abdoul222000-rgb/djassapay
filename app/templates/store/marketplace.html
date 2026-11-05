@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+
+{% block title %}Marketplace Côte d'Ivoire - Boutiques & Articles Anti-Lapin | DjassaPay{% endblock %}
+
+{% block meta_description %}Visitez la Marketplace DjassaPay Côte d'Ivoire. Achetez en ligne des articles vérifiés chez les commerçants d'Abidjan et de l'intérieur avec acompte Wave CI et MTN MoMo sécurisé.{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+
+  <!-- Bannière Marketplace -->
+  <div class="bg-gradient-to-r from-slate-950 via-slate-900 to-emerald-950 rounded-3xl p-6 sm:p-10 text-white relative overflow-hidden shadow-xl mb-8">
+    <div class="relative z-10 max-w-2xl">
+      <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold border border-emerald-500/30 mb-3 backdrop-blur-sm">
+        <span>🛍️ Marketplace Officielle Côte d'Ivoire</span>
+      </div>
+      <h1 class="text-2xl sm:text-4xl font-black tracking-tight text-white leading-tight">
+        Achetez chez nos commerçants <br class="hidden sm:inline">
+        <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">
+          avec acompte 100% sécurisé
+        </span>
+      </h1>
+      <p class="mt-3 text-xs sm:text-sm text-slate-300 leading-relaxed max-w-xl">
+        Découvrez les articles publiés par les boutiques certifiées de Côte d'Ivoire. Bloquez votre livraison avec votre acompte <strong>Wave CI</strong> ou <strong>MTN MoMo</strong>, et réglez le solde cash à l'arrivée du coursier moto !
+      </p>
+
+      <div class="mt-5 flex flex-wrap gap-2 text-[11px] text-slate-300">
+        <span class="bg-white/10 px-2.5 py-1 rounded-lg flex items-center"><i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400 mr-1"></i> Acompte Protégé</span>
+        <span class="bg-white/10 px-2.5 py-1 rounded-lg flex items-center"><i data-lucide="bike" class="w-3.5 h-3.5 text-sky-400 mr-1"></i> Livraison 33 Communes</span>
+        <span class="bg-white/10 px-2.5 py-1 rounded-lg flex items-center"><i data-lucide="check-circle" class="w-3.5 h-3.5 text-amber-400 mr-1"></i> Vendeurs Réels Vérifiés</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Barre de Recherche et Filtres -->
+  <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/90 shadow-sm mb-8">
+    <form action="/marketplace" method="GET" class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
+      
+      <!-- Input Recherche Texte -->
+      <div class="sm:col-span-5 relative">
+        <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+        <input 
+          type="text" 
+          name="q" 
+          value="{{ q }}" 
+          placeholder="Rechercher un article, robe, sac, téléphone, boutique..." 
+          class="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
+        >
+      </div>
+
+      <!-- Filtre Ville / Commune -->
+      <div class="sm:col-span-3">
+        <select 
+          name="city" 
+          class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition font-medium text-slate-700"
+        >
+          <option value="all" {% if not selected_city or selected_city == 'all' %}selected{% endif %}>📍 Toutes les Communes / Villes</option>
+          {% for c in available_cities %}
+          <option value="{{ c }}" {% if selected_city == c %}selected{% endif %}>{{ c }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Filtre Tri -->
+      <div class="sm:col-span-2">
+        <select 
+          name="sort" 
+          class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition font-medium text-slate-700"
+        >
+          <option value="recent" {% if sort == 'recent' %}selected{% endif %}>Nouveautés</option>
+          <option value="price_asc" {% if sort == 'price_asc' %}selected{% endif %}>Prix : Croissant</option>
+          <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>Prix : Décroissant</option>
+        </select>
+      </div>
+
+      <!-- Bouton Filtrer -->
+      <div class="sm:col-span-2 flex items-center space-x-2">
+        <button 
+          type="submit" 
+          class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm rounded-xl transition shadow-sm flex items-center justify-center space-x-1"
+        >
+          <i data-lucide="filter" class="w-3.5 h-3.5"></i>
+          <span>Filtrer</span>
+        </button>
+        {% if q or (selected_city and selected_city != 'all') or (sort and sort != 'recent') %}
+        <a 
+          href="/marketplace" 
+          title="Réinitialiser" 
+          class="p-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl transition flex items-center justify-center"
+        >
+          <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+        </a>
+        {% endif %}
+      </div>
+
+    </form>
+  </div>
+
+  <!-- Résumé des résultats -->
+  <div class="flex items-center justify-between mb-6 px-1">
+    <div>
+      <h2 class="text-lg font-extrabold text-slate-900 flex items-center space-x-2">
+        <span>Articles disponibles</span>
+        <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold">
+          {{ total_count }}
+        </span>
+      </h2>
+      {% if q %}
+      <p class="text-xs text-slate-500 mt-0.5">Résultats pour « <strong>{{ q }}</strong> »</p>
+      {% endif %}
+    </div>
+
+    <a href="/register" class="hidden sm:inline-flex items-center space-x-1.5 text-xs font-bold text-emerald-600 hover:text-emerald-700">
+      <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
+      <span>Vous êtes vendeur ? Publiez vos articles</span>
+    </a>
+  </div>
+
+  <!-- Grille de Produits -->
+  {% if products %}
+  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
+    {% for product in products %}
+    <div class="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/90 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col justify-between group">
+      
+      <!-- Image / Vidéo Produit -->
+      <a href="/shop/{{ product.merchant.store_slug }}/product/{{ product.id }}" class="block aspect-square bg-slate-100 relative overflow-hidden">
+        {% if product.is_video %}
+          <video src="{{ product.image_url }}" autoplay loop muted playsinline class="w-full h-full object-cover group-hover:scale-105 transition duration-300"></video>
+          <span class="absolute bottom-2 left-2 bg-slate-950/80 text-white text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-sm flex items-center space-x-1">
+            <i data-lucide="play" class="w-2.5 h-2.5"></i>
+            <span>Vidéo</span>
+          </span>
+        {% else %}
+          <img 
+            src="{{ product.image_url or 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80' }}" 
+            alt="{{ product.title }}" 
+            class="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+            loading="lazy"
+          >
+        {% endif %}
+
+        <!-- Badge Ville Marchand -->
+        <span class="absolute top-2 left-2 bg-slate-900/80 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded-lg flex items-center space-x-1">
+          <i data-lucide="map-pin" class="w-2.5 h-2.5 text-emerald-400"></i>
+          <span>{{ product.merchant.city or 'Abidjan' }}</span>
+        </span>
+
+        {% if product.compare_at_price and product.compare_at_price > product.price %}
+        <span class="absolute top-2 right-2 bg-red-600 text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded-md shadow-sm">
+          Promo
+        </span>
+        {% endif %}
+      </a>
+
+      <!-- Détails Produit & Vendeur -->
+      <div class="p-3 sm:p-4 flex-1 flex flex-col justify-between">
+        
+        <div>
+          <!-- Boutique Vendeur -->
+          <a href="/shop/{{ product.merchant.store_slug }}" class="text-[11px] font-semibold text-slate-500 hover:text-emerald-600 transition flex items-center space-x-1 truncate mb-1">
+            <i data-lucide="store" class="w-3 h-3 text-emerald-600 shrink-0"></i>
+            <span class="truncate">{{ product.merchant.store_name }}</span>
+          </a>
+
+          <!-- Titre Article -->
+          <h3 class="font-bold text-slate-900 text-xs sm:text-sm line-clamp-2 leading-snug">
+            <a href="/shop/{{ product.merchant.store_slug }}/product/{{ product.id }}" class="hover:text-emerald-600 transition">
+              {{ product.title }}
+            </a>
+          </h3>
+
+          <!-- Prix -->
+          <div class="mt-2 flex items-baseline space-x-1.5 flex-wrap">
+            <span class="text-sm sm:text-base font-black text-slate-900">
+              {{ "{:,}".format(product.price) }} <span class="text-[11px] font-bold text-emerald-600">FCFA</span>
+            </span>
+            {% if product.compare_at_price and product.compare_at_price > product.price %}
+            <span class="text-[10px] sm:text-xs text-slate-400 line-through">
+              {{ "{:,}".format(product.compare_at_price) }} F
+            </span>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Bouton Achat Direct Anti-Lapin -->
+        <div class="mt-3 pt-2.5 border-t border-slate-100">
+          <a 
+            href="/shop/{{ product.merchant.store_slug }}/product/{{ product.id }}" 
+            class="w-full py-2 px-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-[11px] sm:text-xs rounded-xl shadow-sm transition flex items-center justify-center space-x-1 active:scale-95 text-center"
+          >
+            <i data-lucide="shopping-bag" class="w-3.5 h-3.5"></i>
+            <span>Commander</span>
+          </a>
+          <div class="mt-1 text-center text-[9px] text-slate-400 flex items-center justify-center space-x-1">
+            <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            <span>Acompte Wave direct</span>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+
+  <!-- État vide : Aucun article trouvé -->
+  <div class="bg-white rounded-3xl p-8 sm:p-12 text-center border border-dashed border-slate-300 max-w-lg mx-auto my-6">
+    <div class="w-16 h-16 bg-slate-100 text-slate-400 rounded-2xl flex items-center justify-center mx-auto text-2xl mb-4">
+      🛍️
+    </div>
+    <h3 class="text-base font-extrabold text-slate-900">Aucun article ne correspond à votre recherche</h3>
+    <p class="mt-2 text-xs text-slate-500 leading-relaxed">
+      Essayez de modifier votre mot-clé ou sélectionnez « Toutes les Communes » pour voir tous les produits en vente.
+    </p>
+
+    <div class="mt-6 flex flex-col sm:flex-row items-center justify-center gap-2">
+      <a href="/marketplace" class="w-full sm:w-auto px-4 py-2 bg-slate-900 text-white font-bold text-xs rounded-xl hover:bg-slate-800 transition">
+        Voir tous les articles
+      </a>
+      <a href="/register" class="w-full sm:w-auto px-4 py-2 bg-emerald-600 text-white font-bold text-xs rounded-xl hover:bg-emerald-500 transition">
+        Publier un article (Vendeurs)
+      </a>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Bannière Vendeur (Bas de page) -->
+  <div class="mt-12 bg-emerald-50 border border-emerald-200/80 rounded-3xl p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div class="flex items-center space-x-4 text-center sm:text-left">
+      <div class="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center text-xl shrink-0 mx-auto sm:mx-0 shadow-md">
+        🚀
+      </div>
+      <div>
+        <h4 class="font-extrabold text-slate-900 text-base">Vous vendez sur WhatsApp, Instagram ou TikTok ?</h4>
+        <p class="text-xs text-slate-600 mt-0.5">Ouvrez votre boutique DjassaPay en 30 secondes et encaissez vos acomptes Wave sans risque de lapin.</p>
+      </div>
+    </div>
+    <a href="/register" class="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs sm:text-sm rounded-xl shadow-md transition shrink-0 text-center">
+      Créer Ma Boutique Vendeur
+    </a>
+  </div>
+
+</div>
+{% endblock %}

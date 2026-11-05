@@ -24,11 +24,15 @@
     </p>
 
     <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
-      <a href="/register" class="w-full sm:w-auto px-8 py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold rounded-2xl shadow-lg shadow-emerald-600/30 transition transform active:scale-95 flex items-center justify-center space-x-2 text-base">
+      <a href="/register" class="w-full sm:w-auto px-7 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold rounded-2xl shadow-lg shadow-emerald-600/30 transition transform active:scale-95 flex items-center justify-center space-x-2 text-sm sm:text-base">
         <i data-lucide="sparkles" class="w-5 h-5"></i>
-        <span>Ouvrir ma Boutique en 30s (Gratuit)</span>
+        <span>Ouvrir ma Boutique (Gratuit)</span>
       </a>
-      <a href="/login" class="w-full sm:w-auto px-7 py-4 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-2xl shadow-sm transition flex items-center justify-center space-x-2 text-sm">
+      <a href="/marketplace" class="w-full sm:w-auto px-6 py-3.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-2xl shadow-md transition flex items-center justify-center space-x-2 text-sm">
+        <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+        <span>Visiter la Marketplace</span>
+      </a>
+      <a href="/login" class="w-full sm:w-auto px-5 py-3.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-2xl shadow-sm transition flex items-center justify-center space-x-2 text-sm">
         <i data-lucide="log-in" class="w-4 h-4"></i>
         <span>Connexion Vendeur</span>
       </a>
@@ -73,6 +77,71 @@
         Fini les notes vocales interminables. Votre coursier reçoit un bordereau propre avec l'adresse, repères, bouton d'appel et montant cash à encaisser.
       </p>
     </div>
+  </div>
+
+  <!-- SECTION MARKETPLACE EN DIRECT -->
+  <div class="mt-16 sm:mt-24">
+    <div class="flex flex-col sm:flex-row items-start sm:items-end justify-between mb-8 gap-4">
+      <div>
+        <div class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-bold mb-2">
+          <span>🛍️ Marketplace Ouverte</span>
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Articles en vente chez nos commerçants</h2>
+        <p class="text-xs sm:text-sm text-slate-500 mt-1">Visitez les boutiques vérifiées et commandez avec acompte Wave CI direct.</p>
+      </div>
+
+      <a href="/marketplace" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition flex items-center space-x-1.5 shadow-sm shrink-0">
+        <span>Voir toute la Marketplace</span>
+        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+      </a>
+    </div>
+
+    {% if marketplace_products %}
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      {% for product in marketplace_products %}
+      <div class="bg-white rounded-2xl border border-slate-200/90 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col justify-between group">
+        <a href="/shop/{{ product.merchant.store_slug }}/product/{{ product.id }}" class="block aspect-square bg-slate-100 relative overflow-hidden">
+          {% if product.is_video %}
+            <video src="{{ product.image_url }}" autoplay loop muted playsinline class="w-full h-full object-cover group-hover:scale-105 transition"></video>
+          {% else %}
+            <img src="{{ product.image_url or 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80' }}" alt="{{ product.title }}" class="w-full h-full object-cover group-hover:scale-105 transition" loading="lazy">
+          {% endif %}
+          <span class="absolute top-2 left-2 bg-slate-900/80 text-white text-[9px] font-bold px-2 py-0.5 rounded-md">
+            {{ product.merchant.city or 'Abidjan' }}
+          </span>
+        </a>
+        <div class="p-3 flex-1 flex flex-col justify-between">
+          <div>
+            <div class="text-[10px] text-slate-400 font-semibold truncate">{{ product.merchant.store_name }}</div>
+            <h4 class="font-bold text-slate-900 text-xs truncate mt-0.5">{{ product.title }}</h4>
+            <div class="mt-1 text-xs font-extrabold text-slate-900">
+              {{ "{:,}".format(product.price) }} <span class="text-[10px] text-emerald-600 font-bold">FCFA</span>
+            </div>
+          </div>
+          <div class="mt-2.5 pt-2 border-t border-slate-100">
+            <a href="/shop/{{ product.merchant.store_slug }}/product/{{ product.id }}" class="w-full py-1.5 px-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[10px] rounded-lg transition block text-center">
+              Acheter
+            </a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-white rounded-3xl p-8 text-center border border-dashed border-slate-300">
+      <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mx-auto text-xl mb-3">
+        🛍️
+      </div>
+      <h3 class="text-sm font-bold text-slate-900">La Marketplace DjassaPay accueille vos premiers articles !</h3>
+      <p class="text-xs text-slate-500 mt-1 max-w-md mx-auto">Créez votre boutique en ligne et vos produits apparaîtront automatiquement ici pour être achetés par les clients de toute la Côte d'Ivoire.</p>
+      <div class="mt-4">
+        <a href="/register" class="inline-flex items-center space-x-1.5 px-4 py-2 bg-emerald-600 text-white font-bold text-xs rounded-xl hover:bg-emerald-500 transition">
+          <span>Ouvrir ma boutique gratuitement</span>
+          <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+        </a>
+      </div>
+    </div>
+    {% endif %}
   </div>
 
   <!-- Comment ça marche en 3 étapes -->

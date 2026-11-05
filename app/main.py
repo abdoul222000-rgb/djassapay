@@ -109,6 +109,7 @@ def robots_txt():
     """Autorise Googlebot et les moteurs à indexer tout le site public."""
     return """User-agent: *
 Allow: /
+Allow: /marketplace
 Allow: /register
 Allow: /login
 Allow: /pricing
@@ -127,6 +128,7 @@ def sitemap_xml():
         merchants = db.query(Merchant).all()
         urls = [
             ("https://djassapay.onrender.com/", "daily", "1.0"),
+            ("https://djassapay.onrender.com/marketplace", "daily", "0.9"),
             ("https://djassapay.onrender.com/pricing", "weekly", "0.8"),
             ("https://djassapay.onrender.com/register", "monthly", "0.9"),
             ("https://djassapay.onrender.com/login", "monthly", "0.5"),

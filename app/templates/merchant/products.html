@@ -5,8 +5,14 @@
 {% block content %}
 <div class="max-w-5xl mx-auto px-4 py-8" x-data="{ 
   showAddModal: false,
+  showEditModal: false,
+  editProduct: { id: null, title: '', price: 0, compare_at_price: '', stock: 10, description: '', is_active: true },
   previewUrl: null,
   isVideo: false,
+  openEdit(p) {
+    this.editProduct = { ...p };
+    this.showEditModal = true;
+  },
   triggerCapture(mode) {
     const input = document.getElementById('media-file-input');
     if (!input) return;
@@ -41,8 +47,8 @@
         <i data-lucide="arrow-left" class="w-3.5 h-3.5 mr-1"></i>
         Retour au Tableau de Bord
       </a>
-      <h1 class="text-2xl font-extrabold text-slate-900">Catalogue d'Articles</h1>
-      <p class="text-xs text-slate-500">Ajoutez et modifiez les produits visibles par vos clients sur votre vitrine.</p>
+      <h1 class="text-2xl font-extrabold text-slate-900">Catalogue de vos Articles</h1>
+      <p class="text-xs text-slate-500">Gérez exclusivement vos propres articles. Toutes vos modifications s'appliquent uniquement à votre boutique <strong>{{ merchant.store_name }}</strong>.</p>
     </div>
 
     <button @click="showAddModal = true; resetPreview()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl transition flex items-center space-x-1.5 shadow-sm">
@@ -50,6 +56,13 @@
       <span>Ajouter un Article</span>
     </button>
   </div>
+
+  {% if request.query_params.get('saved') %}
+  <div class="mt-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold rounded-xl flex items-center space-x-2">
+    <i data-lucide="check-circle" class="w-4 h-4 text-emerald-600"></i>
+    <span>Article mis à jour avec succès sur votre compte !</span>
+  </div>
+  {% endif %}
 
   <!-- Modal Ajout Produit -->
   <div x-show="showAddModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" x-cloak>
@@ -69,7 +82,6 @@
         <!-- SECTION PHOTO / VIDÉO EN DIRECT -->
         <div class="p-4 rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 text-center">
           
-          <!-- Si aucun média sélectionné -->
           <div x-show="!previewUrl" class="space-y-3">
             <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto text-xl shadow-sm">
               📸
@@ -79,27 +91,21 @@
               <p class="text-[11px] text-slate-400 mt-0.5">Prenez en photo directement avec votre téléphone ou choisissez dans votre galerie</p>
             </div>
 
-            <!-- Boutons de capture / galerie -->
             <div class="flex flex-col sm:flex-row items-center justify-center gap-2 pt-2">
-              
-              <!-- 1. Prendre photo (Camera native smartphone) -->
               <button type="button" @click="triggerCapture('camera')" class="w-full sm:w-auto px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-sm cursor-pointer transition flex items-center justify-center space-x-1.5 active:scale-95">
                 <i data-lucide="camera" class="w-4 h-4"></i>
                 <span>Prendre une photo</span>
               </button>
 
-              <!-- 2. Galerie (Photo ou Vidéo) -->
               <button type="button" @click="triggerCapture('gallery')" class="w-full sm:w-auto px-4 py-2.5 bg-white border border-slate-200 hover:border-slate-300 text-slate-700 font-bold text-xs rounded-xl shadow-sm cursor-pointer transition flex items-center justify-center space-x-1.5 active:scale-95">
                 <i data-lucide="image" class="w-4 h-4 text-emerald-600"></i>
                 <span>Galerie (Photo ou Vidéo)</span>
               </button>
 
-              <!-- Input de fichier unique et dynamique -->
               <input type="file" id="media-file-input" name="media_file" class="hidden" @change="previewMedia($event)">
             </div>
           </div>
 
-          <!-- Prévisualisation en direct si média choisi -->
           <div x-show="previewUrl" class="space-y-3" x-cloak>
             <div class="w-44 h-44 mx-auto rounded-2xl overflow-hidden bg-black shadow-md relative">
               <template x-if="!isVideo">
@@ -153,6 +159,68 @@
     </div>
   </div>
 
+  <!-- Modal Modification Produit -->
+  <div x-show="showEditModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" x-cloak>
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto" @click.away="showEditModal = false">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-bold text-slate-900 flex items-center space-x-2">
+          <i data-lucide="edit-3" class="w-5 h-5 text-emerald-600"></i>
+          <span>Modifier l'Article</span>
+        </h2>
+        <button @click="showEditModal = false" class="text-slate-400 hover:text-slate-600 p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form :action="'/merchant/products/' + editProduct.id + '/edit'" method="POST" enctype="multipart/form-data" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Nom de l'article *</label>
+          <input type="text" name="title" x-model="editProduct.title" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-500">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Description</label>
+          <textarea name="description" rows="2" x-model="editProduct.description" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-500"></textarea>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Prix de vente (FCFA) *</label>
+            <input type="number" name="price" x-model="editProduct.price" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Prix barré promo</label>
+            <input type="number" name="compare_at_price" x-model="editProduct.compare_at_price" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Quantité en stock</label>
+            <input type="number" name="stock" x-model="editProduct.stock" required class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Visibilité Marketplace</label>
+            <select name="is_active" x-model="editProduct.is_active" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-500 bg-white">
+              <option :value="true">Visible (En vente)</option>
+              <option :value="false">Masqué (Pause)</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Remplacer la photo / vidéo (optionnel)</label>
+          <input type="file" name="media_file" accept="image/*,video/*" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
+        </div>
+
+        <div class="pt-3 border-t border-slate-100 flex justify-end space-x-2">
+          <button type="button" @click="showEditModal = false" class="px-4 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">Annuler</button>
+          <button type="submit" class="px-5 py-2.5 text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl shadow-md">Enregistrer les modifications</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Liste des Produits Existants -->
   <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
     {% for product in products %}
@@ -170,6 +238,12 @@
         <span class="absolute top-2 right-2 bg-slate-900/80 text-white text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-sm">
           Stock : {{ product.stock }}
         </span>
+
+        {% if not product.is_active %}
+        <span class="absolute top-2 left-2 bg-amber-500 text-slate-950 text-[10px] font-extrabold px-2 py-0.5 rounded-full">
+          Masqué
+        </span>
+        {% endif %}
       </div>
 
       <div class="p-4 flex-1 flex flex-col justify-between">
@@ -184,21 +258,54 @@
         </div>
 
         <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
-          <a href="/shop/{{ merchant.store_slug }}/product/{{ product.id }}" target="_blank" class="text-xs font-semibold text-emerald-600 hover:underline">
-            Voir la fiche
-          </a>
-
-          <form action="/merchant/products/{{ product.id }}/delete" method="POST" onsubmit="return confirm('Supprimer cet article ?')">
-            <button type="submit" class="text-slate-400 hover:text-red-600 transition p-1">
-              <i data-lucide="trash-2" class="w-4 h-4"></i>
+          <div class="flex items-center space-x-2">
+            <!-- Bouton Modifier l'article -->
+            <button 
+              type="button" 
+              @click="openEdit({
+                id: {{ product.id }},
+                title: '{{ product.title | replace(\"'\", \"\\'\") }}',
+                description: '{{ (product.description or '') | replace(\"'\", \"\\'\") | replace('\n', ' ') }}',
+                price: {{ product.price }},
+                compare_at_price: {{ product.compare_at_price or 'null' }},
+                stock: {{ product.stock }},
+                is_active: {{ 'true' if product.is_active else 'false' }}
+              })"
+              class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition flex items-center space-x-1"
+            >
+              <i data-lucide="edit" class="w-3.5 h-3.5 text-emerald-600"></i>
+              <span>Modifier</span>
             </button>
-          </form>
+
+            <!-- Toggle Visibilité -->
+            <form action="/merchant/products/{{ product.id }}/toggle" method="POST">
+              <button 
+                type="submit" 
+                title="{{ 'Mettre en pause' if product.is_active else 'Activer' }}"
+                class="p-1.5 text-xs font-semibold rounded-lg transition {{ 'text-slate-400 hover:text-amber-600' if product.is_active else 'text-amber-600 hover:text-emerald-600' }}"
+              >
+                <i data-lucide="{{ 'eye' if product.is_active else 'eye-off' }}" class="w-4 h-4"></i>
+              </button>
+            </form>
+          </div>
+
+          <div class="flex items-center space-x-2">
+            <a href="/shop/{{ merchant.store_slug }}/product/{{ product.id }}" target="_blank" class="text-xs font-semibold text-emerald-600 hover:underline">
+              Fiche
+            </a>
+
+            <form action="/merchant/products/{{ product.id }}/delete" method="POST" onsubmit="return confirm('Supprimer définitivement cet article ?')">
+              <button type="submit" class="text-slate-400 hover:text-red-600 transition p-1">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     </div>
     {% else %}
     <div class="col-span-3 bg-white rounded-2xl p-8 text-center border border-dashed border-slate-300">
-      <p class="text-slate-400 text-xs">Aucun article enregistré. Cliquez sur "Ajouter un Article" pour prendre en photo votre premier produit !</p>
+      <p class="text-slate-400 text-xs">Aucun article dans votre boutique. Cliquez sur "Ajouter un Article" pour prendre en photo votre premier produit !</p>
     </div>
     {% endfor %}
   </div>
