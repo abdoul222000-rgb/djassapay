@@ -59,13 +59,14 @@
   <div class="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-sm flex items-start space-x-4">
     <div class="w-24 h-24 rounded-2xl bg-slate-900 overflow-hidden shrink-0">
       {% if product.is_video %}
-        <video src="{{ product.image_url }}" autoplay loop muted playsinline class="w-full h-full object-cover"></video>
+        <video src="{{ product.image_url }}" autoplay loop muted playsinline class="w-full h-full object-cover" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='block';"></video>
+        <img src="https://images.unsplash.com/photo-1472851294608-062f824d29cc?auto=format&fit=crop&w=600&q=80" style="display:none;" class="w-full h-full object-cover" alt="{{ product.title }}">
       {% else %}
         <img 
-          src="{{ product.image_url or 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80' }}" 
+          src="{{ product.image_url or 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?auto=format&fit=crop&w=600&q=80' }}" 
           alt="{{ product.title }}" 
           class="w-full h-full object-cover"
-          onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80';"
+          onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1472851294608-062f824d29cc?auto=format&fit=crop&w=600&q=80';"
         >
       {% endif %}
     </div>

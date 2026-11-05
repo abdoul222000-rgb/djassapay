@@ -96,6 +96,54 @@ def startup_populate_data():
             founder_merchant.store_name = "Djassapay Officiel"
             founder_merchant.store_slug = "djassapay"
             db.commit()
+
+        # 1. Migration automatique schéma PostgreSQL : s'assurer que image_url est TEXT (support Base64 illimité)
+        try:
+            from sqlalchemy import text
+            db.execute(text("ALTER TABLE products ALTER COLUMN image_url TYPE TEXT;"))
+            db.commit()
+            print("[Database Migration] products.image_url vérifié/converti en TEXT.")
+        except Exception as e:
+            db.rollback()
+
+        # 2. Restauration & Protection permanente des photos de tous les vendeurs
+        pav_suit_img = "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=800&q=80"
+        roxane_top_img = "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=800&q=80"
+
+        all_products = db.query(Product).all()
+        for prod in all_products:
+            m_name = (prod.merchant.store_name if prod.merchant else "").lower()
+            m_slug = (prod.merchant.store_slug if prod.merchant else "").lower()
+            title_lower = (prod.title or "").lower()
+            img_url = prod.image_url or ""
+
+            # Pav-225 shop - Complet (26 500 FCFA à Adjamé)
+            if "pav" in m_name or "pav" in m_slug or "complet" in title_lower:
+                if not img_url or img_url.startswith("/static/uploads/") or "photo-1523275335684" in img_url:
+                    prod.image_url = pav_suit_img
+                    print(f"[Photo Restore] Pav-225 Complet restauré : {prod.title}")
+
+            # Princesse Roxane Shop - Haut sauter (1 000 FCFA à Abobo)
+            elif "roxane" in m_name or "roxane" in m_slug or "sauter" in title_lower or "haut" in title_lower:
+                if not img_url or img_url.startswith("/static/uploads/") or "photo-1523275335684" in img_url or prod.is_video:
+                    prod.image_url = roxane_top_img
+                    print(f"[Photo Restore] Princesse Roxane Haut sauter restauré : {prod.title}")
+
+            # Tout autre produit dont le média /static/uploads/ est absent du disque
+            elif img_url.startswith("/static/uploads/"):
+                local_fpath = os.path.join("app", img_url.lstrip("/"))
+                if not os.path.exists(local_fpath):
+                    if any(w in title_lower for w in ["robe", "jupe", "chemise", "pantalon", "habit", "mode"]):
+                        prod.image_url = "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=800&q=80"
+                    elif any(w in title_lower for w in ["chaussure", "basket", "soulier", "talon"]):
+                        prod.image_url = "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=800&q=80"
+                    elif any(w in title_lower for w in ["sac", "valise", "pochette"]):
+                        prod.image_url = "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=800&q=80"
+                    else:
+                        prod.image_url = "https://images.unsplash.com/photo-1472851294608-062f824d29cc?auto=format&fit=crop&w=800&q=80"
+                    print(f"[Photo Restore] Image réparée pour produit '{prod.title}' -> {prod.image_url}")
+
+        db.commit()
     finally:
         db.close()
 

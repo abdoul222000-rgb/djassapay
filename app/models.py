@@ -80,7 +80,7 @@ class Product(Base):
     description = Column(Text, nullable=True)
     price = Column(Integer, nullable=False) # Prix en FCFA
     compare_at_price = Column(Integer, nullable=True) # Prix barré promo
-    image_url = Column(String(255), nullable=True)
+    image_url = Column(Text, nullable=True) # Stockage permanent Text (Base64 ou URL)
     stock = Column(Integer, default=10)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -93,6 +93,10 @@ class Product(Base):
         if not self.image_url:
             return False
         lower = self.image_url.lower()
+        if lower.startswith("data:image/"):
+            return False
+        if lower.startswith("data:video/"):
+            return True
         return any(lower.endswith(ext) for ext in [".mp4", ".mov", ".webm", ".m4v"])
 
 class Order(Base):
