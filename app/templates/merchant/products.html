@@ -9,8 +9,16 @@
   editProduct: { id: null, title: '', price: 0, compare_at_price: '', stock: 10, description: '', is_active: true },
   previewUrl: null,
   isVideo: false,
-  openEdit(p) {
-    this.editProduct = { ...p };
+  openEditFromBtn(el) {
+    this.editProduct = {
+      id: parseInt(el.dataset.id),
+      title: el.dataset.title || '',
+      description: el.dataset.description || '',
+      price: parseInt(el.dataset.price) || 0,
+      compare_at_price: el.dataset.compareAtPrice ? parseInt(el.dataset.compareAtPrice) : '',
+      stock: parseInt(el.dataset.stock) || 1,
+      is_active: el.dataset.active === 'true'
+    };
     this.showEditModal = true;
   },
   triggerCapture(mode) {
@@ -262,15 +270,14 @@
             <!-- Bouton Modifier l'article -->
             <button 
               type="button" 
-              @click="openEdit({
-                id: {{ product.id }},
-                title: '{{ product.title | replace(\"'\", \"\\'\") }}',
-                description: '{{ (product.description or '') | replace(\"'\", \"\\'\") | replace('\n', ' ') }}',
-                price: {{ product.price }},
-                compare_at_price: {{ product.compare_at_price or 'null' }},
-                stock: {{ product.stock }},
-                is_active: {{ 'true' if product.is_active else 'false' }}
-              })"
+              @click="openEditFromBtn($el)"
+              data-id="{{ product.id }}"
+              data-title="{{ product.title | e }}"
+              data-description="{{ (product.description or '') | e }}"
+              data-price="{{ product.price }}"
+              data-compare-at-price="{{ product.compare_at_price or '' }}"
+              data-stock="{{ product.stock }}"
+              data-active="{{ 'true' if product.is_active else 'false' }}"
               class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition flex items-center space-x-1"
             >
               <i data-lucide="edit" class="w-3.5 h-3.5 text-emerald-600"></i>
