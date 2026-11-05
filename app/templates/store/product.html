@@ -131,45 +131,29 @@
       </h2>
 
       <div class="grid grid-cols-2 gap-3">
-        <!-- Wave -->
-        <label :class="paymentMethod === 'WAVE' ? 'border-sky-500 bg-sky-50/50 ring-2 ring-sky-500/20' : 'border-slate-200 hover:border-slate-300'" class="border rounded-2xl p-3 flex flex-col items-center justify-center cursor-pointer transition text-center">
+        <!-- Wave CI (Actif) -->
+        <label :class="paymentMethod === 'WAVE' ? 'border-[#1BA4D9] bg-sky-50/50 ring-2 ring-[#1BA4D9]' : 'border-slate-200 hover:border-slate-300'" class="border rounded-2xl p-3 flex flex-col items-center justify-center cursor-pointer transition text-center shadow-sm">
           <input type="radio" name="payment_method" value="WAVE" x-model="paymentMethod" class="sr-only">
-          <div class="w-10 h-10 rounded-xl bg-[#1BA4D9] text-white flex items-center justify-center font-black text-xs shadow-sm mb-1.5">
+          <div class="w-10 h-10 rounded-xl bg-[#1BA4D9] text-white flex items-center justify-center font-black text-sm shadow-sm mb-1.5">
             WAVE
           </div>
-          <span class="text-xs font-bold text-slate-900">Wave 1%</span>
-          <span class="text-[10px] text-slate-500">Sans frais cachés</span>
+          <span class="text-xs font-bold text-slate-900">Wave CI</span>
+          <span class="text-[10px] text-emerald-600 font-bold">Sans frais (1%)</span>
         </label>
 
-        <!-- Orange Money -->
-        <label :class="paymentMethod === 'ORANGE_MONEY' ? 'border-amber-500 bg-amber-50/50 ring-2 ring-amber-500/20' : 'border-slate-200 hover:border-slate-300'" class="border rounded-2xl p-3 flex flex-col items-center justify-center cursor-pointer transition text-center">
-          <input type="radio" name="payment_method" value="ORANGE_MONEY" x-model="paymentMethod" class="sr-only">
-          <div class="w-10 h-10 rounded-xl bg-[#FF6600] text-white flex items-center justify-center font-black text-xs shadow-sm mb-1.5">
-            OM
-          </div>
-          <span class="text-xs font-bold text-slate-900">Orange Money</span>
-          <span class="text-[10px] text-slate-500">Code secret OTP</span>
-        </label>
-
-        <!-- MTN MoMo -->
-        <label :class="paymentMethod === 'MTN_MOMO' ? 'border-yellow-500 bg-yellow-50/50 ring-2 ring-yellow-500/20' : 'border-slate-200 hover:border-slate-300'" class="border rounded-2xl p-3 flex flex-col items-center justify-center cursor-pointer transition text-center">
+        <!-- MTN MoMo CI (Actif) -->
+        <label :class="paymentMethod === 'MTN_MOMO' ? 'border-amber-400 bg-amber-50/50 ring-2 ring-amber-400' : 'border-slate-200 hover:border-slate-300'" class="border rounded-2xl p-3 flex flex-col items-center justify-center cursor-pointer transition text-center shadow-sm">
           <input type="radio" name="payment_method" value="MTN_MOMO" x-model="paymentMethod" class="sr-only">
           <div class="w-10 h-10 rounded-xl bg-[#FFCC00] text-slate-950 flex items-center justify-center font-black text-xs shadow-sm mb-1.5">
             MTN
           </div>
           <span class="text-xs font-bold text-slate-900">MTN MoMo</span>
-          <span class="text-[10px] text-slate-500">Validation instantanée</span>
+          <span class="text-[10px] text-slate-500">Validation immédiate</span>
         </label>
+      </div>
 
-        <!-- Moov Money -->
-        <label :class="paymentMethod === 'MOOV' ? 'border-blue-500 bg-blue-50/50 ring-2 ring-blue-500/20' : 'border-slate-200 hover:border-slate-300'" class="border rounded-2xl p-3 flex flex-col items-center justify-center cursor-pointer transition text-center">
-          <input type="radio" name="payment_method" value="MOOV" x-model="paymentMethod" class="sr-only">
-          <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-black text-xs shadow-sm mb-1.5">
-            MOOV
-          </div>
-          <span class="text-xs font-bold text-slate-900">Moov Money</span>
-          <span class="text-[10px] text-slate-500">Zone UEMOA</span>
-        </label>
+      <div class="mt-2.5 p-2 rounded-xl bg-slate-50 border border-slate-200 text-center text-[11px] text-slate-400">
+        ℹ️ Orange Money CI & Moov Money CI sont temporairement suspendus pour maintenance technique.
       </div>
     </div>
 

@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="max-w-md mx-auto px-4 py-8" x-data="{ 
-  currentMethod: '{{ method }}' || 'WAVE', 
+  currentMethod: ('{{ method }}' === 'ORANGE_MONEY' || '{{ method }}' === 'MOOV') ? 'WAVE' : ('{{ method }}' || 'WAVE'), 
   copied: false, 
   isProcessing: false,
   copyToClipboard(text) {
@@ -38,37 +38,25 @@
       </div>
     </div>
 
-    <!-- Sélecteur de Moyen de Paiement Ivoirien -->
+    <!-- Sélecteur de Moyen de Paiement Ivoirien (Wave CI & MTN MoMo) -->
     <div class="mt-5">
       <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">
-        Choisissez votre moyen de paiement :
+        Moyen de paiement disponible :
       </label>
-      <div class="grid grid-cols-4 gap-1.5">
+      <div class="grid grid-cols-2 gap-2">
         
-        <!-- Option Wave CI -->
+        <!-- Option Wave CI (Recommandé) -->
         <button 
           type="button" 
           @click="currentMethod = 'WAVE'"
           :class="currentMethod === 'WAVE' ? 'border-[#1BA4D9] bg-sky-50 ring-2 ring-[#1BA4D9]' : 'border-slate-200 hover:border-slate-300 bg-white'"
-          class="p-2 rounded-2xl border text-center transition flex flex-col items-center justify-center space-y-1 shadow-sm"
+          class="p-3 rounded-2xl border text-center transition flex flex-col items-center justify-center space-y-1 shadow-sm"
         >
-          <div class="w-7 h-7 rounded-lg bg-[#1BA4D9] text-white font-black text-xs flex items-center justify-center shadow-sm">
-            W
+          <div class="w-8 h-8 rounded-xl bg-[#1BA4D9] text-white font-black text-xs flex items-center justify-center shadow-sm">
+            WAVE
           </div>
-          <span class="text-[10px] font-bold text-slate-800">Wave</span>
-        </button>
-
-        <!-- Option Orange Money CI -->
-        <button 
-          type="button" 
-          @click="currentMethod = 'ORANGE_MONEY'"
-          :class="currentMethod === 'ORANGE_MONEY' ? 'border-[#FF6600] bg-orange-50 ring-2 ring-[#FF6600]' : 'border-slate-200 hover:border-slate-300 bg-white'"
-          class="p-2 rounded-2xl border text-center transition flex flex-col items-center justify-center space-y-1 shadow-sm"
-        >
-          <div class="w-7 h-7 rounded-lg bg-[#FF6600] text-white font-black text-[10px] flex items-center justify-center shadow-sm">
-            OM
-          </div>
-          <span class="text-[10px] font-bold text-slate-800">Orange</span>
+          <span class="text-xs font-bold text-slate-800">Wave CI</span>
+          <span class="text-[10px] text-emerald-600 font-semibold">1% sans frais</span>
         </button>
 
         <!-- Option MTN MoMo CI -->
@@ -76,28 +64,21 @@
           type="button" 
           @click="currentMethod = 'MTN_MOMO'"
           :class="currentMethod === 'MTN_MOMO' ? 'border-[#FFCC00] bg-yellow-50 ring-2 ring-[#FFCC00]' : 'border-slate-200 hover:border-slate-300 bg-white'"
-          class="p-2 rounded-2xl border text-center transition flex flex-col items-center justify-center space-y-1 shadow-sm"
+          class="p-3 rounded-2xl border text-center transition flex flex-col items-center justify-center space-y-1 shadow-sm"
         >
-          <div class="w-7 h-7 rounded-lg bg-[#FFCC00] text-slate-950 font-black text-[10px] flex items-center justify-center shadow-sm">
+          <div class="w-8 h-8 rounded-xl bg-[#FFCC00] text-slate-950 font-black text-xs flex items-center justify-center shadow-sm">
             MTN
           </div>
-          <span class="text-[10px] font-bold text-slate-800">MTN</span>
-        </button>
-
-        <!-- Option Moov Money CI -->
-        <button 
-          type="button" 
-          @click="currentMethod = 'MOOV'"
-          :class="currentMethod === 'MOOV' ? 'border-blue-600 bg-blue-50 ring-2 ring-blue-600' : 'border-slate-200 hover:border-slate-300 bg-white'"
-          class="p-2 rounded-2xl border text-center transition flex flex-col items-center justify-center space-y-1 shadow-sm"
-        >
-          <div class="w-7 h-7 rounded-lg bg-blue-600 text-white font-black text-[10px] flex items-center justify-center shadow-sm">
-            MOOV
-          </div>
-          <span class="text-[10px] font-bold text-slate-800">Moov</span>
+          <span class="text-xs font-bold text-slate-800">MTN MoMo</span>
+          <span class="text-[10px] text-slate-500 font-semibold">Instantané</span>
         </button>
 
       </div>
+
+      <div class="mt-2 text-center text-[10px] text-slate-400">
+        ⚠️ Orange Money & Moov Money sont temporairement suspendus.
+      </div>
+    </div>
     </div>
 
     <!-- Instructions Détaillées selon le moyen -->
