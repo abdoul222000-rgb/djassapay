@@ -107,8 +107,21 @@ def startup_populate_data():
             db.rollback()
 
         # 2. Restauration & Protection permanente des photos de tous les vendeurs
-        pav_suit_img = "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=800&q=80"
-        roxane_top_img = "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=800&q=80"
+        import base64
+
+        # Vraie photo authentique de Pav-225 (fournie directement par le vendeur)
+        pav_real_path = "app/static/images/pav_real_complet.jpg"
+        pav_suit_img = "/static/images/pav_real_complet.jpg"
+        if os.path.exists(pav_real_path):
+            with open(pav_real_path, "rb") as f:
+                pav_suit_img = f"data:image/jpeg;base64,{base64.b64encode(f.read()).decode('utf-8')}"
+
+        # Photo élégante ivoirienne pour Princesse Roxane
+        roxane_path = "app/static/images/roxane_haut_sauter.jpg"
+        roxane_top_img = "/static/images/roxane_haut_sauter.jpg"
+        if os.path.exists(roxane_path):
+            with open(roxane_path, "rb") as f:
+                roxane_top_img = f"data:image/jpeg;base64,{base64.b64encode(f.read()).decode('utf-8')}"
 
         all_products = db.query(Product).all()
         for prod in all_products:
@@ -117,15 +130,14 @@ def startup_populate_data():
             title_lower = (prod.title or "").lower()
             img_url = prod.image_url or ""
 
-            # Pav-225 shop - Complet (26 500 FCFA à Adjamé)
+            # Pav-225 shop - Complet (26 500 FCFA à Adjamé) -> VRAIE PHOTO OFFICIELLE
             if "pav" in m_name or "pav" in m_slug or "complet" in title_lower:
-                if not img_url or img_url.startswith("/static/uploads/") or "photo-1523275335684" in img_url:
-                    prod.image_url = pav_suit_img
-                    print(f"[Photo Restore] Pav-225 Complet restauré : {prod.title}")
+                prod.image_url = pav_suit_img
+                print(f"[Photo Restore] Pav-225 Complet restauré avec sa VRAIE photo authentique: {prod.title}")
 
             # Princesse Roxane Shop - Haut sauter (1 000 FCFA à Abobo)
             elif "roxane" in m_name or "roxane" in m_slug or "sauter" in title_lower or "haut" in title_lower:
-                if not img_url or img_url.startswith("/static/uploads/") or "photo-1523275335684" in img_url or prod.is_video:
+                if not img_url or img_url.startswith("/static/uploads/") or "photo-1523275335684" in img_url or "photo-1503342217505" in img_url or prod.is_video:
                     prod.image_url = roxane_top_img
                     print(f"[Photo Restore] Princesse Roxane Haut sauter restauré : {prod.title}")
 
