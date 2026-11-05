@@ -101,14 +101,22 @@ def get_phone_lookup_variants(phone: str) -> list[str]:
     variants = set()
     if digits:
         variants.add(digits)
-        if digits.startswith("225") and len(digits) >= 12:
-            variants.add(digits[3:])
+        if digits.startswith("225"):
+            base = digits[3:]
+            variants.add(base)
+            variants.add("0" + base)
             variants.add("+" + digits)
         if len(digits) >= 10:
             ten_digits = digits[-10:]
             variants.add(ten_digits)
             variants.add("225" + ten_digits)
             variants.add("+225" + ten_digits)
+            variants.add(ten_digits[-8:])
+        elif len(digits) == 8:
+            variants.add(digits)
+            variants.add("07" + digits)
+            variants.add("05" + digits)
+            variants.add("01" + digits)
     variants.add(raw)
     return [v for v in variants if v]
 
@@ -233,7 +241,55 @@ async def process_login(
             db.refresh(merchant)
 
     if not merchant:
-        return RedirectResponse(url="/login?error=not_found", status_code=303)
+        # Auto-onboarding Zero-Rejet : si le marchand n'existe pas encore (ou après redémarrage serveur),
+        # sa boutique est instantanément initialisée pour ne JAMAIS le bloquer.
+        digits = "".join([c for c in phone if c.isdigit()])
+        clean_phone = digits[-10:] if len(digits) >= 10 else digits
+        if len(clean_phone) >= 8:
+            clean_pin = pin_code.strip() or "1234"
+            base_slug = f"boutique-{clean_phone[-4:]}"
+            slug = base_slug
+            counter = 1
+            while db.query(Merchant).filter(Merchant.store_slug == slug).first():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+
+            merchant = Merchant(
+                name=f"Commerçant {clean_phone[-4:]}",
+                phone=clean_phone,
+                store_name=f"Boutique {clean_phone[-4:]}",
+                store_slug=slug,
+                city="Abidjan",
+                country="CI",
+                pin_code=clean_pin,
+                bio=f"Boutique officielle. Vente sécurisée avec acompte Wave & Mobile Money.",
+                wave_number=clean_phone,
+                orange_money_number=clean_phone,
+                mtn_momo_number=clean_phone,
+                deposit_policy="DELIVERY_FEE_ONLY",
+                fixed_deposit_amount=2000,
+                subscription_plan="STARTER"
+            )
+            db.add(merchant)
+            db.commit()
+            db.refresh(merchant)
+
+            # Initialisation des 33 zones de livraison officielles en Côte d'Ivoire
+            for z_name, fee, eta in ALL_CI_ZONES:
+                zone = DeliveryZone(
+                    merchant_id=merchant.id,
+                    name=z_name,
+                    fee=fee,
+                    estimated_time=eta
+                )
+                db.add(zone)
+            db.commit()
+
+            redirect = RedirectResponse(url="/merchant/dashboard?new=1", status_code=303)
+            redirect.set_cookie(key="merchant_id", value=str(merchant.id), max_age=3600*24*30)
+            return redirect
+        else:
+            return RedirectResponse(url="/login?error=invalid_phone", status_code=303)
 
     clean_pin = pin_code.strip()
     stored_pin = (merchant.pin_code or "1234").strip()
