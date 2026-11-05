@@ -39,8 +39,12 @@
 
   <!-- Entête de la Boutique -->
   <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm text-center relative overflow-hidden">
-    <div class="w-20 h-20 rounded-2xl mx-auto overflow-hidden ring-4 ring-emerald-500/10 shadow-md">
-      <img src="{{ merchant.logo_url or 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80' }}" alt="{{ merchant.store_name }}" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80';">
+    <div class="w-20 h-20 rounded-2xl mx-auto overflow-hidden ring-4 ring-emerald-500/10 shadow-md bg-emerald-600 flex items-center justify-center text-white font-black text-2xl">
+      {% if merchant.logo_url and 'photo-1544005313' not in merchant.logo_url %}
+        <img src="{{ merchant.logo_url }}" alt="{{ merchant.store_name }}" class="w-full h-full object-cover">
+      {% else %}
+        <span>{{ merchant.store_name[:2] | upper }}</span>
+      {% endif %}
     </div>
 
     <h1 class="text-2xl font-extrabold text-slate-900 mt-3">{{ merchant.store_name }}</h1>

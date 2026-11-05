@@ -25,12 +25,55 @@
 
     <!-- Formulaire Principal -->
     <div class="lg:col-span-2 space-y-6">
-      <form action="/merchant/settings/update" method="POST" class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-5">
+      <form action="/merchant/settings/update" method="POST" enctype="multipart/form-data" x-data="{ logoPreview: '{{ merchant.logo_url or '' }}', removeLogo: false }" class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-5">
         
         <h2 class="text-base font-bold text-slate-900 flex items-center space-x-2">
           <i data-lucide="store" class="w-4 h-4 text-emerald-600"></i>
-          <span>Profil de la Boutique</span>
+          <span>Profil & Logo de la Boutique</span>
         </h2>
+
+        <!-- Section Logo / Photo Personnelle du Vendeur -->
+        <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200/80">
+          <label class="block text-xs font-bold text-slate-800 mb-2">Photo de profil ou Logo de votre boutique</label>
+          <div class="flex flex-col sm:flex-row items-center gap-4">
+            <!-- Aperçu -->
+            <div class="w-20 h-20 rounded-2xl overflow-hidden ring-4 ring-emerald-500/10 shadow-sm shrink-0 bg-emerald-600 flex items-center justify-center text-white font-black text-2xl relative">
+              <template x-if="logoPreview && !removeLogo">
+                <img :src="logoPreview" alt="Logo" class="w-full h-full object-cover">
+              </template>
+              <template x-if="!logoPreview || removeLogo">
+                <span>{{ merchant.store_name[:2] | upper }}</span>
+              </template>
+            </div>
+
+            <div class="flex-1 space-y-2 text-center sm:text-left">
+              <p class="text-xs text-slate-600">Ajoutez votre propre photo ou le logo de votre boutique pour inspirer confiance à vos clients.</p>
+              
+              <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                <button type="button" @click="$refs.logoInput.click()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition flex items-center space-x-1.5 shadow-sm">
+                  <i data-lucide="camera" class="w-3.5 h-3.5"></i>
+                  <span>Prendre / Choisir une photo</span>
+                </button>
+
+                <template x-if="logoPreview && !removeLogo">
+                  <button type="button" @click="removeLogo = true; $refs.removeInput.value = '1'" class="px-3 py-1.5 bg-white border border-slate-200 hover:border-red-300 text-red-600 font-bold text-xs rounded-xl transition">
+                    Supprimer ma photo
+                  </button>
+                </template>
+              </div>
+
+              <input 
+                type="file" 
+                name="logo_file" 
+                x-ref="logoInput" 
+                accept="image/*" 
+                class="hidden" 
+                @change="const file = $event.target.files[0]; if (file) { removeLogo = false; $refs.removeInput.value = '0'; const reader = new FileReader(); reader.onload = (e) => { logoPreview = e.target.result; }; reader.readAsDataURL(file); }"
+              >
+              <input type="hidden" name="remove_logo" x-ref="removeInput" value="0">
+            </div>
+          </div>
+        </div>
 
         <div>
           <label class="block text-xs font-semibold text-slate-700 mb-1">Nom public de votre boutique *</label>

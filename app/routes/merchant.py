@@ -313,22 +313,33 @@ async def update_settings(
     moov_money_number: str = Form(""),
     deposit_policy: str = Form(...),
     fixed_deposit_amount: int = Form(2000),
+    logo_file: UploadFile = File(None),
+    remove_logo: str = Form(""),
     db: Session = Depends(get_db)
 ):
-    """Mise à jour des coordonnées et de la politique d'acompte du marchand."""
+    """Mise à jour des coordonnées, de la photo/logo et de la politique d'acompte du marchand."""
     merchant = get_current_merchant(db, request)
     if not merchant:
         return RedirectResponse(url="/login?unauthorized=1", status_code=303)
 
-    merchant.store_name = store_name
-    merchant.phone = phone
-    merchant.bio = bio
-    merchant.wave_number = wave_number
-    merchant.orange_money_number = orange_money_number
-    merchant.mtn_momo_number = mtn_momo_number
-    merchant.moov_money_number = moov_money_number
+    merchant.store_name = store_name.strip()
+    merchant.phone = phone.strip()
+    merchant.bio = bio.strip()
+    merchant.wave_number = wave_number.strip()
+    merchant.orange_money_number = orange_money_number.strip()
+    merchant.mtn_momo_number = mtn_momo_number.strip()
+    merchant.moov_money_number = moov_money_number.strip()
     merchant.deposit_policy = deposit_policy
     merchant.fixed_deposit_amount = fixed_deposit_amount
+
+    # Traitement de la photo de profil / logo de la boutique
+    if remove_logo == "1":
+        merchant.logo_url = None
+    elif logo_file and hasattr(logo_file, "filename") and logo_file.filename:
+        uploaded_logo = await process_uploaded_media(logo_file)
+        if uploaded_logo:
+            merchant.logo_url = uploaded_logo
+
     db.commit()
 
     return RedirectResponse(url="/merchant/settings?saved=1", status_code=303)

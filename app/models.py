@@ -32,7 +32,7 @@ class Merchant(Base):
     store_name = Column(String(100), nullable=False)
     store_slug = Column(String(100), unique=True, index=True, nullable=False)
     bio = Column(Text, nullable=True)
-    logo_url = Column(String(255), nullable=True)
+    logo_url = Column(Text, nullable=True) # Stockage permanent Text (Base64 ou URL)
     currency = Column(String(10), default="FCFA")
     country = Column(String(10), default="CI") # CI, SN, CM, BF, ML, etc.
     city = Column(String(100), default="Abidjan")

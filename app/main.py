@@ -97,14 +97,21 @@ def startup_populate_data():
             founder_merchant.store_slug = "djassapay"
             db.commit()
 
-        # 1. Migration automatique schéma PostgreSQL : s'assurer que image_url est TEXT (support Base64 illimité)
+        # 1. Migration automatique schéma PostgreSQL : s'assurer que image_url et logo_url sont TEXT (support Base64 illimité)
         try:
             from sqlalchemy import text
             db.execute(text("ALTER TABLE products ALTER COLUMN image_url TYPE TEXT;"))
+            db.execute(text("ALTER TABLE merchants ALTER COLUMN logo_url TYPE TEXT;"))
             db.commit()
-            print("[Database Migration] products.image_url vérifié/converti en TEXT.")
+            print("[Database Migration] products.image_url et merchants.logo_url vérifiés/convertis en TEXT.")
         except Exception as e:
             db.rollback()
+
+        # Nettoyage des anciennes photos IA de profil de vendeur
+        for m in db.query(Merchant).all():
+            if m.logo_url and "photo-1544005313" in m.logo_url:
+                m.logo_url = None
+        db.commit()
 
         # 2. Restauration & Protection permanente des photos de tous les vendeurs
         import base64
