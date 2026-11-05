@@ -50,16 +50,17 @@ def startup_populate_data():
         merchant = db.query(Merchant).first()
         if not merchant:
             demo_merchant = Merchant(
-                name="Aïcha Traoré",
-                phone="0708091011",
-                email="aicha@glam-abidjan.ci",
+                name="Diabagate Assouman",
+                phone="0595094159",
+                email="contact@djassapay.ci",
                 store_name="Glamour Abidjan",
                 store_slug="glamour-abidjan",
-                bio="Mode chic, robes tendances & accessoires haute qualité livrés partout à Abidjan & banlieues.",
+                bio="Mode chic, robes tendances & accessoires livrés partout en Côte d'Ivoire.",
                 logo_url="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80",
-                wave_number="0708091011",
-                orange_money_number="0708091011",
-                mtn_momo_number="0505060708",
+                wave_number="0595094159",
+                orange_money_number="0595094159",
+                mtn_momo_number="0595094159",
+                moov_money_number="0100000000",
                 deposit_policy="DELIVERY_FEE_ONLY",
                 fixed_deposit_amount=2000
             )
@@ -107,5 +108,49 @@ def startup_populate_data():
             ]
             db.add_all(prods)
             db.commit()
+    finally:
+        db.close()
+
+# ==============================================================
+# SEO & INDEXATION GOOGLE (ROBOTS.TXT & SITEMAP.XML)
+# ==============================================================
+from fastapi.responses import PlainTextResponse, Response
+
+@app.get("/robots.txt", response_class=PlainTextResponse)
+def robots_txt():
+    """Autorise Googlebot et les moteurs à indexer tout le site public."""
+    return """User-agent: *
+Allow: /
+Allow: /register
+Allow: /login
+Allow: /pricing
+Allow: /shop/
+Disallow: /admin/
+Disallow: /merchant/
+
+Sitemap: https://djassapay.onrender.com/sitemap.xml
+"""
+
+@app.get("/sitemap.xml")
+def sitemap_xml():
+    """Génère la sitemap officielle XML pour Google Search Console."""
+    db = SessionLocal()
+    try:
+        merchants = db.query(Merchant).all()
+        urls = [
+            ("https://djassapay.onrender.com/", "daily", "1.0"),
+            ("https://djassapay.onrender.com/pricing", "weekly", "0.8"),
+            ("https://djassapay.onrender.com/register", "monthly", "0.9"),
+            ("https://djassapay.onrender.com/login", "monthly", "0.5"),
+        ]
+        for m in merchants:
+            urls.append((f"https://djassapay.onrender.com/shop/{m.store_slug}", "daily", "0.8"))
+
+        xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
+        xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        for loc, changefreq, priority in urls:
+            xml += f"  <url>\n    <loc>{loc}</loc>\n    <changefreq>{changefreq}</changefreq>\n    <priority>{priority}</priority>\n  </url>\n"
+        xml += "</urlset>"
+        return Response(content=xml, media_type="application/xml")
     finally:
         db.close()
