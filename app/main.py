@@ -50,16 +50,17 @@ def startup_populate_data():
         merchant = db.query(Merchant).first()
         if not merchant:
             demo_merchant = Merchant(
-                name="Aïcha Traoré",
-                phone="0708091011",
-                email="aicha@glam-abidjan.ci",
+                name="Diabagate Assouman",
+                phone="0595094159",
+                email="contact@djassapay.ci",
                 store_name="Glamour Abidjan",
                 store_slug="glamour-abidjan",
-                bio="Mode chic, robes tendances & accessoires haute qualité livrés partout à Abidjan & banlieues.",
+                bio="Mode chic, robes tendances & accessoires livrés partout en Côte d'Ivoire.",
                 logo_url="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80",
-                wave_number="0708091011",
-                orange_money_number="0708091011",
-                mtn_momo_number="0505060708",
+                wave_number="0595094159",
+                orange_money_number="0595094159",
+                mtn_momo_number="0595094159",
+                moov_money_number="0100000000",
                 deposit_policy="DELIVERY_FEE_ONLY",
                 fixed_deposit_amount=2000
             )
