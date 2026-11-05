@@ -166,6 +166,9 @@ async def process_checkout(
     # Création du numéro de commande unique (ex: DJA-7382)
     order_number = f"DJA-{uuid.uuid4().hex[:5].upper()}"
 
+    clean_notes = customer_notes if isinstance(customer_notes, str) else ""
+    clean_method = payment_method if isinstance(payment_method, str) else "WAVE"
+
     order = Order(
         order_number=order_number,
         merchant_id=merchant.id,
@@ -173,14 +176,14 @@ async def process_checkout(
         customer_phone=customer_phone,
         delivery_zone_name=zone_name,
         delivery_address=delivery_address,
-        customer_notes=customer_notes,
+        customer_notes=clean_notes,
         subtotal=subtotal,
         delivery_fee=delivery_fee,
         total_amount=total,
         deposit_required=deposit_required,
         deposit_paid=0,
         balance_due=balance_due,
-        payment_method=payment_method,
+        payment_method=clean_method,
         payment_status=PaymentStatusEnum.PENDING_DEPOSIT.value
     )
     db.add(order)
