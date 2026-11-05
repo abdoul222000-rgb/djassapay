@@ -17,10 +17,13 @@ async def landing_page(request: Request, db: Session = Depends(get_db)):
     """Page d'accueil de la plateforme DjassaPay avec vitrine Marketplace."""
     merchants = db.query(Merchant).all()
     marketplace_products = db.query(Product).join(Merchant).filter(
-        Product.is_active == True,
-        Product.stock > 0
+        Product.is_active != False,
+        (Product.stock == None) | (Product.stock >= 0)
     ).order_by(Product.created_at.desc()).limit(8).all()
-    total_products_count = db.query(Product).filter(Product.is_active == True, Product.stock > 0).count()
+    total_products_count = db.query(Product).filter(
+        Product.is_active != False,
+        (Product.stock == None) | (Product.stock >= 0)
+    ).count()
 
     return templates.TemplateResponse("landing.html", {
         "request": request,
@@ -42,8 +45,8 @@ async def marketplace_view(
     directement les articles ajoutés par les vendeurs vérifiés de Côte d'Ivoire.
     """
     query = db.query(Product).join(Merchant).filter(
-        Product.is_active == True,
-        Product.stock > 0
+        Product.is_active != False,
+        (Product.stock == None) | (Product.stock >= 0)
     )
 
     clean_q = q.strip()
@@ -91,8 +94,8 @@ async def view_store(request: Request, store_slug: str, db: Session = Depends(ge
     
     products = db.query(Product).filter(
         Product.merchant_id == merchant.id,
-        Product.is_active == True
-    ).all()
+        Product.is_active != False
+    ).order_by(Product.created_at.desc()).all()
     
     delivery_zones = db.query(DeliveryZone).filter(
         DeliveryZone.merchant_id == merchant.id

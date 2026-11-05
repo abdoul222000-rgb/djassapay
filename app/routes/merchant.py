@@ -150,7 +150,8 @@ async def add_product(
         price=price,
         compare_at_price=compare_at_price if compare_at_price else None,
         image_url=final_media_url,
-        stock=stock
+        stock=stock,
+        is_active=True
     )
     db.add(product)
     db.commit()
