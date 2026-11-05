@@ -49,10 +49,14 @@ async def send_whatsapp_cloud_message(recipient_phone: str, message_text: str) -
             return {"status": "error", "message": str(e)}
 
     # Mode Simulation / Log local
-    print(f"[WhatsApp Démo Simulation] Message automatique pour {cleaned_to} :")
-    print("-" * 50)
-    print(message_text)
-    print("-" * 50)
+    try:
+        print(f"[WhatsApp Démo Simulation] Message automatique pour {cleaned_to} :")
+        print("-" * 50)
+        print(message_text)
+        print("-" * 50)
+    except UnicodeEncodeError:
+        print(f"[WhatsApp Démo Simulation] Message automatique pour {cleaned_to} (texte encodé) :")
+        print(message_text.encode("ascii", errors="replace").decode())
     return {"status": "simulated", "recipient": cleaned_to}
 
 async def auto_notify_order_created(order, merchant):

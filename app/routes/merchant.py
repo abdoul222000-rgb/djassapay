@@ -123,7 +123,7 @@ async def add_product(
     final_media_url = image_url.strip() if image_url else ""
 
     # Traitement du fichier uploadé (Appareil photo smartphone, galerie ou vidéo)
-    if media_file and media_file.filename:
+    if media_file and hasattr(media_file, "filename") and media_file.filename:
         try:
             os.makedirs("app/static/uploads", exist_ok=True)
             ext = os.path.splitext(media_file.filename)[1].lower()
@@ -153,6 +153,81 @@ async def add_product(
         stock=stock
     )
     db.add(product)
+    db.commit()
+    return RedirectResponse(url="/merchant/products", status_code=303)
+
+@router.post("/merchant/products/{product_id}/edit")
+async def edit_product(
+    request: Request,
+    product_id: int,
+    title: str = Form(...),
+    description: str = Form(""),
+    price: int = Form(...),
+    compare_at_price: int = Form(None),
+    stock: int = Form(10),
+    is_active: bool = Form(True),
+    media_file: UploadFile = File(None),
+    db: Session = Depends(get_db)
+):
+    """
+    Modification d'un produit : STRICTEMENT réservé au marchand propriétaire.
+    Chaque marchand ne peut modifier QUE ses propres articles.
+    """
+    merchant = get_current_merchant(db, request)
+    if not merchant:
+        return RedirectResponse(url="/login?unauthorized=1", status_code=303)
+
+    product = db.query(Product).filter(
+        Product.id == product_id,
+        Product.merchant_id == merchant.id
+    ).first()
+    if not product:
+        raise HTTPException(status_code=404, detail="Article introuvable ou vous n'êtes pas autorisé à modifier ce produit")
+
+    # Mise à jour des informations
+    product.title = title.strip()
+    product.description = description.strip()
+    product.price = price
+    product.compare_at_price = compare_at_price if compare_at_price else None
+    product.stock = stock
+    product.is_active = is_active
+
+    # Nouveau fichier média si fourni
+    if media_file and hasattr(media_file, "filename") and media_file.filename:
+        try:
+            os.makedirs("app/static/uploads", exist_ok=True)
+            ext = os.path.splitext(media_file.filename)[1].lower()
+            if ext not in [".jpg", ".jpeg", ".png", ".webp", ".gif", ".mp4", ".mov", ".webm", ".m4v"]:
+                ext = ".jpg"
+            unique_name = f"media_{uuid.uuid4().hex[:12]}{ext}"
+            filepath = os.path.join("app/static/uploads", unique_name)
+
+            contents = await media_file.read()
+            if len(contents) > 0:
+                with open(filepath, "wb") as f:
+                    f.write(contents)
+                product.image_url = f"/static/uploads/{unique_name}"
+        except Exception as e:
+            print(f"[Upload Error] Échec de sauvegarde de la nouvelle photo : {e}")
+
+    db.commit()
+    return RedirectResponse(url="/merchant/products?saved=1", status_code=303)
+
+@router.post("/merchant/products/{product_id}/toggle")
+async def toggle_product(request: Request, product_id: int, db: Session = Depends(get_db)):
+    """Active ou désactive la visibilité d'un produit (réservé au propriétaire)."""
+    merchant = get_current_merchant(db, request)
+    if not merchant:
+        return RedirectResponse(url="/login?unauthorized=1", status_code=303)
+
+    product = db.query(Product).filter(
+        Product.id == product_id,
+        Product.merchant_id == merchant.id
+    ).first()
+    if not product:
+        raise HTTPException(status_code=404, detail="Article introuvable")
+
+    product.is_active = not product.is_active
     db.commit()
     return RedirectResponse(url="/merchant/products", status_code=303)
 

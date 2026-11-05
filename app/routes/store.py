@@ -14,11 +14,72 @@ templates = Jinja2Templates(directory="app/templates")
 
 @router.get("/", response_class=HTMLResponse)
 async def landing_page(request: Request, db: Session = Depends(get_db)):
-    """Page d'accueil de la plateforme DjassaPay."""
+    """Page d'accueil de la plateforme DjassaPay avec vitrine Marketplace."""
     merchants = db.query(Merchant).all()
+    marketplace_products = db.query(Product).join(Merchant).filter(
+        Product.is_active == True,
+        Product.stock > 0
+    ).order_by(Product.created_at.desc()).limit(8).all()
+    total_products_count = db.query(Product).filter(Product.is_active == True, Product.stock > 0).count()
+
     return templates.TemplateResponse("landing.html", {
         "request": request,
-        "merchants": merchants
+        "merchants": merchants,
+        "marketplace_products": marketplace_products,
+        "total_products_count": total_products_count
+    })
+
+@router.get("/marketplace", response_class=HTMLResponse)
+async def marketplace_view(
+    request: Request,
+    q: str = "",
+    city: str = "all",
+    sort: str = "recent",
+    db: Session = Depends(get_db)
+):
+    """
+    Marketplace publique permettant à tout visiteur de découvrir et d'acheter 
+    directement les articles ajoutés par les vendeurs vérifiés de Côte d'Ivoire.
+    """
+    query = db.query(Product).join(Merchant).filter(
+        Product.is_active == True,
+        Product.stock > 0
+    )
+
+    clean_q = q.strip()
+    if clean_q:
+        search_pattern = f"%{clean_q}%"
+        query = query.filter(
+            (Product.title.ilike(search_pattern)) |
+            (Product.description.ilike(search_pattern)) |
+            (Merchant.store_name.ilike(search_pattern))
+        )
+
+    clean_city = city.strip()
+    if clean_city and clean_city.lower() != "all":
+        query = query.filter(Merchant.city.ilike(f"%{clean_city}%"))
+
+    if sort == "price_asc":
+        query = query.order_by(Product.price.asc())
+    elif sort == "price_desc":
+        query = query.order_by(Product.price.desc())
+    else:
+        query = query.order_by(Product.created_at.desc())
+
+    products = query.all()
+
+    # Liste des villes représentées
+    active_cities_raw = db.query(Merchant.city).filter(Merchant.city != None).distinct().all()
+    available_cities = sorted(list(set(c[0] for c in active_cities_raw if c[0])))
+
+    return templates.TemplateResponse("store/marketplace.html", {
+        "request": request,
+        "products": products,
+        "total_count": len(products),
+        "q": clean_q,
+        "selected_city": clean_city,
+        "sort": sort,
+        "available_cities": available_cities
     })
 
 @router.get("/shop/{store_slug}", response_class=HTMLResponse)
