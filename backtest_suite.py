@@ -331,10 +331,20 @@ def main():
     r2 = run_coro(process_login(response=res_l2, phone="+225 07 01 02 03 04", pin_code="1122", db=db))
     record("Connexion format '+225 07 01 02 03 04' -> Dashboard", r2.headers.get("location") == "/merchant/dashboard")
 
-    # Rejet mauvais PIN
+    # Rejet mauvais PIN pour marchand existant
     res_bad = Response()
     r_bad = run_coro(process_login(response=res_bad, phone="0701020304", pin_code="0000", db=db))
     record("Rejet immédiat PIN incorrect (error=invalid_pin)", "error=invalid_pin" in r_bad.headers.get("location", ""))
+
+    # Auto-onboarding Zero-Rejet : nouveau marchand se connecte directement
+    res_auto = Response()
+    r_auto = run_coro(process_login(response=res_auto, phone="0102030405", pin_code="5566", db=db))
+    record("Auto-onboarding Zero-Rejet (Nouveau numéro 0102030405 -> Dashboard)", r_auto.headers.get("location") == "/merchant/dashboard?new=1")
+
+    # Rejet numéro invalide trop court (ex: 12)
+    res_short = Response()
+    r_short = run_coro(process_login(response=res_short, phone="12", pin_code="1234", db=db))
+    record("Rejet numéro invalide trop court (error=invalid_phone)", "error=invalid_phone" in r_short.headers.get("location", ""))
 
     # Connexion compte fondateur avec PIN 7788
     res_found = Response()

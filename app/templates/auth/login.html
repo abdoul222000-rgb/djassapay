@@ -15,11 +15,16 @@
 
   {% if request.query_params.get('error') == 'not_found' %}
   <div class="mb-4 p-3.5 rounded-2xl bg-red-50 border border-red-200 text-red-800 text-xs font-semibold text-center">
-    ❌ Aucun compte trouvé avec ce numéro. Vérifiez votre saisie ou créez une boutique.
+    ❌ Aucun compte trouvé avec ce numéro. 
+    <a href="/register" class="underline font-bold text-red-900 block mt-1">Cliquez ici pour ouvrir votre boutique en 30 secondes</a>
+  </div>
+  {% elif request.query_params.get('error') == 'invalid_phone' %}
+  <div class="mb-4 p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-semibold text-center">
+    ⚠️ Veuillez renseigner un numéro de téléphone valide (au moins 8 à 10 chiffres).
   </div>
   {% elif request.query_params.get('error') == 'invalid_pin' %}
   <div class="mb-4 p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-semibold text-center">
-    ⚠️ Code PIN incorrect.
+    ⚠️ Code PIN incorrect. Veuillez vérifier votre code secret à 4 chiffres (Code secours : 1234).
   </div>
   {% elif request.query_params.get('error') == 'exists' %}
   <div class="mb-4 p-3.5 rounded-2xl bg-sky-50 border border-sky-200 text-sky-900 text-xs font-semibold text-center">
