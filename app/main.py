@@ -44,69 +44,57 @@ app.include_router(whatsapp.router)
 
 @app.on_event("startup")
 def startup_populate_data():
-    """Vérifie et initialise les données de démonstration au premier lancement."""
+    """Initialise le compte marchand officiel et supprime toute boutique démo."""
     db = SessionLocal()
     try:
-        merchant = db.query(Merchant).first()
-        if not merchant:
-            demo_merchant = Merchant(
+        from app.routes.auth import ALL_CI_ZONES
+        
+        # Supprimer l'ancienne boutique démo Glamour Abidjan et ses faux produits
+        old_demo = db.query(Merchant).filter(Merchant.store_slug == "glamour-abidjan").first()
+        if old_demo:
+            db.delete(old_demo)
+            db.commit()
+
+        # Vérifier ou créer le compte officiel du Fondateur
+        founder_merchant = db.query(Merchant).filter(
+            (Merchant.phone == "0595094159") | (Merchant.store_slug == "djassapay")
+        ).first()
+
+        if not founder_merchant:
+            founder_merchant = Merchant(
                 name="Diabagate Assouman",
                 phone="0595094159",
                 email="contact@djassapay.ci",
-                store_name="Glamour Abidjan",
-                store_slug="glamour-abidjan",
-                bio="Mode chic, robes tendances & accessoires livrés partout en Côte d'Ivoire.",
-                logo_url="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80",
+                store_name="Djassapay Officiel",
+                store_slug="djassapay",
+                bio="Plateforme e-commerce et encaissements sécurisés en Côte d'Ivoire.",
+                logo_url="https://images.unsplash.com/photo-1556742049-0a67c5574f73?auto=format&fit=crop&w=200&q=80",
                 wave_number="0595094159",
                 orange_money_number="0595094159",
                 mtn_momo_number="0595094159",
                 moov_money_number="0100000000",
+                pin_code="7788",
                 deposit_policy="DELIVERY_FEE_ONLY",
                 fixed_deposit_amount=2000
             )
-            db.add(demo_merchant)
+            db.add(founder_merchant)
             db.commit()
-            db.refresh(demo_merchant)
+            db.refresh(founder_merchant)
 
-            # Zones de livraison complètes en Côte d'Ivoire (Abidjan & Intérieur)
-            from app.routes.auth import ALL_CI_ZONES
+            # Zones de livraison complètes en Côte d'Ivoire (33 Communes & Villes)
             zones = [
-                DeliveryZone(merchant_id=demo_merchant.id, name=z[0], fee=z[1], estimated_time=z[2])
+                DeliveryZone(merchant_id=founder_merchant.id, name=z[0], fee=z[1], estimated_time=z[2])
                 for z in ALL_CI_ZONES
             ]
             db.add_all(zones)
-
-            # Produits démo
-            prods = [
-                Product(
-                    merchant_id=demo_merchant.id,
-                    title="Robe Soirée Satin Émeraude",
-                    description="Robe longue glamour en satin soyeux de qualité supérieure, idéale pour cérémonies et sorties chic.",
-                    price=18500,
-                    compare_at_price=25000,
-                    image_url="https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=600&q=80",
-                    stock=15
-                ),
-                Product(
-                    merchant_id=demo_merchant.id,
-                    title="Sac à Main Cuir Luxia Gold",
-                    description="Sac cabas élégant avec finitions dorées premium. Résistant et raffiné.",
-                    price=14000,
-                    compare_at_price=18000,
-                    image_url="https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=600&q=80",
-                    stock=8
-                ),
-                Product(
-                    merchant_id=demo_merchant.id,
-                    title="Ensemble Tailleur Lin Ivoire",
-                    description="Deux pièces veste et pantalon fluide en lin naturel respirant. Coupe moderne et décontractée.",
-                    price=22000,
-                    compare_at_price=28000,
-                    image_url="https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=600&q=80",
-                    stock=12
-                )
-            ]
-            db.add_all(prods)
+            db.commit()
+        else:
+            # S'assurer que le compte officiel a les coordonnées parfaites
+            founder_merchant.phone = "0595094159"
+            founder_merchant.wave_number = "0595094159"
+            founder_merchant.pin_code = "7788"
+            founder_merchant.store_name = "Djassapay Officiel"
+            founder_merchant.store_slug = "djassapay"
             db.commit()
     finally:
         db.close()
