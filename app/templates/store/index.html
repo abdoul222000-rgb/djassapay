@@ -40,7 +40,7 @@
   <!-- Entête de la Boutique -->
   <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm text-center relative overflow-hidden">
     <div class="w-20 h-20 rounded-2xl mx-auto overflow-hidden ring-4 ring-emerald-500/10 shadow-md bg-emerald-600 flex items-center justify-center text-white font-black text-2xl">
-      {% if merchant.logo_url and 'photo-1544005313' not in merchant.logo_url %}
+      {% if merchant.logo_url and 'photo-1544005313' not in merchant.logo_url and 'unsplash' not in merchant.logo_url %}
         <img src="{{ merchant.logo_url }}" alt="{{ merchant.store_name }}" class="w-full h-full object-cover">
       {% else %}
         <span>{{ merchant.store_name[:2] | upper }}</span>
@@ -130,16 +130,16 @@
       <div class="aspect-square w-full bg-slate-100 relative overflow-hidden group">
         {% if product.is_video %}
           <video src="{{ product.image_url }}" autoplay loop muted playsinline class="w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='block';"></video>
-          <img src="https://images.unsplash.com/photo-1472851294608-062f824d29cc?auto=format&fit=crop&w=600&q=80" style="display:none;" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" alt="{{ product.title }}">
+          <img src="/static/images/product_placeholder.svg" style="display:none;" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" alt="{{ product.title }}">
           <span class="absolute bottom-2 left-2 bg-slate-900/80 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center space-x-1">
             <span>▶ Vidéo</span>
           </span>
         {% else %}
           <img 
-            src="{{ product.image_url or 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?auto=format&fit=crop&w=600&q=80' }}" 
+            src="{{ product.image_url or '/static/images/product_placeholder.svg' }}" 
             alt="{{ product.title }}" 
             class="w-full h-full object-cover group-hover:scale-105 transition duration-300"
-            onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1472851294608-062f824d29cc?auto=format&fit=crop&w=600&q=80';"
+            onerror="this.onerror=null; this.src='/static/images/product_placeholder.svg';"
             loading="lazy"
           >
         {% endif %}

@@ -194,7 +194,7 @@ async def add_product(
             final_media_url = uploaded_media
 
     if not final_media_url:
-        final_media_url = "https://images.unsplash.com/photo-1472851294608-062f824d29cc?auto=format&fit=crop&w=600&q=80"
+        final_media_url = "/static/images/product_placeholder.svg"
 
     product = Product(
         merchant_id=merchant.id,
@@ -294,10 +294,12 @@ async def merchant_settings(request: Request, db: Session = Depends(get_db)):
         return RedirectResponse(url="/login?unauthorized=1", status_code=303)
 
     zones = db.query(DeliveryZone).filter(DeliveryZone.merchant_id == merchant.id).all()
+    clean_logo = merchant.logo_url if (merchant.logo_url and "unsplash" not in merchant.logo_url and "photo-" not in merchant.logo_url) else ""
 
     return templates.TemplateResponse("merchant/settings.html", {
         "request": request,
         "merchant": merchant,
+        "clean_logo": clean_logo,
         "zones": zones
     })
 
@@ -379,6 +381,39 @@ async def delete_delivery_zone(request: Request, zone_id: int, db: Session = Dep
         db.delete(zone)
         db.commit()
     return RedirectResponse(url="/merchant/settings", status_code=303)
+
+@router.post("/merchant/zones/{zone_id}/edit")
+async def edit_delivery_zone(
+    request: Request,
+    zone_id: int,
+    name: str = Form(...),
+    fee: int = Form(...),
+    estimated_time: str = Form("1h - 3h"),
+    db: Session = Depends(get_db)
+):
+    """Modifier le nom ou le tarif d'une zone de livraison du vendeur."""
+    merchant = get_current_merchant(db, request)
+    if not merchant:
+        return RedirectResponse(url="/login?unauthorized=1", status_code=303)
+
+    zone = db.query(DeliveryZone).filter(DeliveryZone.id == zone_id, DeliveryZone.merchant_id == merchant.id).first()
+    if zone:
+        zone.name = name.strip()
+        zone.fee = fee
+        zone.estimated_time = estimated_time.strip()
+        db.commit()
+    return RedirectResponse(url="/merchant/settings?saved=1", status_code=303)
+
+@router.post("/merchant/zones/clear-all")
+async def clear_all_delivery_zones(request: Request, db: Session = Depends(get_db)):
+    """Supprimer toutes les zones de livraison en 1 clic pour repartir de zéro."""
+    merchant = get_current_merchant(db, request)
+    if not merchant:
+        return RedirectResponse(url="/login?unauthorized=1", status_code=303)
+
+    db.query(DeliveryZone).filter(DeliveryZone.merchant_id == merchant.id).delete()
+    db.commit()
+    return RedirectResponse(url="/merchant/settings?saved=1", status_code=303)
 
 @router.get("/pricing", response_class=HTMLResponse)
 async def pricing_page(request: Request, db: Session = Depends(get_db)):

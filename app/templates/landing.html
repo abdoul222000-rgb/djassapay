@@ -110,11 +110,11 @@
             <video src="{{ product.image_url }}" autoplay loop muted playsinline class="w-full h-full object-cover group-hover:scale-105 transition"></video>
           {% else %}
             <img 
-              src="{{ product.image_url or 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80' }}" 
+              src="{{ product.image_url or '/static/images/product_placeholder.svg' }}" 
               alt="{{ product.title }}" 
               class="w-full h-full object-cover group-hover:scale-105 transition" 
               loading="lazy"
-              onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80';"
+              onerror="this.onerror=null; this.src='/static/images/product_placeholder.svg';"
             >
           {% endif %}
           <span class="absolute top-2 left-2 bg-slate-900/80 text-white text-[9px] font-bold px-2 py-0.5 rounded-md">

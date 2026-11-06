@@ -80,14 +80,6 @@ def startup_populate_data():
             db.add(founder_merchant)
             db.commit()
             db.refresh(founder_merchant)
-
-            # Zones de livraison complètes en Côte d'Ivoire (33 Communes & Villes)
-            zones = [
-                DeliveryZone(merchant_id=founder_merchant.id, name=z[0], fee=z[1], estimated_time=z[2])
-                for z in ALL_CI_ZONES
-            ]
-            db.add_all(zones)
-            db.commit()
         else:
             # S'assurer que le compte officiel a les coordonnées parfaites
             founder_merchant.phone = "0595094159"
@@ -109,9 +101,21 @@ def startup_populate_data():
         except Exception as e:
             db.rollback()
 
+        # 2. Suppression des zones et tarifs pré-remplis pour redonner la liberté totale aux vendeurs
+        try:
+            from app.routes.auth import ALL_CI_ZONES
+            default_zone_names = {z[0] for z in ALL_CI_ZONES}
+            for z in db.query(DeliveryZone).all():
+                if z.name in default_zone_names:
+                    db.delete(z)
+            db.commit()
+            print("[Database Migration] Zones pré-remplies supprimées avec succès pour redonner le plein contrôle aux vendeurs.")
+        except Exception as e:
+            db.rollback()
+
         # Nettoyage des anciennes photos IA de profil de vendeur
         for m in db.query(Merchant).all():
-            if m.logo_url and "photo-1544005313" in m.logo_url:
+            if m.logo_url and ("photo-1544005313" in m.logo_url or "unsplash" in m.logo_url):
                 m.logo_url = None
         db.commit()
 
@@ -146,7 +150,7 @@ def startup_populate_data():
 
             # Princesse Roxane Shop - Haut sauter (1 000 FCFA à Abobo)
             elif "roxane" in m_name or "roxane" in m_slug or "sauter" in title_lower or "haut" in title_lower:
-                if not img_url or img_url.startswith("/static/uploads/") or "photo-1523275335684" in img_url or "photo-1503342217505" in img_url or prod.is_video:
+                if not img_url or not img_url.startswith("data:image/") or "photo-1523275335684" in img_url or "photo-1503342217505" in img_url or "unsplash" in img_url or prod.is_video:
                     prod.image_url = roxane_top_img
                     print(f"[Photo Restore] Princesse Roxane Haut sauter restauré : {prod.title}")
 
@@ -154,15 +158,8 @@ def startup_populate_data():
             elif img_url.startswith("/static/uploads/"):
                 local_fpath = os.path.join("app", img_url.lstrip("/"))
                 if not os.path.exists(local_fpath):
-                    if any(w in title_lower for w in ["robe", "jupe", "chemise", "pantalon", "habit", "mode"]):
-                        prod.image_url = "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=800&q=80"
-                    elif any(w in title_lower for w in ["chaussure", "basket", "soulier", "talon"]):
-                        prod.image_url = "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=800&q=80"
-                    elif any(w in title_lower for w in ["sac", "valise", "pochette"]):
-                        prod.image_url = "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=800&q=80"
-                    else:
-                        prod.image_url = "https://images.unsplash.com/photo-1472851294608-062f824d29cc?auto=format&fit=crop&w=800&q=80"
-                    print(f"[Photo Restore] Image réparée pour produit '{prod.title}' -> {prod.image_url}")
+                    prod.image_url = "/static/images/product_placeholder.svg"
+                    print(f"[Photo Restore] Image réparée pour produit '{prod.title}' -> placeholder SVG")
 
         db.commit()
     finally:

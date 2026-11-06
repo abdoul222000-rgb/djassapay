@@ -140,7 +140,7 @@ async def process_checkout(
     quantity: int = Form(1),
     customer_name: str = Form(...),
     customer_phone: str = Form(...),
-    delivery_zone_id: int = Form(...),
+    delivery_zone_id: int = Form(0),
     delivery_address: str = Form(...),
     customer_notes: str = Form(""),
     payment_method: str = Form("WAVE"),
@@ -157,7 +157,7 @@ async def process_checkout(
 
     zone = db.query(DeliveryZone).filter(DeliveryZone.id == delivery_zone_id, DeliveryZone.merchant_id == merchant.id).first()
     delivery_fee = zone.fee if zone else 1500
-    zone_name = zone.name if zone else "Abidjan Centre"
+    zone_name = zone.name if zone else "Livraison standard"
 
     subtotal = product.price * quantity
     total, deposit_required, balance_due = PaymentService.calculate_deposit_and_balance(

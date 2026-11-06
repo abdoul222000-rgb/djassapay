@@ -60,13 +60,13 @@
     <div class="w-24 h-24 rounded-2xl bg-slate-900 overflow-hidden shrink-0">
       {% if product.is_video %}
         <video src="{{ product.image_url }}" autoplay loop muted playsinline class="w-full h-full object-cover" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='block';"></video>
-        <img src="https://images.unsplash.com/photo-1472851294608-062f824d29cc?auto=format&fit=crop&w=600&q=80" style="display:none;" class="w-full h-full object-cover" alt="{{ product.title }}">
+        <img src="/static/images/product_placeholder.svg" style="display:none;" class="w-full h-full object-cover" alt="{{ product.title }}">
       {% else %}
         <img 
-          src="{{ product.image_url or 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?auto=format&fit=crop&w=600&q=80' }}" 
+          src="{{ product.image_url or '/static/images/product_placeholder.svg' }}" 
           alt="{{ product.title }}" 
           class="w-full h-full object-cover"
-          onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1472851294608-062f824d29cc?auto=format&fit=crop&w=600&q=80';"
+          onerror="this.onerror=null; this.src='/static/images/product_placeholder.svg';"
         >
       {% endif %}
     </div>
@@ -116,11 +116,19 @@
 
       <div>
         <label class="block text-xs font-medium text-slate-600 mb-1">Commune / Zone de livraison *</label>
+        {% if delivery_zones %}
         <select name="delivery_zone_id" x-model.number="selectedZoneId" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
           {% for zone in delivery_zones %}
           <option value="{{ zone.id }}">{{ zone.name }} (+{{ "{:,}".format(zone.fee) }} FCFA)</option>
           {% endfor %}
         </select>
+        {% else %}
+        <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700">
+          <input type="hidden" name="delivery_zone_id" value="0">
+          <span class="font-bold text-slate-800">Livraison directe</span> : 1 500 FCFA
+          <p class="text-[10px] text-slate-400 mt-0.5">Le coursier vous contactera sur WhatsApp pour convenir de l'adresse exacte.</p>
+        </div>
+        {% endif %}
       </div>
 
       <div>

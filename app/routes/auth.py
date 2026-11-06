@@ -179,20 +179,7 @@ async def process_register(
     db.commit()
     db.refresh(merchant)
 
-    # Initialisation des 33 zones de livraison officielles en Côte d'Ivoire
-    city_zones = PRESET_ZONES.get(city, ALL_CI_ZONES)
-    for z_name, fee, eta in city_zones:
-        zone = DeliveryZone(
-            merchant_id=merchant.id,
-            name=z_name,
-            fee=fee,
-            estimated_time=eta
-        )
-        db.add(zone)
-
-    db.commit()
-
-    # Redirection vers le dashboard avec cookie de session
+    # Redirection vers le dashboard avec cookie de session (le vendeur gère librement ses propres zones et tarifs)
     redirect = RedirectResponse(url="/merchant/dashboard?new=1", status_code=303)
     redirect.set_cookie(key="merchant_id", value=str(merchant.id), max_age=3600*24*30)
     return redirect
@@ -275,17 +262,7 @@ async def process_login(
             db.commit()
             db.refresh(merchant)
 
-            # Initialisation des 33 zones de livraison officielles en Côte d'Ivoire
-            for z_name, fee, eta in ALL_CI_ZONES:
-                zone = DeliveryZone(
-                    merchant_id=merchant.id,
-                    name=z_name,
-                    fee=fee,
-                    estimated_time=eta
-                )
-                db.add(zone)
-            db.commit()
-
+            # Redirection vers le dashboard (le vendeur gère librement ses propres zones)
             redirect = RedirectResponse(url="/merchant/dashboard?new=1", status_code=303)
             redirect.set_cookie(key="merchant_id", value=str(merchant.id), max_age=3600*24*30)
             return redirect
