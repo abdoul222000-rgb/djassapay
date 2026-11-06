@@ -20,12 +20,12 @@
   </g>
   
   <!-- Typographie DjassaPay -->
-  <text x="86" y="49" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-size="32" font-weight="800" fill="#0F172A" letter-spacing="-0.5">
+  <text x="86" y="49" font-family="'Plus Jakarta Sans', system-ui, -apple-system, sans-serif" font-size="32" font-weight="800" fill="#0F172A" letter-spacing="-0.5">
     Djassa<tspan fill="#059669">Pay</tspan>
   </text>
   
   <!-- Sous-titre officiel -->
-  <text x="88" y="65" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-size="10" font-weight="700" fill="#64748B" letter-spacing="1.5">
-    ANTI-LAPIN &bull; C&Ocirc;TE D'IVOIRE
+  <text x="88" y="65" font-family="'Plus Jakarta Sans', system-ui, -apple-system, sans-serif" font-size="10" font-weight="700" fill="#64748B" letter-spacing="1.5">
+    ANTI-LAPIN &#8226; C&#212;TE D&#39;IVOIRE
   </text>
 </svg>
