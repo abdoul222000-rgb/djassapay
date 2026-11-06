@@ -2,6 +2,23 @@
 
 {% block title %}{{ merchant.store_name }} - Boutique en ligne officielle{% endblock %}
 
+{% block opengraph %}
+  <meta property="og:site_name" content="DjassaPay • Boutique Officielle">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://djassapay.onrender.com/shop/{{ merchant.store_slug }}">
+  <meta property="og:title" content="Boutique {{ merchant.store_name }} • Vente Sécurisée">
+  <meta property="og:description" content="Découvrez le catalogue officiel de {{ merchant.store_name }} à {{ merchant.city or 'Abidjan' }}. Commandez directement avec acompte Wave CI et Mobile Money sécurisé !">
+  <meta property="og:image" content="https://djassapay.onrender.com/shop/{{ merchant.store_slug }}/og-image">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+
+  <!-- Twitter Card pour affichage grand format WhatsApp & Réseaux Sociaux -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Boutique {{ merchant.store_name }} • DjassaPay">
+  <meta name="twitter:description" content="Articles disponibles chez {{ merchant.store_name }}. Livraison rapide et acompte Wave sécurisé.">
+  <meta name="twitter:image" content="https://djassapay.onrender.com/shop/{{ merchant.store_slug }}/og-image">
+{% endblock %}
+
 {% block content %}
 <div class="max-w-3xl mx-auto px-4 py-6" x-data="{
   copied: false,
@@ -84,7 +101,7 @@
       </button>
 
       <!-- Contact WhatsApp Vendeur -->
-      <a href="https://wa.me/225{{ merchant.phone }}" target="_blank" class="inline-flex items-center space-x-1 px-3.5 py-1.5 rounded-full text-xs font-bold bg-[#25D366] hover:bg-[#20bd5a] text-white transition active:scale-95 shadow-sm">
+      <a href="https://wa.me/{{ merchant.whatsapp_phone_clean }}" target="_blank" class="inline-flex items-center space-x-1 px-3.5 py-1.5 rounded-full text-xs font-bold bg-[#25D366] hover:bg-[#20bd5a] text-white transition active:scale-95 shadow-sm">
         <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
         <span>WhatsApp</span>
       </a>

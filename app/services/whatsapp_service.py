@@ -3,15 +3,33 @@ import httpx
 from app.config import settings
 
 def clean_phone_number(phone: str, default_country_code: str = "225") -> str:
-    """Clean and normalize phone number for WhatsApp wa.me links and Cloud API."""
-    clean = "".join([c for c in phone if c.isdigit()])
-    # If 10 digits starting with 0 (ex CI: 0708091011 or 0102030405)
-    if clean.startswith("0") and len(clean) == 10:
-        clean = default_country_code + clean[1:]
-    elif len(clean) == 8: # Old 8-digit format
-        clean = default_country_code + clean
-    elif not clean.startswith(default_country_code) and len(clean) <= 10:
-        clean = default_country_code + clean
+    """
+    Clean and normalize phone number for WhatsApp wa.me links and Cloud API.
+    En Côte d'Ivoire (plan 10 chiffres ARTEC 2021), le format international WhatsApp est 
+    +225 suivi des 10 chiffres entiers (ex: 2250507114644 ou 2250708091011, 13 chiffres au total).
+    Le '0' initial ne doit JAMAIS être supprimé.
+    """
+    clean = "".join([c for c in (phone or "") if c.isdigit()])
+    if not clean:
+        return default_country_code + "0595094159"
+    # Déjà au format international complet à 13 chiffres (ex: 2250507114644)
+    if clean.startswith("225") and len(clean) == 13:
+        return clean
+    # Ancien format ou troncature à 12 chiffres (ex: 225507114644 -> réparer en 2250507114644)
+    if clean.startswith("225") and len(clean) == 12 and clean[3] in ["0", "1", "5", "7"]:
+        return "2250" + clean[3:]
+    # Format national ivoirien standard à 10 chiffres (ex: 0507114644 -> 2250507114644)
+    if len(clean) == 10:
+        return default_country_code + clean
+    # Numéro à 9 chiffres sans le premier 0 (ex: 507114644 -> 2250507114644)
+    if len(clean) == 9 and clean[0] in ["1", "5", "7"]:
+        return default_country_code + "0" + clean
+    # Ancien format à 8 chiffres (avant 2021) -> préfixe 07 par défaut
+    if len(clean) == 8:
+        return default_country_code + "07" + clean
+    # Si ne commence pas par 225, ajouter l'indicatif
+    if not clean.startswith(default_country_code):
+        return default_country_code + clean
     return clean
 
 async def send_whatsapp_cloud_message(recipient_phone: str, message_text: str) -> dict:

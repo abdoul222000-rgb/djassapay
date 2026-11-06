@@ -60,6 +60,13 @@ class Merchant(Base):
     delivery_zones = relationship("DeliveryZone", back_populates="merchant", cascade="all, delete-orphan")
     orders = relationship("Order", back_populates="merchant")
 
+    @property
+    def whatsapp_phone_clean(self) -> str:
+        """Numéro WhatsApp nettoyé au format international officiel 2250XXXXXXXX."""
+        from app.services.whatsapp_service import clean_phone_number
+        target = self.phone or self.wave_number or "0595094159"
+        return clean_phone_number(target)
+
 class DeliveryZone(Base):
     __tablename__ = "delivery_zones"
 

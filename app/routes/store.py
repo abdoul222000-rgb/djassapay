@@ -1,8 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, Form
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, Response, FileResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 import uuid
+import os
+import base64
 
 from app.database import get_db
 from app.models import Merchant, Product, DeliveryZone, Order, OrderItem, PaymentStatusEnum
@@ -132,6 +134,77 @@ async def view_product(request: Request, store_slug: str, product_id: int, db: S
         "product": product,
         "delivery_zones": delivery_zones
     })
+
+@router.get("/shop/{store_slug}/og-image")
+async def store_og_image(store_slug: str, db: Session = Depends(get_db)):
+    """Sert l'image haute définition en binaire JPEG pour les aperçus WhatsApp, Facebook, TikTok (OpenGraph)."""
+    merchant = db.query(Merchant).filter(Merchant.store_slug == store_slug).first()
+    if not merchant:
+        return FileResponse("app/static/images/djassapay_brand_identity.jpg")
+
+    # 1. Vérifier si le marchand a un logo personnel (Base64)
+    if merchant.logo_url and merchant.logo_url.startswith("data:image/"):
+        try:
+            header, data = merchant.logo_url.split(",", 1)
+            media_type = header.split(";")[0].replace("data:", "") or "image/jpeg"
+            img_bytes = base64.b64decode(data)
+            return Response(content=img_bytes, media_type=media_type, headers={"Cache-Control": "public, max-age=86400"})
+        except Exception:
+            pass
+    elif merchant.logo_url and merchant.logo_url.startswith("/static/"):
+        local_p = os.path.join("app", merchant.logo_url.lstrip("/"))
+        if os.path.exists(local_p):
+            return FileResponse(local_p)
+
+    # 2. Sinon, prendre la photo du premier article disponible
+    first_prod = db.query(Product).filter(
+        Product.merchant_id == merchant.id,
+        Product.is_active != False,
+        Product.image_url != None
+    ).first()
+    if first_prod and first_prod.image_url:
+        if first_prod.image_url.startswith("data:image/"):
+            try:
+                header, data = first_prod.image_url.split(",", 1)
+                media_type = header.split(";")[0].replace("data:", "") or "image/jpeg"
+                img_bytes = base64.b64decode(data)
+                return Response(content=img_bytes, media_type=media_type, headers={"Cache-Control": "public, max-age=86400"})
+            except Exception:
+                pass
+        elif first_prod.image_url.startswith("/static/"):
+            local_p = os.path.join("app", first_prod.image_url.lstrip("/"))
+            if os.path.exists(local_p):
+                return FileResponse(local_p)
+
+    # 3. Fallback visuel de marque officiel
+    return FileResponse("app/static/images/djassapay_brand_identity.jpg")
+
+@router.get("/shop/{store_slug}/product/{product_id}/og-image")
+async def product_og_image(store_slug: str, product_id: int, db: Session = Depends(get_db)):
+    """Sert la photo haute définition d'un article pour les aperçus WhatsApp, Facebook, TikTok (OpenGraph)."""
+    merchant = db.query(Merchant).filter(Merchant.store_slug == store_slug).first()
+    if not merchant:
+        return FileResponse("app/static/images/djassapay_brand_identity.jpg")
+
+    product = db.query(Product).filter(
+        Product.id == product_id,
+        Product.merchant_id == merchant.id
+    ).first()
+    if product and product.image_url:
+        if product.image_url.startswith("data:image/"):
+            try:
+                header, data = product.image_url.split(",", 1)
+                media_type = header.split(";")[0].replace("data:", "") or "image/jpeg"
+                img_bytes = base64.b64decode(data)
+                return Response(content=img_bytes, media_type=media_type, headers={"Cache-Control": "public, max-age=86400"})
+            except Exception:
+                pass
+        elif product.image_url.startswith("/static/"):
+            local_p = os.path.join("app", product.image_url.lstrip("/"))
+            if os.path.exists(local_p):
+                return FileResponse(local_p)
+
+    return FileResponse("app/static/images/djassapay_brand_identity.jpg")
 
 @router.post("/shop/{store_slug}/checkout")
 async def process_checkout(

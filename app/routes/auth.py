@@ -181,6 +181,7 @@ async def process_register(
     response: Response,
     name: str = Form(...),
     phone: str = Form(...),
+    wave_number: str = Form(None),
     store_name: str = Form(...),
     city: str = Form("Abidjan"),
     country: str = Form("CI"),
@@ -188,9 +189,16 @@ async def process_register(
     db: Session = Depends(get_db)
 ):
     """Enregistre un nouveau commerçant et prépare sa boutique prête à vendre."""
-    # Normalisation du numéro pour stockage propre à 10 chiffres (Côte d'Ivoire)
+    # Normalisation du numéro WhatsApp pour stockage propre à 10 chiffres (Côte d'Ivoire)
     digits = "".join([c for c in phone if c.isdigit()])
     clean_phone = digits[-10:] if len(digits) >= 10 else digits
+
+    # Normalisation du numéro Wave
+    clean_wave = clean_phone
+    if wave_number and isinstance(wave_number, str):
+        wave_digits = "".join([c for c in wave_number if c.isdigit()])
+        if wave_digits:
+            clean_wave = wave_digits[-10:] if len(wave_digits) >= 10 else wave_digits
     
     # Vérifier si ce numéro a déjà une boutique
     variants = get_phone_lookup_variants(phone)
@@ -216,9 +224,9 @@ async def process_register(
         country=country,
         pin_code=pin_code.strip() or "1234",
         bio=f"Boutique officielle {store_name} à {city}. Vente sécurisée avec acompte Wave & Mobile Money.",
-        wave_number=clean_phone,
-        orange_money_number=clean_phone,
-        mtn_momo_number=clean_phone,
+        wave_number=clean_wave,
+        orange_money_number=clean_wave,
+        mtn_momo_number=clean_wave,
         deposit_policy="DELIVERY_FEE_ONLY",
         fixed_deposit_amount=2000,
         subscription_plan="STARTER"
