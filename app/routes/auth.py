@@ -225,10 +225,11 @@ async def process_login(
             merchant = Merchant(
                 name="Diabagate Assouman",
                 phone="0595094159",
-                email="contact@djassapay.ci",
-                store_name="Djassapay Store",
+                email="djassapay9@gmail.com",
+                store_name="Djassapay Officiel",
                 store_slug="djassapay",
                 bio="Boutique officielle Djassapay.",
+                logo_url="/static/images/djassapay_icon.svg",
                 wave_number="0595094159",
                 orange_money_number="0595094159",
                 mtn_momo_number="0595094159",

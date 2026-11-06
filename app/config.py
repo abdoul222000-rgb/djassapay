@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     FOUNDER_PIN: str = "7788" # Code PIN Secret Fondateur pour accéder à l'espace
     FOUNDER_PASSWORD: str = "DjassaFondateur2026@" # Mot de passe de secours
     FOUNDER_PHONE: str = "0595094159"
+    FOUNDER_EMAIL: str = "djassapay9@gmail.com"
     FOUNDER_WAVE_NUMBER: str = "0595094159"
     FOUNDER_ORANGE_MONEY_NUMBER: str = "0595094159"
     FOUNDER_MTN_MOMO_NUMBER: str = "0595094159"

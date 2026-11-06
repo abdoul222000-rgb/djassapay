@@ -64,11 +64,11 @@ def startup_populate_data():
             founder_merchant = Merchant(
                 name="Diabagate Assouman",
                 phone="0595094159",
-                email="contact@djassapay.ci",
+                email="djassapay9@gmail.com",
                 store_name="Djassapay Officiel",
                 store_slug="djassapay",
                 bio="Plateforme e-commerce et encaissements sécurisés en Côte d'Ivoire.",
-                logo_url="https://images.unsplash.com/photo-1556742049-0a67c5574f73?auto=format&fit=crop&w=200&q=80",
+                logo_url="/static/images/djassapay_icon.svg",
                 wave_number="0595094159",
                 orange_money_number="0595094159",
                 mtn_momo_number="0595094159",
@@ -91,10 +91,12 @@ def startup_populate_data():
         else:
             # S'assurer que le compte officiel a les coordonnées parfaites
             founder_merchant.phone = "0595094159"
+            founder_merchant.email = "djassapay9@gmail.com"
             founder_merchant.wave_number = "0595094159"
             founder_merchant.pin_code = "7788"
             founder_merchant.store_name = "Djassapay Officiel"
             founder_merchant.store_slug = "djassapay"
+            founder_merchant.logo_url = "/static/images/djassapay_icon.svg"
             db.commit()
 
         # 1. Migration automatique schéma PostgreSQL : s'assurer que image_url et logo_url sont TEXT (support Base64 illimité)
