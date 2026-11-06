@@ -256,22 +256,62 @@
         </div>
 
         <!-- Formulaire Ajout Zone Personnalisée -->
-        <form action="/merchant/zones/add" method="POST" class="pt-3 border-t border-slate-100 space-y-2.5">
+        <form action="/merchant/zones/add" method="POST" class="pt-3 border-t border-slate-100 space-y-2.5" x-data="{
+          setTemplate(name, fee, time) {
+            $refs.zoneName.value = name;
+            $refs.zoneFee.value = fee;
+            $refs.zoneTime.value = time;
+          }
+        }">
           <span class="text-xs font-extrabold text-slate-800 block">+ Ajouter une zone à votre tarif :</span>
+
+          <!-- Suggestions rapides en 1 clic pour toute la Côte d'Ivoire -->
+          <div class="space-y-1">
+            <span class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Modèles rapides (Abidjan & Intérieur) :</span>
+            <div class="flex flex-wrap gap-1.5">
+              <button type="button" @click="setTemplate('Abidjan (Toutes Communes)', 1500, '1h - 3h')" class="text-[10px] px-2 py-0.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-semibold transition">
+                + Abidjan (1 500 F)
+              </button>
+              <button type="button" @click="setTemplate('Yopougon (Abidjan)', 2000, '2h - 4h')" class="text-[10px] px-2 py-0.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-semibold transition">
+                + Yopougon (2 000 F)
+              </button>
+              <button type="button" @click="setTemplate('Cocody (Abidjan)', 1500, '1h - 2h')" class="text-[10px] px-2 py-0.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-semibold transition">
+                + Cocody (1 500 F)
+              </button>
+              <button type="button" @click="setTemplate('Bouaké (Colis car / gare)', 2500, '24h - 48h')" class="text-[10px] px-2 py-0.5 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 font-semibold transition">
+                + Bouaké (2 500 F)
+              </button>
+              <button type="button" @click="setTemplate('Yamoussoukro (Colis car / gare)', 2500, '24h - 48h')" class="text-[10px] px-2 py-0.5 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 font-semibold transition">
+                + Yamoussoukro (2 500 F)
+              </button>
+              <button type="button" @click="setTemplate('San-Pédro (Colis car / gare)', 3000, '24h - 48h')" class="text-[10px] px-2 py-0.5 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 font-semibold transition">
+                + San-Pédro (3 000 F)
+              </button>
+              <button type="button" @click="setTemplate('Korhogo (Colis car / gare)', 3000, '24h - 48h')" class="text-[10px] px-2 py-0.5 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 font-semibold transition">
+                + Korhogo (3 000 F)
+              </button>
+              <button type="button" @click="setTemplate('Toutes les villes de l\'Intérieur (Colis car)', 3000, '24h - 48h')" class="text-[10px] px-2 py-0.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 font-semibold transition">
+                + Tout l'Intérieur CI (3 000 F)
+              </button>
+              <button type="button" @click="setTemplate('Retrait sur place en Boutique', 0, 'Immédiat')" class="text-[10px] px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 font-semibold transition">
+                + Retrait Boutique (Gratuit)
+              </button>
+            </div>
+          </div>
           
           <div>
             <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">Nom de la zone ou ville *</label>
-            <input type="text" name="name" required placeholder="Ex: Cocody, Yopougon, Bassam, Intérieur..." class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-500">
+            <input type="text" name="name" x-ref="zoneName" required placeholder="Ex: Cocody, Yopougon, Bouaké, San-Pédro, Tout l'Intérieur..." class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-500">
           </div>
 
           <div class="grid grid-cols-2 gap-2">
             <div>
               <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">Tarif de livraison (FCFA) *</label>
-              <input type="number" name="fee" required placeholder="Ex: 1500, 2000, 0" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-500">
+              <input type="number" name="fee" x-ref="zoneFee" required placeholder="Ex: 1500, 2000, 3000" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-500">
             </div>
             <div>
               <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">Délai estimé</label>
-              <input type="text" name="estimated_time" value="1h - 3h" placeholder="Ex: 2h, Dans la journée" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-500">
+              <input type="text" name="estimated_time" x-ref="zoneTime" value="1h - 3h" placeholder="Ex: 1h - 3h, 24h (Colis car)" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-500">
             </div>
           </div>
 

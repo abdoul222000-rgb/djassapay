@@ -13,7 +13,7 @@ templates = Jinja2Templates(directory="app/templates")
 # ==============================================================
 # TOUTES LES COMMUNES DE CÔTE D'IVOIRE (ABIDJAN & INTÉRIEUR)
 # ==============================================================
-# PRÉSETS 100% CÔTE D'IVOIRE (TOUTES LES COMMUNES & VILLES)
+# PRÉSETS 100% CÔTE D'IVOIRE (TOUTES LES COMMUNES & VILLES DE CI)
 # ==============================================================
 COMMUNES_ABIDJAN = [
     ("Cocody (Angré, 2 Plateaux, Riviera, Palmeraie, Danga, Abatta)", 1500, "1h - 2h"),
@@ -46,18 +46,33 @@ VILLES_INTERIEUR_CI = [
     ("Agboville (Centre & Samaké)", 2500, "24h - 48h (Colis)"),
     ("Aboisso & Noé", 3000, "24h - 48h (Colis)"),
     ("Dabou (Centre & Kpass)", 2500, "2h - 4h"),
-    ("Ferkessédougou", 3500, "24h - 48h (Colis)"),
     ("Bondoukou & Bouna", 3500, "24h - 48h (Colis)"),
-    ("Toumodi & Tiébissou", 2500, "24h - 48h (Colis)"),
-    ("Daoukro & Dimbokro", 2500, "24h - 48h (Colis)"),
+    ("Ferkessédougou", 3500, "24h - 48h (Colis)"),
     ("Séguéla & Worodougou", 3500, "24h - 48h (Colis)"),
     ("Odienné & Kabadougou", 4000, "24h - 48h (Colis)"),
+    ("Daoukro & Dimbokro", 2500, "24h - 48h (Colis)"),
+    ("Toumodi & Tiébissou", 2500, "24h - 48h (Colis)"),
+    ("Bouaflé & Sinfra", 3000, "24h - 48h (Colis)"),
+    ("Guiglo & Duékoué", 3500, "24h - 48h (Colis)"),
+    ("Danané & Zouan-Hounien", 4000, "24h - 48h (Colis)"),
+    ("Katiola & Niakara", 3000, "24h - 48h (Colis)"),
+    ("Boundiali & Tengréla", 4000, "24h - 48h (Colis)"),
+    ("Sassandra & San-Pédro", 3000, "24h - 48h (Colis)"),
+    ("Adzopé & Akoupé", 2500, "24h - 48h (Colis)"),
+    ("Oumé & Lakota", 3000, "24h - 48h (Colis)"),
+    ("Bonoua & Grand-Bassam", 2500, "2h - 4h"),
+    ("Jacqueville", 2500, "2h - 4h"),
+    ("Tiassalé & N'Douci", 2500, "2h - 4h"),
+    ("Touba & Bafing", 4000, "24h - 48h (Colis)"),
+    ("Mankono & Béré", 4000, "24h - 48h (Colis)"),
+    ("Toutes les Villes de l'Intérieur (Colis Car)", 3000, "24h - 48h (Colis)"),
 ]
 
 ALL_CI_ZONES = COMMUNES_ABIDJAN + VILLES_INTERIEUR_CI
 
-# Zones prédéfinies pour les boutiques en Côte d'Ivoire
+# Toutes les villes et communes de Côte d'Ivoire (Couverture Nationale 100%)
 PRESET_ZONES = {
+    # District Autonome d'Abidjan (14 Communes & Banlieue)
     "Abidjan (Toutes les 14 Communes)": ALL_CI_ZONES,
     "Cocody (Abidjan)": ALL_CI_ZONES,
     "Yopougon (Abidjan)": ALL_CI_ZONES,
@@ -71,9 +86,11 @@ PRESET_ZONES = {
     "Attécoubé (Abidjan)": ALL_CI_ZONES,
     "Bingerville": ALL_CI_ZONES,
     "Grand-Bassam": ALL_CI_ZONES,
-    "Songon & Dabou": ALL_CI_ZONES,
+    "Songon": ALL_CI_ZONES,
     "Anyama": ALL_CI_ZONES,
+    # District Autonome de Yamoussoukro
     "Yamoussoukro": ALL_CI_ZONES,
+    # Villes & Régions de l'Intérieur de la Côte d'Ivoire
     "Bouaké": ALL_CI_ZONES,
     "San-Pédro": ALL_CI_ZONES,
     "Korhogo": ALL_CI_ZONES,
@@ -85,6 +102,37 @@ PRESET_ZONES = {
     "Abengourou": ALL_CI_ZONES,
     "Agboville": ALL_CI_ZONES,
     "Aboisso": ALL_CI_ZONES,
+    "Dabou": ALL_CI_ZONES,
+    "Bondoukou": ALL_CI_ZONES,
+    "Ferkessédougou": ALL_CI_ZONES,
+    "Séguéla": ALL_CI_ZONES,
+    "Odienné": ALL_CI_ZONES,
+    "Daoukro": ALL_CI_ZONES,
+    "Dimbokro": ALL_CI_ZONES,
+    "Toumodi": ALL_CI_ZONES,
+    "Tiébissou": ALL_CI_ZONES,
+    "Bouaflé": ALL_CI_ZONES,
+    "Sinfra": ALL_CI_ZONES,
+    "Issia": ALL_CI_ZONES,
+    "Guiglo": ALL_CI_ZONES,
+    "Duékoué": ALL_CI_ZONES,
+    "Danané": ALL_CI_ZONES,
+    "Katiola": ALL_CI_ZONES,
+    "Boundiali": ALL_CI_ZONES,
+    "Bouna": ALL_CI_ZONES,
+    "Sassandra": ALL_CI_ZONES,
+    "Adzopé": ALL_CI_ZONES,
+    "Akoupé": ALL_CI_ZONES,
+    "Oumé": ALL_CI_ZONES,
+    "Lakota": ALL_CI_ZONES,
+    "Bonoua": ALL_CI_ZONES,
+    "Jacqueville": ALL_CI_ZONES,
+    "Tiassalé": ALL_CI_ZONES,
+    "Touba": ALL_CI_ZONES,
+    "Mankono": ALL_CI_ZONES,
+    "Tengréla": ALL_CI_ZONES,
+    "Toute la Côte d'Ivoire (Vente Nationale)": ALL_CI_ZONES,
+    "Autre ville / commune (Côte d'Ivoire)": ALL_CI_ZONES,
 }
 
 def slugify(text: str) -> str:
