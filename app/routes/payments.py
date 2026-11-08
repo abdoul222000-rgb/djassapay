@@ -61,7 +61,8 @@ async def simulate_payment_page(
         "order": order,
         "merchant": merchant,
         "method": method.upper(),
-        "whatsapp_url": whatsapp_url
+        "whatsapp_url": whatsapp_url,
+        "settings": settings
     })
 
 @router.post("/payments/simulate/{order_number}/confirm")

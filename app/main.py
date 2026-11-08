@@ -91,6 +91,14 @@ def startup_populate_data():
             founder_merchant.logo_url = "/static/images/djassapay_icon.svg"
             db.commit()
 
+        # S'assurer que Pav-225 shop est bien en mode gratuit STARTER (annulation test)
+        for p_m in db.query(Merchant).all():
+            if "pav" in (p_m.store_name or "").lower() or "pav" in (p_m.store_slug or "").lower():
+                p_m.subscription_plan = "STARTER"
+                p_m.subscription_status = "FREE"
+                p_m.subscription_paid_amount = 0
+        db.commit()
+
         # 1. Migration automatique schéma PostgreSQL : s'assurer que image_url et logo_url sont TEXT (support Base64 illimité)
         try:
             from sqlalchemy import text
@@ -143,18 +151,26 @@ def startup_populate_data():
             title_lower = (prod.title or "").lower()
             img_url = prod.image_url or ""
 
-            # Pav-225 shop - Complet (26 500 FCFA à Adjamé) -> VRAIE PHOTO OFFICIELLE
-            if "pav" in m_name or "pav" in m_slug or "complet" in title_lower:
-                prod.image_url = pav_suit_img
-                print(f"[Photo Restore] Pav-225 Complet restauré avec sa VRAIE photo authentique: {prod.title}")
+            is_pav_store = ("pav" in m_name or "pav" in m_slug)
+            is_roxane_store = ("roxane" in m_name or "roxane" in m_slug)
 
-            # Princesse Roxane Shop - Haut sauter (1 000 FCFA à Abobo)
-            elif "roxane" in m_name or "roxane" in m_slug or "sauter" in title_lower or "haut" in title_lower:
+            # 1. Pav-225 shop UNIQUEMENT : sa VRAIE photo officielle certifiée (Complet 26 500 FCFA)
+            if is_pav_store and (prod.price == 26500 or "complet" in title_lower):
+                prod.image_url = pav_suit_img
+                print(f"[Photo Restore] Pav-225 Complet restauré exclusivement pour Pav-225: {prod.title}")
+
+            # 2. Princesse Roxane Shop UNIQUEMENT : sa photo officielle certifiée (Haut sauter)
+            elif is_roxane_store and ("sauter" in title_lower or "haut" in title_lower or prod.price == 1000):
                 if not img_url or not img_url.startswith("data:image/") or "photo-1523275335684" in img_url or "photo-1503342217505" in img_url or "unsplash" in img_url or prod.is_video:
                     prod.image_url = roxane_top_img
                     print(f"[Photo Restore] Princesse Roxane Haut sauter restauré : {prod.title}")
 
-            # Tout autre produit dont le média /static/uploads/ est absent du disque
+            # 3. NETTOYAGE STRICT : Si un autre vendeur a reçu par erreur la photo de Pav-225, la SUPPRIMER IMMÉDIATEMENT !
+            elif not is_pav_store and (img_url == pav_suit_img or "/static/images/pav_real_complet.jpg" in img_url or (len(pav_suit_img) > 100 and pav_suit_img[:100] in img_url)):
+                prod.image_url = "/static/images/product_placeholder.svg"
+                print(f"[Photo Restore] Photo de Pav SUPPRIMÉE du produit '{prod.title}' (Vendeur: {prod.merchant.store_name if prod.merchant else 'Inconnu'})")
+
+            # 4. Protection absolue des autres vendeurs : AUCUN écrasement de photo existante
             elif img_url.startswith("/static/uploads/"):
                 local_fpath = os.path.join("app", img_url.lstrip("/"))
                 if not os.path.exists(local_fpath):
@@ -210,3 +226,31 @@ def sitemap_xml():
         return Response(content=xml, media_type="application/xml")
     finally:
         db.close()
+
+# ==============================================================
+# TÉLÉCHARGEMENT DIRECT DANS LA GALERIE (SMARTPHONE & PC)
+# ==============================================================
+@app.get("/telecharger/affiche-complete")
+def download_affiche_complete():
+    """Téléchargement direct forcé de l'affiche officielle complète avec marque et QR code."""
+    fpath = "app/static/images/affiche_fondateur_campagne_officielle_hd.jpg"
+    if os.path.exists(fpath):
+        return FileResponse(fpath, media_type="image/jpeg", filename="affiche_fondateur_djassapay_complete.jpg")
+    return Response(content="Affiche non trouvée", status_code=404)
+
+@app.get("/telecharger/affiche-photo")
+def download_affiche_photo():
+    """Téléchargement direct forcé de la photo publicitaire épurée du fondateur."""
+    fpath = "app/static/images/affiche_fondateur_pose_hd.jpg"
+    if os.path.exists(fpath):
+        return FileResponse(fpath, media_type="image/jpeg", filename="photo_fondateur_djassapay_pure.jpg")
+    return Response(content="Photo non trouvée", status_code=404)
+
+@app.get("/telecharger", response_class=HTMLResponse)
+@app.get("/galerie", response_class=HTMLResponse)
+def page_telechargement_galerie(request: Request):
+    """Page dédiée optimisée smartphone pour enregistrer les 2 affiches directement dans la galerie Photos."""
+    return templates.TemplateResponse("telecharger.html", {
+        "request": request,
+        "app_name": settings.APP_NAME
+    })

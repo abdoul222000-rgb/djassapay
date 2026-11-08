@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Télécharger dans la Galerie - DjassaPay</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 antialiased p-4 md:p-8 min-h-screen flex flex-col items-center">
+  
+  <div class="max-w-2xl w-full space-y-6">
+
+    <!-- EN-TÊTE -->
+    <header class="text-center space-y-2 py-4">
+      <div class="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/30 px-3.5 py-1 rounded-full text-emerald-400 text-xs font-bold uppercase tracking-wider">
+        <span>🇨🇮</span> Affiches Officielles du Fondateur
+      </div>
+      <h1 class="text-2xl md:text-3xl font-black text-white">
+        Enregistrez vos Affiches dans votre Galerie
+      </h1>
+      <p class="text-xs md:text-sm text-slate-400 max-w-md mx-auto">
+        Téléchargez les 2 visuels officiels en Haute Définition (1080 × 1920) directement sur votre téléphone.
+      </p>
+    </header>
+
+    <!-- LES DEUX AFFICHES -->
+    <div class="space-y-8">
+      
+      <!-- IMAGE 1 : AFFICHE COMPLÈTE -->
+      <div class="bg-slate-900 border border-emerald-500/40 rounded-3xl p-5 shadow-2xl space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <span class="text-xs font-black uppercase tracking-wider text-emerald-400">Option 1</span>
+            <h2 class="text-lg font-bold text-white">Affiche Complète (Marque + QR Code)</h2>
+          </div>
+          <span class="text-[11px] bg-emerald-500/20 text-emerald-300 font-bold px-2.5 py-1 rounded-full">1080×1920 HD</span>
+        </div>
+
+        <div class="relative rounded-2xl overflow-hidden border border-slate-700 bg-black flex justify-center">
+          <img id="img-complete" src="/static/images/affiche_fondateur_campagne_officielle_hd.jpg" alt="Affiche Complète DjassaPay" class="w-full max-w-sm h-auto object-cover rounded-2xl">
+        </div>
+
+        <div class="space-y-2.5">
+          <button onclick="saveToGallery('/static/images/affiche_fondateur_campagne_officielle_hd.jpg', 'affiche_fondateur_djassapay_complete.jpg')" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black py-3.5 px-4 rounded-2xl shadow-xl shadow-emerald-500/25 flex items-center justify-center gap-2 text-sm transition-all active:scale-95">
+            <span>📲</span> Enregistrer dans ma Galerie Photos
+          </button>
+          
+          <a href="/telecharger/affiche-complete" download="affiche_fondateur_djassapay_complete.jpg" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 text-xs border border-slate-700 transition-colors">
+            <span>💾</span> Télécharger le fichier JPG direct
+          </a>
+        </div>
+
+        <p class="text-[11px] text-slate-400 text-center italic">
+          💡 Sur iPhone ou Android : vous pouvez aussi <b>maintenir votre doigt appuyé</b> sur l'image ci-dessus et choisir <b>« Enregistrer dans Photos »</b>.
+        </p>
+      </div>
+
+      <!-- IMAGE 2 : PHOTO PUBLICITAIRE ÉPURÉE -->
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-2xl space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <span class="text-xs font-black uppercase tracking-wider text-amber-400">Option 2</span>
+            <h2 class="text-lg font-bold text-white">Photo Publicitaire Épurée (Sans texte)</h2>
+          </div>
+          <span class="text-[11px] bg-amber-500/20 text-amber-300 font-bold px-2.5 py-1 rounded-full">1080×1920 HD</span>
+        </div>
+
+        <div class="relative rounded-2xl overflow-hidden border border-slate-700 bg-black flex justify-center">
+          <img id="img-pure" src="/static/images/affiche_fondateur_pose_hd.jpg" alt="Photo Pub Épurée DjassaPay" class="w-full max-w-sm h-auto object-cover rounded-2xl">
+        </div>
+
+        <div class="space-y-2.5">
+          <button onclick="saveToGallery('/static/images/affiche_fondateur_pose_hd.jpg', 'photo_fondateur_djassapay_pure.jpg')" class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black py-3.5 px-4 rounded-2xl shadow-xl shadow-amber-500/25 flex items-center justify-center gap-2 text-sm transition-all active:scale-95">
+            <span>📲</span> Enregistrer dans ma Galerie Photos
+          </button>
+          
+          <a href="/telecharger/affiche-photo" download="photo_fondateur_djassapay_pure.jpg" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 text-xs border border-slate-700 transition-colors">
+            <span>💾</span> Télécharger le fichier JPG direct
+          </a>
+        </div>
+
+        <p class="text-[11px] text-slate-400 text-center italic">
+          💡 Idéale pour créer vos propres Stories Instagram personnalisées avec musique ou filtres.
+        </p>
+      </div>
+
+    </div>
+
+    <!-- BOUTON RETOUR À LA BOUTIQUE -->
+    <div class="text-center pt-4">
+      <a href="/" class="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-emerald-400 transition-colors">
+        <span>←</span> Retour à l'accueil DjassaPay
+      </a>
+    </div>
+
+  </div>
+
+  <script>
+    async function saveToGallery(imageUrl, fileName) {
+      try {
+        const response = await fetch(imageUrl);
+        const blob = await response.blob();
+        const file = new File([blob], fileName, { type: 'image/jpeg' });
+        
+        // Sur smartphone (iPhone Safari / Android Chrome)
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title: 'Affiche Officielle DjassaPay',
+            text: 'Enregistrer dans Photos'
+          });
+          return;
+        }
+      } catch (err) {
+        console.log('Partage natif non disponible, bascule téléchargement standard:', err);
+      }
+
+      // Fallback téléchargement direct classique
+      const a = document.createElement('a');
+      a.href = imageUrl;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+  </script>
+</body>
+</html>

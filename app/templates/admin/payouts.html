@@ -127,13 +127,41 @@
           </div>
         </div>
 
+        <!-- Compte Marchand Wave Business Officiel CI -->
+        <div class="p-4 rounded-2xl bg-sky-50 border-2 border-[#1BA4D9]/40 space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="w-7 h-7 rounded-lg bg-[#1BA4D9] text-white font-black text-xs flex items-center justify-center">W</span>
+              <div>
+                <span class="text-xs font-black uppercase text-slate-900 block">Compte Officiel Wave Business CI</span>
+                <span class="text-[10px] text-sky-700 font-bold">Encaissements B2B & Acomptes Plateforme</span>
+              </div>
+            </div>
+            <span class="px-2.5 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-black uppercase tracking-wider">Actif & Vérifié</span>
+          </div>
+
+          <div class="grid sm:grid-cols-2 gap-3 pt-1">
+            <div>
+              <label class="block text-[11px] font-bold uppercase text-slate-700 mb-1">Numéro de Compte B2B Wave *</label>
+              <input type="text" name="founder_wave_account_number" value="{{ settings.FOUNDER_WAVE_ACCOUNT_NUMBER }}" placeholder="CI 94 95 29 42" class="w-full px-3 py-2 rounded-xl border border-sky-300 bg-white text-xs font-mono font-bold text-slate-900 focus:ring-2 focus:ring-[#1BA4D9]">
+              <span class="text-[10px] text-slate-500 mt-0.5 block">Utilisé par les clients & entreprises Wave</span>
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-bold uppercase text-slate-700 mb-1">Identifiant Marchand B2B</label>
+              <input type="text" name="founder_wave_b2b_id" value="{{ settings.FOUNDER_WAVE_B2B_ID }}" placeholder="M_ci_OunaDzCXM0MS" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-mono text-slate-700 focus:ring-2 focus:ring-[#1BA4D9]">
+              <span class="text-[10px] text-slate-500 mt-0.5 block">Identifiant unique Wave Business</span>
+            </div>
+          </div>
+        </div>
+
         <div class="space-y-3 pt-2">
           <div>
             <label class="block text-xs font-bold uppercase text-slate-600 mb-1 flex items-center justify-between">
-              <span>Numéro Wave Réception (Recommandé)</span>
+              <span>Numéro Wave Mobile Réception (Ligne Directe)</span>
               <span class="text-[11px] text-[#1BA4D9] font-bold">Wave 1%</span>
             </label>
-            <input type="text" name="founder_wave_number" value="{{ settings.FOUNDER_WAVE_NUMBER }}" placeholder="Ex: 07 08 09 10 11" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm font-mono focus:ring-2 focus:ring-emerald-500">
+            <input type="text" name="founder_wave_number" value="{{ settings.FOUNDER_WAVE_NUMBER }}" placeholder="Ex: 05 95 09 41 59" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm font-mono focus:ring-2 focus:ring-emerald-500">
           </div>
 
           <div>
@@ -246,9 +274,30 @@
           <p class="text-slate-500 mt-0.5">Propriétaire : {{ m.name }} &bull; WhatsApp : <span class="font-mono font-bold">{{ m.phone }}</span></p>
         </div>
 
-        <div class="text-right">
-          <span class="text-slate-400 block text-[10px] uppercase font-bold">Abonnement payé à la plateforme</span>
-          <span class="font-black text-sm text-emerald-600">{{ "{:,}".format(m.subscription_paid_amount or 0) }} FCFA</span>
+        <div class="flex items-center space-x-3 text-right">
+          <div>
+            <span class="text-slate-400 block text-[10px] uppercase font-bold">Abonnement payé</span>
+            <span class="font-black text-sm text-emerald-600">{{ "{:,}".format(m.subscription_paid_amount or 0) }} FCFA</span>
+          </div>
+
+          <!-- Actions Fondateur sur le plan -->
+          <div>
+            {% if m.subscription_plan in ['PRO', 'BUSINESS'] %}
+            <form action="/admin/merchants/{{ m.id }}/change-plan" method="POST" onsubmit="return confirm('Rétrograder cette boutique en STARTER (Gratuit) ?')">
+              <input type="hidden" name="plan" value="STARTER">
+              <button type="submit" class="px-2.5 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 font-extrabold text-[11px] border border-red-200 shadow-xs transition">
+                Rétrograder en STARTER
+              </button>
+            </form>
+            {% else %}
+            <form action="/admin/merchants/{{ m.id }}/change-plan" method="POST" onsubmit="return confirm('Valider et passer cette boutique en PRO (9 900 FCFA reçu) ?')">
+              <input type="hidden" name="plan" value="PRO">
+              <button type="submit" class="px-2.5 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-extrabold text-[11px] border border-emerald-200 shadow-xs transition">
+                Passer en PRO ⭐
+              </button>
+            </form>
+            {% endif %}
+          </div>
         </div>
       </div>
       {% endfor %}

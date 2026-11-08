@@ -23,6 +23,11 @@ class Settings(BaseSettings):
     FOUNDER_MOOV_MONEY_NUMBER: str = ""
     COMMISSION_PERCENTAGE: float = 1.5 # 1.5% de commission plateforme
     
+    # Compte Officiel Wave Business CI
+    FOUNDER_WAVE_ACCOUNT_NUMBER: str = "CI 94 95 29 42" # Numéro de Compte B2B Wave Business
+    FOUNDER_WAVE_B2B_ID: str = "M_ci_OunaDzCXM0MS" # Identifiant Marchand Wave
+    FOUNDER_WAVE_BUSINESS_NAME: str = "Djassapay"
+    
     # Passerelle Wave Business (Optionnel)
     WAVE_API_KEY: str = ""
     WAVE_WEBHOOK_SECRET: str = ""
