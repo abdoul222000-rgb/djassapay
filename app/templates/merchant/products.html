@@ -59,10 +59,16 @@
       <p class="text-xs text-slate-500">Gérez exclusivement vos propres articles. Toutes vos modifications s'appliquent uniquement à votre boutique <strong>{{ merchant.store_name }}</strong>.</p>
     </div>
 
-    <button @click="showAddModal = true; resetPreview()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl transition flex items-center space-x-1.5 shadow-sm">
-      <i data-lucide="camera" class="w-4 h-4"></i>
-      <span>Ajouter un Article</span>
-    </button>
+    <div class="flex items-center space-x-2">
+      <a href="/shop/{{ merchant.store_slug }}" target="_blank" class="px-3.5 py-2.5 bg-white border border-slate-200 hover:border-slate-300 text-slate-800 text-xs font-bold rounded-xl transition flex items-center space-x-1.5 shadow-sm">
+        <i data-lucide="external-link" class="w-4 h-4 text-emerald-600"></i>
+        <span>Voir ma boutique</span>
+      </a>
+      <button @click="showAddModal = true; resetPreview()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl transition flex items-center space-x-1.5 shadow-sm">
+        <i data-lucide="camera" class="w-4 h-4"></i>
+        <span>Ajouter un Article</span>
+      </button>
+    </div>
   </div>
 
   {% if request.query_params.get('saved') %}
@@ -235,12 +241,18 @@
     <div class="bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-sm flex flex-col justify-between">
       <div class="h-48 bg-slate-900 relative overflow-hidden">
         {% if product.is_video %}
-          <video src="{{ product.image_url }}" autoplay loop muted playsinline class="w-full h-full object-cover"></video>
+          <video src="{{ product.image_url }}" autoplay loop muted playsinline class="w-full h-full object-cover" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='block';"></video>
+          <img src="/static/images/product_placeholder.svg" style="display:none;" class="w-full h-full object-cover" alt="{{ product.title }}">
           <span class="absolute bottom-2 left-2 bg-slate-900/80 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center space-x-1">
             <span>▶ Vidéo</span>
           </span>
         {% else %}
-          <img src="{{ product.image_url or 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80' }}" alt="{{ product.title }}" class="w-full h-full object-cover">
+          <img 
+            src="{{ product.image_url or '/static/images/product_placeholder.svg' }}" 
+            alt="{{ product.title }}" 
+            class="w-full h-full object-cover"
+            onerror="this.onerror=null; this.src='/static/images/product_placeholder.svg';"
+          >
         {% endif %}
         
         <span class="absolute top-2 right-2 bg-slate-900/80 text-white text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-sm">

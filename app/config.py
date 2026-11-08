@@ -16,11 +16,17 @@ class Settings(BaseSettings):
     FOUNDER_PIN: str = "7788" # Code PIN Secret Fondateur pour accéder à l'espace
     FOUNDER_PASSWORD: str = "DjassaFondateur2026@" # Mot de passe de secours
     FOUNDER_PHONE: str = "0595094159"
+    FOUNDER_EMAIL: str = "djassapay9@gmail.com"
     FOUNDER_WAVE_NUMBER: str = "0595094159"
     FOUNDER_ORANGE_MONEY_NUMBER: str = "0595094159"
     FOUNDER_MTN_MOMO_NUMBER: str = "0595094159"
     FOUNDER_MOOV_MONEY_NUMBER: str = ""
     COMMISSION_PERCENTAGE: float = 1.5 # 1.5% de commission plateforme
+    
+    # Compte Officiel Wave Business CI
+    FOUNDER_WAVE_ACCOUNT_NUMBER: str = "CI 94 95 29 42" # Numéro de Compte B2B Wave Business
+    FOUNDER_WAVE_B2B_ID: str = "M_ci_OunaDzCXM0MS" # Identifiant Marchand Wave
+    FOUNDER_WAVE_BUSINESS_NAME: str = "Djassapay"
     
     # Passerelle Wave Business (Optionnel)
     WAVE_API_KEY: str = ""

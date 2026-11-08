@@ -124,7 +124,12 @@ def main():
     ))
     march_a = db.query(Merchant).filter(Merchant.phone == "0701020304").first()
     record("Marchand A (Cocody Luxe) créé en base", march_a is not None)
-    record("Marchand A a ses 33 zones de livraison CI", len(march_a.delivery_zones) >= 30)
+    
+    # Ajout d'une zone personnalisée par le Marchand A
+    zone_a = DeliveryZone(merchant_id=march_a.id, name="Cocody / Angré", fee=1500, estimated_time="1h - 2h")
+    db.add(zone_a)
+    db.commit()
+    record("Marchand A libre d'ajouter sa zone et son tarif personnalisé", zone_a.id is not None and zone_a.fee == 1500)
 
     # Inscription Marchand B : Yopougon Mode
     res_b = Response()
@@ -140,6 +145,11 @@ def main():
     ))
     march_b = db.query(Merchant).filter(Merchant.phone == "0509080706").first()
     record("Marchand B (Yopougon Mode) créé en base", march_b is not None)
+    
+    # Ajout d'une zone personnalisée par le Marchand B
+    zone_b = DeliveryZone(merchant_id=march_b.id, name="Yopougon / Niangon", fee=1500, estimated_time="1h - 2h")
+    db.add(zone_b)
+    db.commit()
     record("IDs et Slugs Marchand A et B strictement distincts", march_a.id != march_b.id and march_a.store_slug != march_b.store_slug)
 
     # -------------------------------------------------------------

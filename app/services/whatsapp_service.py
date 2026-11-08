@@ -3,15 +3,33 @@ import httpx
 from app.config import settings
 
 def clean_phone_number(phone: str, default_country_code: str = "225") -> str:
-    """Clean and normalize phone number for WhatsApp wa.me links and Cloud API."""
-    clean = "".join([c for c in phone if c.isdigit()])
-    # If 10 digits starting with 0 (ex CI: 0708091011 or 0102030405)
-    if clean.startswith("0") and len(clean) == 10:
-        clean = default_country_code + clean[1:]
-    elif len(clean) == 8: # Old 8-digit format
-        clean = default_country_code + clean
-    elif not clean.startswith(default_country_code) and len(clean) <= 10:
-        clean = default_country_code + clean
+    """
+    Clean and normalize phone number for WhatsApp wa.me links and Cloud API.
+    En Côte d'Ivoire (plan 10 chiffres ARTEC 2021), le format international WhatsApp est 
+    +225 suivi des 10 chiffres entiers (ex: 2250507114644 ou 2250708091011, 13 chiffres au total).
+    Le '0' initial ne doit JAMAIS être supprimé.
+    """
+    clean = "".join([c for c in (phone or "") if c.isdigit()])
+    if not clean:
+        return default_country_code + "0595094159"
+    # Déjà au format international complet à 13 chiffres (ex: 2250507114644)
+    if clean.startswith("225") and len(clean) == 13:
+        return clean
+    # Ancien format ou troncature à 12 chiffres (ex: 225507114644 -> réparer en 2250507114644)
+    if clean.startswith("225") and len(clean) == 12 and clean[3] in ["0", "1", "5", "7"]:
+        return "2250" + clean[3:]
+    # Format national ivoirien standard à 10 chiffres (ex: 0507114644 -> 2250507114644)
+    if len(clean) == 10:
+        return default_country_code + clean
+    # Numéro à 9 chiffres sans le premier 0 (ex: 507114644 -> 2250507114644)
+    if len(clean) == 9 and clean[0] in ["1", "5", "7"]:
+        return default_country_code + "0" + clean
+    # Ancien format à 8 chiffres (avant 2021) -> préfixe 07 par défaut
+    if len(clean) == 8:
+        return default_country_code + "07" + clean
+    # Si ne commence pas par 225, ajouter l'indicatif
+    if not clean.startswith(default_country_code):
+        return default_country_code + clean
     return clean
 
 async def send_whatsapp_cloud_message(recipient_phone: str, message_text: str) -> dict:
@@ -98,18 +116,49 @@ async def auto_notify_deposit_confirmed(order, merchant):
     return await send_whatsapp_cloud_message(merchant.phone, msg_merchant)
 
 def generate_customer_order_whatsapp(order, merchant) -> str:
-    """Génère le lien de secours 1-clic wa.me pour le client."""
-    phone = clean_phone_number(order.customer_phone)
-    msg = (
-        f"Bonjour {order.customer_name} ! 👋\n\n"
-        f"Votre commande #{order.order_number} chez *{merchant.store_name}* est enregistrée !\n"
-        f"📦 Total : {order.total_amount:,} FCFA\n"
-        f"🔒 Acompte Anti-Lapin : {order.deposit_paid:,} FCFA ({'Reçu ✅' if order.deposit_paid >= order.deposit_required else 'En attente ⏳'})\n"
-        f"💵 Reste à payer au livreur : {order.balance_due:,} FCFA\n\n"
-        f"📍 Livraison : {order.delivery_zone_name} - {order.delivery_address}\n"
-        f"🔗 Suivi en direct : {settings.BASE_URL}/orders/{order.order_number}\n\n"
-        f"Merci pour votre confiance !"
-    )
+    """
+    Génère le lien 1-clic wa.me permettant au client de causer directement avec le vendeur
+    sur WhatsApp après ou pendant sa commande.
+    Le message est adressé au vendeur et pré-rempli avec les détails de la commande.
+    """
+    # Numéro de destination : celui du MARCHAND (vendeur)
+    seller_phone = merchant.phone or merchant.wave_number or "0595094159"
+    phone = clean_phone_number(seller_phone)
+
+    # Détails des articles
+    items_desc = []
+    if hasattr(order, "items") and order.items:
+        for it in order.items:
+            items_desc.append(f"• {it.quantity}x {it.product_title}")
+    items_str = "\n".join(items_desc) if items_desc else "Articles commandés"
+
+    deposit_paid = getattr(order, "deposit_paid", 0) or 0
+    is_paid = (order.payment_status in ["DEPOSIT_PAID", "FULLY_PAID"]) or (deposit_paid > 0)
+
+    if is_paid:
+        msg = (
+            f"Bonjour {merchant.store_name} ! 👋\n\n"
+            f"Je viens de régler mon acompte Wave de *{deposit_paid:,} FCFA* pour ma commande *#{order.order_number}*.\n\n"
+            f"📦 *Articles :*\n{items_str}\n\n"
+            f"💰 *Montant Total :* {order.total_amount:,} FCFA\n"
+            f"💵 *Solde restant à remettre au livreur :* {order.balance_due:,} FCFA\n\n"
+            f"📍 *Mon adresse de livraison :*\n"
+            f"{order.delivery_zone_name} - {order.delivery_address}\n"
+            f"👤 *Client :* {order.customer_name} ({order.customer_phone})\n\n"
+            f"Pouvez-vous me confirmer la bonne réception et l'expédition du colis avec le coursier moto ? Merci !"
+        )
+    else:
+        msg = (
+            f"Bonjour {merchant.store_name} ! 👋\n\n"
+            f"Je souhaite échanger avec vous concernant ma commande *#{order.order_number}* chez *{merchant.store_name}*.\n\n"
+            f"📦 *Articles :*\n{items_str}\n"
+            f"💰 *Total :* {order.total_amount:,} FCFA\n"
+            f"🔒 *Acompte prévu :* {order.deposit_required:,} FCFA\n"
+            f"📍 *Destination :* {order.delivery_zone_name} - {order.delivery_address}\n"
+            f"👤 *Client :* {order.customer_name} ({order.customer_phone})\n\n"
+            f"Pouvez-vous me donner des précisions pour la livraison ? Merci !"
+        )
+
     encoded = urllib.parse.quote(msg)
     return f"https://wa.me/{phone}?text={encoded}"
 

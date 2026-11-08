@@ -1,10 +1,13 @@
 import os
+import io
+import base64
+import uuid
+from PIL import Image, ImageOps
 from fastapi import APIRouter, Depends, HTTPException, Request, Form, UploadFile, File
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-import uuid
 
 from app.database import get_db
 from app.config import settings
@@ -13,6 +16,67 @@ from app.services.whatsapp_service import generate_rider_dispatch_whatsapp
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
+
+async def process_uploaded_media(media_file: UploadFile) -> str:
+    """
+    Traite le média uploadé par le commerçant :
+    - Pour les photos : rotation EXIF automatique smartphone, redimensionnement max 900x900
+      et compression JPEG haute fidélité stockée directement en Base64 Data URI dans PostgreSQL.
+      Garantit que la photo NE SERA JAMAIS PERDUE lors des redémarrages de Render !
+    - Pour les vidéos légères (< 3.5 Mo) : encodage Base64 direct.
+    """
+    if not media_file or not hasattr(media_file, "filename") or not media_file.filename:
+        return ""
+
+    contents = b""
+    try:
+        if hasattr(media_file, "file") and hasattr(media_file.file, "read"):
+            if hasattr(media_file.file, "seek"):
+                media_file.file.seek(0)
+            contents = media_file.file.read()
+        if not contents and hasattr(media_file, "read"):
+            contents = await media_file.read()
+    except Exception as e:
+        print(f"[Upload Read Error] {e}")
+
+    if not contents or len(contents) == 0:
+        return ""
+
+    ext = os.path.splitext(media_file.filename)[1].lower()
+    is_video_ext = ext in [".mp4", ".mov", ".webm", ".m4v"]
+
+    # 1. Traitement des images
+    if not is_video_ext:
+        try:
+            img = Image.open(io.BytesIO(contents))
+            img = ImageOps.exif_transpose(img)
+            if img.mode in ("RGBA", "P"):
+                img = img.convert("RGB")
+            img.thumbnail((900, 900), Image.Resampling.LANCZOS)
+            buf = io.BytesIO()
+            img.save(buf, format="JPEG", quality=82, optimize=True)
+            b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
+            return f"data:image/jpeg;base64,{b64}"
+        except Exception as e:
+            print(f"[Pillow Processing Error] {e}")
+
+    # 2. Vidéo légère (< 3.5 Mo)
+    if is_video_ext and len(contents) < 3.5 * 1024 * 1024:
+        mime = "video/mp4" if ext in [".mp4", ".mov", ".m4v"] else "video/webm"
+        b64 = base64.b64encode(contents).decode("utf-8")
+        return f"data:{mime};base64,{b64}"
+
+    # 3. Fallback stockage fichier
+    try:
+        os.makedirs("app/static/uploads", exist_ok=True)
+        unique_name = f"media_{uuid.uuid4().hex[:12]}{ext}"
+        filepath = os.path.join("app/static/uploads", unique_name)
+        with open(filepath, "wb") as f:
+            f.write(contents)
+        return f"/static/uploads/{unique_name}"
+    except Exception as e:
+        print(f"[Disk Fallback Error] {e}")
+        return ""
 
 def get_current_merchant(db: Session, request: Request = None):
     """
@@ -123,25 +187,14 @@ async def add_product(
     final_media_url = image_url.strip() if image_url else ""
 
     # Traitement du fichier uploadé (Appareil photo smartphone, galerie ou vidéo)
+    # Convertit automatiquement les photos en Base64 JPEG optimisé (survit à TOUS les redémarrages de Render !)
     if media_file and hasattr(media_file, "filename") and media_file.filename:
-        try:
-            os.makedirs("app/static/uploads", exist_ok=True)
-            ext = os.path.splitext(media_file.filename)[1].lower()
-            if ext not in [".jpg", ".jpeg", ".png", ".webp", ".gif", ".mp4", ".mov", ".webm", ".m4v"]:
-                ext = ".jpg"
-            unique_name = f"media_{uuid.uuid4().hex[:12]}{ext}"
-            filepath = os.path.join("app/static/uploads", unique_name)
-
-            contents = await media_file.read()
-            if len(contents) > 0:
-                with open(filepath, "wb") as f:
-                    f.write(contents)
-                final_media_url = f"/static/uploads/{unique_name}"
-        except Exception as e:
-            print(f"[Upload Error] Échec de sauvegarde du média : {e}")
+        uploaded_media = await process_uploaded_media(media_file)
+        if uploaded_media:
+            final_media_url = uploaded_media
 
     if not final_media_url:
-        final_media_url = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80"
+        final_media_url = "/static/images/product_placeholder.svg"
 
     product = Product(
         merchant_id=merchant.id,
@@ -150,7 +203,8 @@ async def add_product(
         price=price,
         compare_at_price=compare_at_price if compare_at_price else None,
         image_url=final_media_url,
-        stock=stock
+        stock=stock,
+        is_active=True
     )
     db.add(product)
     db.commit()
@@ -192,23 +246,11 @@ async def edit_product(
     product.stock = stock
     product.is_active = is_active
 
-    # Nouveau fichier média si fourni
+    # Nouveau fichier média si fourni (Pillow Base64 permanent)
     if media_file and hasattr(media_file, "filename") and media_file.filename:
-        try:
-            os.makedirs("app/static/uploads", exist_ok=True)
-            ext = os.path.splitext(media_file.filename)[1].lower()
-            if ext not in [".jpg", ".jpeg", ".png", ".webp", ".gif", ".mp4", ".mov", ".webm", ".m4v"]:
-                ext = ".jpg"
-            unique_name = f"media_{uuid.uuid4().hex[:12]}{ext}"
-            filepath = os.path.join("app/static/uploads", unique_name)
-
-            contents = await media_file.read()
-            if len(contents) > 0:
-                with open(filepath, "wb") as f:
-                    f.write(contents)
-                product.image_url = f"/static/uploads/{unique_name}"
-        except Exception as e:
-            print(f"[Upload Error] Échec de sauvegarde de la nouvelle photo : {e}")
+        uploaded_media = await process_uploaded_media(media_file)
+        if uploaded_media:
+            product.image_url = uploaded_media
 
     db.commit()
     return RedirectResponse(url="/merchant/products?saved=1", status_code=303)
@@ -252,10 +294,12 @@ async def merchant_settings(request: Request, db: Session = Depends(get_db)):
         return RedirectResponse(url="/login?unauthorized=1", status_code=303)
 
     zones = db.query(DeliveryZone).filter(DeliveryZone.merchant_id == merchant.id).all()
+    clean_logo = merchant.logo_url if (merchant.logo_url and "unsplash" not in merchant.logo_url and "photo-" not in merchant.logo_url) else ""
 
     return templates.TemplateResponse("merchant/settings.html", {
         "request": request,
         "merchant": merchant,
+        "clean_logo": clean_logo,
         "zones": zones
     })
 
@@ -271,22 +315,33 @@ async def update_settings(
     moov_money_number: str = Form(""),
     deposit_policy: str = Form(...),
     fixed_deposit_amount: int = Form(2000),
+    logo_file: UploadFile = File(None),
+    remove_logo: str = Form(""),
     db: Session = Depends(get_db)
 ):
-    """Mise à jour des coordonnées et de la politique d'acompte du marchand."""
+    """Mise à jour des coordonnées, de la photo/logo et de la politique d'acompte du marchand."""
     merchant = get_current_merchant(db, request)
     if not merchant:
         return RedirectResponse(url="/login?unauthorized=1", status_code=303)
 
-    merchant.store_name = store_name
-    merchant.phone = phone
-    merchant.bio = bio
-    merchant.wave_number = wave_number
-    merchant.orange_money_number = orange_money_number
-    merchant.mtn_momo_number = mtn_momo_number
-    merchant.moov_money_number = moov_money_number
+    merchant.store_name = store_name.strip()
+    merchant.phone = phone.strip()
+    merchant.bio = bio.strip()
+    merchant.wave_number = wave_number.strip()
+    merchant.orange_money_number = orange_money_number.strip()
+    merchant.mtn_momo_number = mtn_momo_number.strip()
+    merchant.moov_money_number = moov_money_number.strip()
     merchant.deposit_policy = deposit_policy
     merchant.fixed_deposit_amount = fixed_deposit_amount
+
+    # Traitement de la photo de profil / logo de la boutique
+    if remove_logo == "1":
+        merchant.logo_url = None
+    elif logo_file and hasattr(logo_file, "filename") and logo_file.filename:
+        uploaded_logo = await process_uploaded_media(logo_file)
+        if uploaded_logo:
+            merchant.logo_url = uploaded_logo
+
     db.commit()
 
     return RedirectResponse(url="/merchant/settings?saved=1", status_code=303)
@@ -326,6 +381,39 @@ async def delete_delivery_zone(request: Request, zone_id: int, db: Session = Dep
         db.delete(zone)
         db.commit()
     return RedirectResponse(url="/merchant/settings", status_code=303)
+
+@router.post("/merchant/zones/{zone_id}/edit")
+async def edit_delivery_zone(
+    request: Request,
+    zone_id: int,
+    name: str = Form(...),
+    fee: int = Form(...),
+    estimated_time: str = Form("1h - 3h"),
+    db: Session = Depends(get_db)
+):
+    """Modifier le nom ou le tarif d'une zone de livraison du vendeur."""
+    merchant = get_current_merchant(db, request)
+    if not merchant:
+        return RedirectResponse(url="/login?unauthorized=1", status_code=303)
+
+    zone = db.query(DeliveryZone).filter(DeliveryZone.id == zone_id, DeliveryZone.merchant_id == merchant.id).first()
+    if zone:
+        zone.name = name.strip()
+        zone.fee = fee
+        zone.estimated_time = estimated_time.strip()
+        db.commit()
+    return RedirectResponse(url="/merchant/settings?saved=1", status_code=303)
+
+@router.post("/merchant/zones/clear-all")
+async def clear_all_delivery_zones(request: Request, db: Session = Depends(get_db)):
+    """Supprimer toutes les zones de livraison en 1 clic pour repartir de zéro."""
+    merchant = get_current_merchant(db, request)
+    if not merchant:
+        return RedirectResponse(url="/login?unauthorized=1", status_code=303)
+
+    db.query(DeliveryZone).filter(DeliveryZone.merchant_id == merchant.id).delete()
+    db.commit()
+    return RedirectResponse(url="/merchant/settings?saved=1", status_code=303)
 
 @router.get("/pricing", response_class=HTMLResponse)
 async def pricing_page(request: Request, db: Session = Depends(get_db)):

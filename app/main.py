@@ -64,11 +64,11 @@ def startup_populate_data():
             founder_merchant = Merchant(
                 name="Diabagate Assouman",
                 phone="0595094159",
-                email="contact@djassapay.ci",
+                email="djassapay9@gmail.com",
                 store_name="Djassapay Officiel",
                 store_slug="djassapay",
                 bio="Plateforme e-commerce et encaissements sécurisés en Côte d'Ivoire.",
-                logo_url="https://images.unsplash.com/photo-1556742049-0a67c5574f73?auto=format&fit=crop&w=200&q=80",
+                logo_url="/static/images/djassapay_icon.svg",
                 wave_number="0595094159",
                 orange_money_number="0595094159",
                 mtn_momo_number="0595094159",
@@ -80,22 +80,96 @@ def startup_populate_data():
             db.add(founder_merchant)
             db.commit()
             db.refresh(founder_merchant)
-
-            # Zones de livraison complètes en Côte d'Ivoire (33 Communes & Villes)
-            zones = [
-                DeliveryZone(merchant_id=founder_merchant.id, name=z[0], fee=z[1], estimated_time=z[2])
-                for z in ALL_CI_ZONES
-            ]
-            db.add_all(zones)
-            db.commit()
         else:
             # S'assurer que le compte officiel a les coordonnées parfaites
             founder_merchant.phone = "0595094159"
+            founder_merchant.email = "djassapay9@gmail.com"
             founder_merchant.wave_number = "0595094159"
             founder_merchant.pin_code = "7788"
             founder_merchant.store_name = "Djassapay Officiel"
             founder_merchant.store_slug = "djassapay"
+            founder_merchant.logo_url = "/static/images/djassapay_icon.svg"
             db.commit()
+
+        # 1. Migration automatique schéma PostgreSQL : s'assurer que image_url et logo_url sont TEXT (support Base64 illimité)
+        try:
+            from sqlalchemy import text
+            db.execute(text("ALTER TABLE products ALTER COLUMN image_url TYPE TEXT;"))
+            db.execute(text("ALTER TABLE merchants ALTER COLUMN logo_url TYPE TEXT;"))
+            db.commit()
+            print("[Database Migration] products.image_url et merchants.logo_url vérifiés/convertis en TEXT.")
+        except Exception as e:
+            db.rollback()
+
+        # 2. Suppression des zones et tarifs pré-remplis pour redonner la liberté totale aux vendeurs
+        try:
+            from app.routes.auth import ALL_CI_ZONES
+            default_zone_names = {z[0] for z in ALL_CI_ZONES}
+            for z in db.query(DeliveryZone).all():
+                if z.name in default_zone_names:
+                    db.delete(z)
+            db.commit()
+            print("[Database Migration] Zones pré-remplies supprimées avec succès pour redonner le plein contrôle aux vendeurs.")
+        except Exception as e:
+            db.rollback()
+
+        # Nettoyage des anciennes photos IA de profil de vendeur
+        for m in db.query(Merchant).all():
+            if m.logo_url and ("photo-1544005313" in m.logo_url or "unsplash" in m.logo_url):
+                m.logo_url = None
+        db.commit()
+
+        # 2. Restauration & Protection permanente des photos de tous les vendeurs
+        import base64
+
+        # Vraie photo authentique de Pav-225 (fournie directement par le vendeur)
+        pav_real_path = "app/static/images/pav_real_complet.jpg"
+        pav_suit_img = "/static/images/pav_real_complet.jpg"
+        if os.path.exists(pav_real_path):
+            with open(pav_real_path, "rb") as f:
+                pav_suit_img = f"data:image/jpeg;base64,{base64.b64encode(f.read()).decode('utf-8')}"
+
+        # Photo élégante ivoirienne pour Princesse Roxane
+        roxane_path = "app/static/images/roxane_haut_sauter.jpg"
+        roxane_top_img = "/static/images/roxane_haut_sauter.jpg"
+        if os.path.exists(roxane_path):
+            with open(roxane_path, "rb") as f:
+                roxane_top_img = f"data:image/jpeg;base64,{base64.b64encode(f.read()).decode('utf-8')}"
+
+        all_products = db.query(Product).all()
+        for prod in all_products:
+            m_name = (prod.merchant.store_name if prod.merchant else "").lower()
+            m_slug = (prod.merchant.store_slug if prod.merchant else "").lower()
+            title_lower = (prod.title or "").lower()
+            img_url = prod.image_url or ""
+
+            is_pav_store = ("pav" in m_name or "pav" in m_slug)
+            is_roxane_store = ("roxane" in m_name or "roxane" in m_slug)
+
+            # 1. Pav-225 shop UNIQUEMENT : sa VRAIE photo officielle certifiée (Complet 26 500 FCFA)
+            if is_pav_store and (prod.price == 26500 or "complet" in title_lower):
+                prod.image_url = pav_suit_img
+                print(f"[Photo Restore] Pav-225 Complet restauré exclusivement pour Pav-225: {prod.title}")
+
+            # 2. Princesse Roxane Shop UNIQUEMENT : sa photo officielle certifiée (Haut sauter)
+            elif is_roxane_store and ("sauter" in title_lower or "haut" in title_lower or prod.price == 1000):
+                if not img_url or not img_url.startswith("data:image/") or "photo-1523275335684" in img_url or "photo-1503342217505" in img_url or "unsplash" in img_url or prod.is_video:
+                    prod.image_url = roxane_top_img
+                    print(f"[Photo Restore] Princesse Roxane Haut sauter restauré : {prod.title}")
+
+            # 3. NETTOYAGE STRICT : Si un autre vendeur a reçu par erreur la photo de Pav-225, la SUPPRIMER IMMÉDIATEMENT !
+            elif not is_pav_store and (img_url == pav_suit_img or "/static/images/pav_real_complet.jpg" in img_url or (len(pav_suit_img) > 100 and pav_suit_img[:100] in img_url)):
+                prod.image_url = "/static/images/product_placeholder.svg"
+                print(f"[Photo Restore] Photo de Pav SUPPRIMÉE du produit '{prod.title}' (Vendeur: {prod.merchant.store_name if prod.merchant else 'Inconnu'})")
+
+            # 4. Protection absolue des autres vendeurs : AUCUN écrasement de photo existante
+            elif img_url.startswith("/static/uploads/"):
+                local_fpath = os.path.join("app", img_url.lstrip("/"))
+                if not os.path.exists(local_fpath):
+                    prod.image_url = "/static/images/product_placeholder.svg"
+                    print(f"[Photo Restore] Image réparée pour produit '{prod.title}' -> placeholder SVG")
+
+        db.commit()
     finally:
         db.close()
 
@@ -144,3 +218,31 @@ def sitemap_xml():
         return Response(content=xml, media_type="application/xml")
     finally:
         db.close()
+
+# ==============================================================
+# TÉLÉCHARGEMENT DIRECT DANS LA GALERIE (SMARTPHONE & PC)
+# ==============================================================
+@app.get("/telecharger/affiche-complete")
+def download_affiche_complete():
+    """Téléchargement direct forcé de l'affiche officielle complète avec marque et QR code."""
+    fpath = "app/static/images/affiche_fondateur_campagne_officielle_hd.jpg"
+    if os.path.exists(fpath):
+        return FileResponse(fpath, media_type="image/jpeg", filename="affiche_fondateur_djassapay_complete.jpg")
+    return Response(content="Affiche non trouvée", status_code=404)
+
+@app.get("/telecharger/affiche-photo")
+def download_affiche_photo():
+    """Téléchargement direct forcé de la photo publicitaire épurée du fondateur."""
+    fpath = "app/static/images/affiche_fondateur_pose_hd.jpg"
+    if os.path.exists(fpath):
+        return FileResponse(fpath, media_type="image/jpeg", filename="photo_fondateur_djassapay_pure.jpg")
+    return Response(content="Photo non trouvée", status_code=404)
+
+@app.get("/telecharger", response_class=HTMLResponse)
+@app.get("/galerie", response_class=HTMLResponse)
+def page_telechargement_galerie(request: Request):
+    """Page dédiée optimisée smartphone pour enregistrer les 2 affiches directement dans la galerie Photos."""
+    return templates.TemplateResponse("telecharger.html", {
+        "request": request,
+        "app_name": settings.APP_NAME
+    })

@@ -25,12 +25,55 @@
 
     <!-- Formulaire Principal -->
     <div class="lg:col-span-2 space-y-6">
-      <form action="/merchant/settings/update" method="POST" class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-5">
+      <form action="/merchant/settings/update" method="POST" enctype="multipart/form-data" x-data="{ logoPreview: '{{ clean_logo or '' }}', removeLogo: false }" class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-5">
         
         <h2 class="text-base font-bold text-slate-900 flex items-center space-x-2">
           <i data-lucide="store" class="w-4 h-4 text-emerald-600"></i>
-          <span>Profil de la Boutique</span>
+          <span>Profil & Logo de la Boutique</span>
         </h2>
+
+        <!-- Section Logo / Photo Personnelle du Vendeur -->
+        <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200/80">
+          <label class="block text-xs font-bold text-slate-800 mb-2">Photo de profil ou Logo de votre boutique</label>
+          <div class="flex flex-col sm:flex-row items-center gap-4">
+            <!-- Aperçu -->
+            <div class="w-20 h-20 rounded-2xl overflow-hidden ring-4 ring-emerald-500/10 shadow-sm shrink-0 bg-emerald-600 flex items-center justify-center text-white font-black text-2xl relative">
+              <template x-if="logoPreview && !removeLogo">
+                <img :src="logoPreview" alt="Logo" class="w-full h-full object-cover">
+              </template>
+              <template x-if="!logoPreview || removeLogo">
+                <span>{{ merchant.store_name[:2] | upper }}</span>
+              </template>
+            </div>
+
+            <div class="flex-1 space-y-2 text-center sm:text-left">
+              <p class="text-xs text-slate-600">Ajoutez votre propre photo ou le logo de votre boutique pour inspirer confiance à vos clients.</p>
+              
+              <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                <button type="button" @click="$refs.logoInput.click()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition flex items-center space-x-1.5 shadow-sm">
+                  <i data-lucide="camera" class="w-3.5 h-3.5"></i>
+                  <span>Prendre / Choisir une photo</span>
+                </button>
+
+                <template x-if="logoPreview && !removeLogo">
+                  <button type="button" @click="removeLogo = true; $refs.removeInput.value = '1'" class="px-3 py-1.5 bg-white border border-slate-200 hover:border-red-300 text-red-600 font-bold text-xs rounded-xl transition">
+                    Supprimer ma photo
+                  </button>
+                </template>
+              </div>
+
+              <input 
+                type="file" 
+                name="logo_file" 
+                x-ref="logoInput" 
+                accept="image/*" 
+                class="hidden" 
+                @change="const file = $event.target.files[0]; if (file) { removeLogo = false; $refs.removeInput.value = '0'; const reader = new FileReader(); reader.onload = (e) => { logoPreview = e.target.result; }; reader.readAsDataURL(file); }"
+              >
+              <input type="hidden" name="remove_logo" x-ref="removeInput" value="0">
+            </div>
+          </div>
+        </div>
 
         <div>
           <label class="block text-xs font-semibold text-slate-700 mb-1">Nom public de votre boutique *</label>
@@ -122,38 +165,158 @@
       </form>
     </div>
 
-    <!-- Gestion des Zones de Livraison -->
-    <div class="space-y-4">
+    <!-- Gestion des Zones de Livraison Personnalisées -->
+    <div class="space-y-4" x-data="{ editingZoneId: null }">
       <div class="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-sm">
-        <h2 class="text-sm font-bold text-slate-900 mb-3 flex items-center space-x-2">
-          <i data-lucide="map-pin" class="w-4 h-4 text-emerald-600"></i>
-          <span>Zones & Tarifs Livraison</span>
-        </h2>
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-sm font-bold text-slate-900 flex items-center space-x-2">
+            <i data-lucide="map-pin" class="w-4 h-4 text-emerald-600"></i>
+            <span>Zones & Tarifs de Livraison</span>
+          </h2>
+          <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+            {{ zones|length }} zone(s)
+          </span>
+        </div>
+        
+        <p class="text-[11px] text-slate-500 mb-3">
+          Vous êtes 100% libre de fixer vos propres tarifs et d'ajouter uniquement les zones que vous desservez.
+        </p>
 
-        <!-- Liste des zones -->
-        <div class="divide-y divide-slate-100 max-h-64 overflow-y-auto mb-4">
+        <!-- Actions globales si zones existantes -->
+        {% if zones %}
+        <div class="flex justify-end mb-2">
+          <form action="/merchant/zones/clear-all" method="POST" onsubmit="return confirm('Effacer toutes les zones actuelles pour repartir de zéro ?')">
+            <button type="submit" class="text-[11px] font-bold text-red-500 hover:text-red-700 underline">
+              Tout effacer et repartir à zéro
+            </button>
+          </form>
+        </div>
+        {% endif %}
+
+        <!-- Liste des zones actuelles -->
+        <div class="divide-y divide-slate-100 max-h-72 overflow-y-auto mb-4">
           {% for zone in zones %}
-          <div class="py-2.5 flex items-center justify-between text-xs">
-            <div>
-              <div class="font-bold text-slate-800">{{ zone.name }}</div>
-              <div class="text-emerald-600 font-semibold">{{ "{:,}".format(zone.fee) }} FCFA</div>
+          <div class="py-2.5">
+            <!-- Mode Affichage Normal -->
+            <div x-show="editingZoneId !== {{ zone.id }}" class="flex items-center justify-between text-xs">
+              <div>
+                <div class="font-bold text-slate-800">{{ zone.name }}</div>
+                <div class="flex items-center space-x-2 mt-0.5">
+                  <span class="text-emerald-600 font-extrabold">{{ "{:,}".format(zone.fee) }} FCFA</span>
+                  <span class="text-slate-400 text-[10px]">⏱️ {{ zone.estimated_time }}</span>
+                </div>
+              </div>
+              <div class="flex items-center space-x-1">
+                <button type="button" @click="editingZoneId = {{ zone.id }}" class="p-1 text-slate-400 hover:text-emerald-600 rounded transition" title="Modifier le tarif">
+                  <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
+                </button>
+                <form action="/merchant/zones/{{ zone.id }}/delete" method="POST" onsubmit="return confirm('Supprimer cette zone ?')">
+                  <button type="submit" class="p-1 text-slate-400 hover:text-red-600 rounded transition" title="Supprimer">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                  </button>
+                </form>
+              </div>
             </div>
-            <form action="/merchant/zones/{{ zone.id }}/delete" method="POST" onsubmit="return confirm('Supprimer cette zone ?')">
-              <button type="submit" class="text-slate-400 hover:text-red-600 p-1">
-                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-              </button>
-            </form>
+
+            <!-- Mode Modification Rapide -->
+            <div x-show="editingZoneId === {{ zone.id }}" x-cloak class="p-2.5 bg-slate-50 rounded-xl border border-emerald-200">
+              <form action="/merchant/zones/{{ zone.id }}/edit" method="POST" class="space-y-2">
+                <div>
+                  <label class="block text-[10px] font-bold text-slate-600">Nom de la commune / zone :</label>
+                  <input type="text" name="name" value="{{ zone.name }}" required class="w-full px-2 py-1 text-xs rounded-lg border border-slate-300">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                  <div>
+                    <label class="block text-[10px] font-bold text-slate-600">Tarif (FCFA) :</label>
+                    <input type="number" name="fee" value="{{ zone.fee }}" required class="w-full px-2 py-1 text-xs rounded-lg border border-slate-300 font-bold text-emerald-600">
+                  </div>
+                  <div>
+                    <label class="block text-[10px] font-bold text-slate-600">Délai estimé :</label>
+                    <input type="text" name="estimated_time" value="{{ zone.estimated_time }}" class="w-full px-2 py-1 text-xs rounded-lg border border-slate-300">
+                  </div>
+                </div>
+                <div class="flex items-center justify-end space-x-1.5 pt-1">
+                  <button type="button" @click="editingZoneId = null" class="px-2 py-1 text-[11px] font-semibold text-slate-500 hover:bg-slate-200 rounded">
+                    Annuler
+                  </button>
+                  <button type="submit" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] rounded-lg shadow-sm">
+                    Enregistrer
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+          {% else %}
+          <div class="py-6 text-center text-xs text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+            <i data-lucide="map-pin-off" class="w-6 h-6 mx-auto mb-1 text-slate-300"></i>
+            <p class="font-bold text-slate-600">Aucune zone enregistrée</p>
+            <p class="text-[11px] mt-0.5">Ajoutez vos propres communes ci-dessous avec vos tarifs personnalisés.</p>
           </div>
           {% endfor %}
         </div>
 
-        <!-- Formulaire Ajout Zone -->
-        <form action="/merchant/zones/add" method="POST" class="pt-3 border-t border-slate-100 space-y-2">
-          <span class="text-xs font-bold text-slate-700 block">Ajouter une commune :</span>
-          <input type="text" name="name" required placeholder="Ex: Port-Bouët / Vridi" class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs">
-          <input type="number" name="fee" required placeholder="Tarif en FCFA (ex: 2000)" class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs">
-          <button type="submit" class="w-full py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-lg transition">
-            + Ajouter la zone
+        <!-- Formulaire Ajout Zone Personnalisée -->
+        <form action="/merchant/zones/add" method="POST" class="pt-3 border-t border-slate-100 space-y-2.5" x-data="{
+          setTemplate(name, fee, time) {
+            $refs.zoneName.value = name;
+            $refs.zoneFee.value = fee;
+            $refs.zoneTime.value = time;
+          }
+        }">
+          <span class="text-xs font-extrabold text-slate-800 block">+ Ajouter une zone à votre tarif :</span>
+
+          <!-- Suggestions rapides en 1 clic pour toute la Côte d'Ivoire -->
+          <div class="space-y-1">
+            <span class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Modèles rapides (Abidjan & Intérieur) :</span>
+            <div class="flex flex-wrap gap-1.5">
+              <button type="button" @click="setTemplate('Abidjan (Toutes Communes)', 1500, '1h - 3h')" class="text-[10px] px-2 py-0.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-semibold transition">
+                + Abidjan (1 500 F)
+              </button>
+              <button type="button" @click="setTemplate('Yopougon (Abidjan)', 2000, '2h - 4h')" class="text-[10px] px-2 py-0.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-semibold transition">
+                + Yopougon (2 000 F)
+              </button>
+              <button type="button" @click="setTemplate('Cocody (Abidjan)', 1500, '1h - 2h')" class="text-[10px] px-2 py-0.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-semibold transition">
+                + Cocody (1 500 F)
+              </button>
+              <button type="button" @click="setTemplate('Bouaké (Colis car / gare)', 2500, '24h - 48h')" class="text-[10px] px-2 py-0.5 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 font-semibold transition">
+                + Bouaké (2 500 F)
+              </button>
+              <button type="button" @click="setTemplate('Yamoussoukro (Colis car / gare)', 2500, '24h - 48h')" class="text-[10px] px-2 py-0.5 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 font-semibold transition">
+                + Yamoussoukro (2 500 F)
+              </button>
+              <button type="button" @click="setTemplate('San-Pédro (Colis car / gare)', 3000, '24h - 48h')" class="text-[10px] px-2 py-0.5 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 font-semibold transition">
+                + San-Pédro (3 000 F)
+              </button>
+              <button type="button" @click="setTemplate('Korhogo (Colis car / gare)', 3000, '24h - 48h')" class="text-[10px] px-2 py-0.5 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 font-semibold transition">
+                + Korhogo (3 000 F)
+              </button>
+              <button type="button" @click="setTemplate('Toutes les villes de l\'Intérieur (Colis car)', 3000, '24h - 48h')" class="text-[10px] px-2 py-0.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 font-semibold transition">
+                + Tout l'Intérieur CI (3 000 F)
+              </button>
+              <button type="button" @click="setTemplate('Retrait sur place en Boutique', 0, 'Immédiat')" class="text-[10px] px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 font-semibold transition">
+                + Retrait Boutique (Gratuit)
+              </button>
+            </div>
+          </div>
+          
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">Nom de la zone ou ville *</label>
+            <input type="text" name="name" x-ref="zoneName" required placeholder="Ex: Cocody, Yopougon, Bouaké, San-Pédro, Tout l'Intérieur..." class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-500">
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">Tarif de livraison (FCFA) *</label>
+              <input type="number" name="fee" x-ref="zoneFee" required placeholder="Ex: 1500, 2000, 3000" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-500">
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">Délai estimé</label>
+              <input type="text" name="estimated_time" x-ref="zoneTime" value="1h - 3h" placeholder="Ex: 1h - 3h, 24h (Colis car)" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-500">
+            </div>
+          </div>
+
+          <button type="submit" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl shadow-sm transition active:scale-95">
+            + Ajouter cette zone à ma boutique
           </button>
         </form>
       </div>

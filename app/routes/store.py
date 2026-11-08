@@ -1,8 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, Form
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, Response, FileResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 import uuid
+import os
+import base64
 
 from app.database import get_db
 from app.models import Merchant, Product, DeliveryZone, Order, OrderItem, PaymentStatusEnum
@@ -17,10 +19,13 @@ async def landing_page(request: Request, db: Session = Depends(get_db)):
     """Page d'accueil de la plateforme DjassaPay avec vitrine Marketplace."""
     merchants = db.query(Merchant).all()
     marketplace_products = db.query(Product).join(Merchant).filter(
-        Product.is_active == True,
-        Product.stock > 0
+        Product.is_active != False,
+        (Product.stock == None) | (Product.stock >= 0)
     ).order_by(Product.created_at.desc()).limit(8).all()
-    total_products_count = db.query(Product).filter(Product.is_active == True, Product.stock > 0).count()
+    total_products_count = db.query(Product).filter(
+        Product.is_active != False,
+        (Product.stock == None) | (Product.stock >= 0)
+    ).count()
 
     return templates.TemplateResponse("landing.html", {
         "request": request,
@@ -42,8 +47,8 @@ async def marketplace_view(
     directement les articles ajoutés par les vendeurs vérifiés de Côte d'Ivoire.
     """
     query = db.query(Product).join(Merchant).filter(
-        Product.is_active == True,
-        Product.stock > 0
+        Product.is_active != False,
+        (Product.stock == None) | (Product.stock >= 0)
     )
 
     clean_q = q.strip()
@@ -91,8 +96,8 @@ async def view_store(request: Request, store_slug: str, db: Session = Depends(ge
     
     products = db.query(Product).filter(
         Product.merchant_id == merchant.id,
-        Product.is_active == True
-    ).all()
+        Product.is_active != False
+    ).order_by(Product.created_at.desc()).all()
     
     delivery_zones = db.query(DeliveryZone).filter(
         DeliveryZone.merchant_id == merchant.id
@@ -130,6 +135,77 @@ async def view_product(request: Request, store_slug: str, product_id: int, db: S
         "delivery_zones": delivery_zones
     })
 
+@router.get("/shop/{store_slug}/og-image")
+async def store_og_image(store_slug: str, db: Session = Depends(get_db)):
+    """Sert l'image haute définition en binaire JPEG pour les aperçus WhatsApp, Facebook, TikTok (OpenGraph)."""
+    merchant = db.query(Merchant).filter(Merchant.store_slug == store_slug).first()
+    if not merchant:
+        return FileResponse("app/static/images/djassapay_brand_identity.jpg")
+
+    # 1. Vérifier si le marchand a un logo personnel (Base64)
+    if merchant.logo_url and merchant.logo_url.startswith("data:image/"):
+        try:
+            header, data = merchant.logo_url.split(",", 1)
+            media_type = header.split(";")[0].replace("data:", "") or "image/jpeg"
+            img_bytes = base64.b64decode(data)
+            return Response(content=img_bytes, media_type=media_type, headers={"Cache-Control": "public, max-age=86400"})
+        except Exception:
+            pass
+    elif merchant.logo_url and merchant.logo_url.startswith("/static/"):
+        local_p = os.path.join("app", merchant.logo_url.lstrip("/"))
+        if os.path.exists(local_p):
+            return FileResponse(local_p)
+
+    # 2. Sinon, prendre la photo du premier article disponible
+    first_prod = db.query(Product).filter(
+        Product.merchant_id == merchant.id,
+        Product.is_active != False,
+        Product.image_url != None
+    ).first()
+    if first_prod and first_prod.image_url:
+        if first_prod.image_url.startswith("data:image/"):
+            try:
+                header, data = first_prod.image_url.split(",", 1)
+                media_type = header.split(";")[0].replace("data:", "") or "image/jpeg"
+                img_bytes = base64.b64decode(data)
+                return Response(content=img_bytes, media_type=media_type, headers={"Cache-Control": "public, max-age=86400"})
+            except Exception:
+                pass
+        elif first_prod.image_url.startswith("/static/"):
+            local_p = os.path.join("app", first_prod.image_url.lstrip("/"))
+            if os.path.exists(local_p):
+                return FileResponse(local_p)
+
+    # 3. Fallback visuel de marque officiel
+    return FileResponse("app/static/images/djassapay_brand_identity.jpg")
+
+@router.get("/shop/{store_slug}/product/{product_id}/og-image")
+async def product_og_image(store_slug: str, product_id: int, db: Session = Depends(get_db)):
+    """Sert la photo haute définition d'un article pour les aperçus WhatsApp, Facebook, TikTok (OpenGraph)."""
+    merchant = db.query(Merchant).filter(Merchant.store_slug == store_slug).first()
+    if not merchant:
+        return FileResponse("app/static/images/djassapay_brand_identity.jpg")
+
+    product = db.query(Product).filter(
+        Product.id == product_id,
+        Product.merchant_id == merchant.id
+    ).first()
+    if product and product.image_url:
+        if product.image_url.startswith("data:image/"):
+            try:
+                header, data = product.image_url.split(",", 1)
+                media_type = header.split(";")[0].replace("data:", "") or "image/jpeg"
+                img_bytes = base64.b64decode(data)
+                return Response(content=img_bytes, media_type=media_type, headers={"Cache-Control": "public, max-age=86400"})
+            except Exception:
+                pass
+        elif product.image_url.startswith("/static/"):
+            local_p = os.path.join("app", product.image_url.lstrip("/"))
+            if os.path.exists(local_p):
+                return FileResponse(local_p)
+
+    return FileResponse("app/static/images/djassapay_brand_identity.jpg")
+
 @router.post("/shop/{store_slug}/checkout")
 async def process_checkout(
     store_slug: str,
@@ -137,7 +213,7 @@ async def process_checkout(
     quantity: int = Form(1),
     customer_name: str = Form(...),
     customer_phone: str = Form(...),
-    delivery_zone_id: int = Form(...),
+    delivery_zone_id: int = Form(0),
     delivery_address: str = Form(...),
     customer_notes: str = Form(""),
     payment_method: str = Form("WAVE"),
@@ -154,7 +230,7 @@ async def process_checkout(
 
     zone = db.query(DeliveryZone).filter(DeliveryZone.id == delivery_zone_id, DeliveryZone.merchant_id == merchant.id).first()
     delivery_fee = zone.fee if zone else 1500
-    zone_name = zone.name if zone else "Abidjan Centre"
+    zone_name = zone.name if zone else "Livraison standard"
 
     subtotal = product.price * quantity
     total, deposit_required, balance_due = PaymentService.calculate_deposit_and_balance(
@@ -166,6 +242,9 @@ async def process_checkout(
     # Création du numéro de commande unique (ex: DJA-7382)
     order_number = f"DJA-{uuid.uuid4().hex[:5].upper()}"
 
+    clean_notes = customer_notes if isinstance(customer_notes, str) else ""
+    clean_method = payment_method if isinstance(payment_method, str) else "WAVE"
+
     order = Order(
         order_number=order_number,
         merchant_id=merchant.id,
@@ -173,14 +252,14 @@ async def process_checkout(
         customer_phone=customer_phone,
         delivery_zone_name=zone_name,
         delivery_address=delivery_address,
-        customer_notes=customer_notes,
+        customer_notes=clean_notes,
         subtotal=subtotal,
         delivery_fee=delivery_fee,
         total_amount=total,
         deposit_required=deposit_required,
         deposit_paid=0,
         balance_due=balance_due,
-        payment_method=payment_method,
+        payment_method=clean_method,
         payment_status=PaymentStatusEnum.PENDING_DEPOSIT.value
     )
     db.add(order)

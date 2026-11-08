@@ -14,26 +14,31 @@
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://djassapay.onrender.com{{ request.url.path }}">
 
-  <!-- Balises Open Graph / WhatsApp / Facebook / LinkedIn -->
+  <!-- Balises Open Graph / WhatsApp / Facebook / TikTok / Twitter -->
+  {% block opengraph %}
   <meta property="og:site_name" content="DjassaPay Côte d'Ivoire">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://djassapay.onrender.com{{ request.url.path }}">
   <meta property="og:title" content="DjassaPay • La plateforme E-commerce Anti-Lapin en Côte d'Ivoire">
   <meta property="og:description" content="Encaissez vos acomptes de livraison directement par Wave CI et Mobile Money. Zéro faux bond, colis expédiés en toute sécurité.">
-  <meta property="og:image" content="https://images.unsplash.com/photo-1556742049-0a67c5574f73?auto=format&fit=crop&w=1200&q=80">
+  <meta property="og:image" content="https://djassapay.onrender.com/static/images/djassapay_brand_identity.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="DjassaPay • E-commerce & Acomptes Wave CI">
   <meta name="twitter:description" content="Sécurisez vos ventes et livraisons moto à Abidjan et dans toute la Côte d'Ivoire.">
-  <meta name="twitter:image" content="https://images.unsplash.com/photo-1556742049-0a67c5574f73?auto=format&fit=crop&w=1200&q=80">
+  <meta name="twitter:image" content="https://djassapay.onrender.com/static/images/djassapay_brand_identity.jpg">
+  {% endblock %}
   
   <!-- PWA & Mobile Web App -->
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#059669">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="/static/images/djassapay_icon.svg">
+  <link rel="icon" type="image/svg+xml" href="/static/images/djassapay_icon.svg">
   
   <!-- Tailwind CSS & Fonts -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -94,53 +99,88 @@
   <!-- Barre de navigation -->
   <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-      <div class="flex items-center space-x-2 sm:space-x-3">
-        
-        <!-- BOUTON RETOUR UNIVERSEL (Sur toutes les pages sauf l'accueil '/') -->
-        {% if request and request.url.path != '/' %}
-        <button type="button" onclick="smartBack()" class="inline-flex items-center space-x-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs sm:text-sm font-bold transition active:scale-95 border border-slate-200/90 shadow-sm" title="Retourner à la page précédente">
-          <i data-lucide="arrow-left" class="w-4 h-4 text-emerald-600"></i>
-          <span class="font-extrabold">Retour</span>
-        </button>
-        {% endif %}
-
-        <a href="/" class="flex items-center space-x-2">
-          <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white font-bold text-lg sm:text-xl shadow-md shadow-emerald-500/20">
-            ⚡
-          </div>
-          <span class="font-extrabold text-lg sm:text-xl tracking-tight text-slate-900">Djassa<span class="text-emerald-600">Pay</span></span>
-        </a>
-        <span class="hidden md:inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
-          Anti-Lapin
-        </span>
-      </div>
-
-      <nav class="flex items-center space-x-1.5 sm:space-x-3">
-        <a href="/marketplace" class="text-xs sm:text-sm font-bold text-slate-800 bg-amber-50 hover:bg-amber-100 border border-amber-200/90 px-2.5 py-1.5 rounded-xl transition flex items-center space-x-1 shadow-sm">
-          <span>🛍️ Marketplace</span>
-        </a>
-
-        <a href="/delivery" class="text-xs sm:text-sm font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80 px-2.5 py-1.5 rounded-lg transition flex items-center space-x-1">
-          <span>🏍️ Livreur</span>
-        </a>
-
-        {% if request and request.cookies.get('merchant_id') %}
-          <a href="/merchant/dashboard" class="text-xs sm:text-sm font-bold bg-slate-900 text-white hover:bg-slate-800 px-3 py-1.5 rounded-xl shadow-sm transition flex items-center space-x-1">
-            <i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i>
-            <span class="hidden sm:inline">Mon Espace</span>
+      
+      <!-- MODE BOUTIQUE PRIVÉE : Isolation totale de la boutique du vendeur -->
+      {% if request and request.url.path.startswith('/shop/') and merchant %}
+        <div class="flex items-center space-x-2 sm:space-x-3">
+          {% if '/product/' in request.url.path %}
+          <a href="/shop/{{ merchant.store_slug }}" class="inline-flex items-center space-x-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs sm:text-sm font-bold transition active:scale-95 border border-slate-200/90 shadow-sm" title="Retour aux articles">
+            <i data-lucide="arrow-left" class="w-4 h-4 text-emerald-600"></i>
+            <span class="font-extrabold">Boutique</span>
           </a>
-          <a href="/logout" title="Déconnexion" class="text-xs font-semibold text-slate-400 hover:text-red-600 p-1.5 rounded-lg transition">
-            <i data-lucide="log-out" class="w-4 h-4"></i>
+          {% endif %}
+
+          <a href="/shop/{{ merchant.store_slug }}" class="flex items-center space-x-2">
+            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-600 text-white font-black text-sm flex items-center justify-center shadow-md shadow-emerald-500/20 overflow-hidden shrink-0">
+              {% if merchant.logo_url and 'photo-1544005313' not in merchant.logo_url and 'unsplash' not in merchant.logo_url %}
+                <img src="{{ merchant.logo_url }}" alt="{{ merchant.store_name }}" class="w-full h-full object-cover">
+              {% else %}
+                <span>{{ merchant.store_name[:2] | upper }}</span>
+              {% endif %}
+            </div>
+            <div class="flex flex-col">
+              <span class="font-extrabold text-sm sm:text-base tracking-tight text-slate-900 leading-tight truncate max-w-[150px] sm:max-w-[220px]">{{ merchant.store_name }}</span>
+              <span class="text-[10px] text-emerald-600 font-bold flex items-center">
+                <i data-lucide="shield-check" class="w-2.5 h-2.5 mr-0.5"></i> Vendeur Vérifié
+              </span>
+            </div>
           </a>
-        {% else %}
-          <a href="/login" class="text-xs sm:text-sm font-semibold text-slate-700 hover:text-slate-900 px-2.5 py-1.5 rounded-lg transition">
-            <span>Connexion</span>
+        </div>
+
+        <!-- Navigation Boutique : 100% privée, AUCUN lien vers d'autres vendeurs ni marketplace -->
+        <nav class="flex items-center space-x-1.5 sm:space-x-2">
+          <a href="https://wa.me/{{ merchant.whatsapp_phone_clean }}" target="_blank" class="text-xs font-bold bg-[#25D366] hover:bg-[#20bd5a] text-white px-3 py-1.5 rounded-xl shadow-sm transition flex items-center space-x-1.5 active:scale-95">
+            <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
+            <span>WhatsApp</span>
           </a>
-          <a href="/register" class="text-xs sm:text-sm font-extrabold bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-xl shadow-sm transition flex items-center space-x-1">
-            <span>+ Ouvrir Boutique</span>
+        </nav>
+
+      {% else %}
+        <!-- MODE GLOBAL (Accueil, Marketplace, Dashboard) -->
+        <div class="flex items-center space-x-2 sm:space-x-3">
+          {% if request and request.url.path != '/' %}
+          <button type="button" onclick="smartBack()" class="inline-flex items-center space-x-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs sm:text-sm font-bold transition active:scale-95 border border-slate-200/90 shadow-sm" title="Retourner à la page précédente">
+            <i data-lucide="arrow-left" class="w-4 h-4 text-emerald-600"></i>
+            <span class="font-extrabold">Retour</span>
+          </button>
+          {% endif %}
+
+          <a href="/" class="flex items-center space-x-2">
+            <img src="/static/images/djassapay_icon.svg" alt="DjassaPay" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl shadow-md shadow-emerald-500/20 shrink-0">
+            <span class="font-extrabold text-lg sm:text-xl tracking-tight text-slate-900">Djassa<span class="text-emerald-600">Pay</span></span>
           </a>
-        {% endif %}
-      </nav>
+          <span class="hidden md:inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+            Anti-Lapin
+          </span>
+        </div>
+
+        <nav class="flex items-center space-x-1.5 sm:space-x-3">
+          <a href="/marketplace" class="text-xs sm:text-sm font-bold text-slate-800 bg-amber-50 hover:bg-amber-100 border border-amber-200/90 px-2.5 py-1.5 rounded-xl transition flex items-center space-x-1 shadow-sm">
+            <span>🛍️ Marketplace</span>
+          </a>
+
+          <a href="/delivery" class="text-xs sm:text-sm font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80 px-2.5 py-1.5 rounded-lg transition flex items-center space-x-1">
+            <span>🏍️ Livreur</span>
+          </a>
+
+          {% if request and request.cookies.get('merchant_id') %}
+            <a href="/merchant/dashboard" class="text-xs sm:text-sm font-bold bg-slate-900 text-white hover:bg-slate-800 px-3 py-1.5 rounded-xl shadow-sm transition flex items-center space-x-1">
+              <i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i>
+              <span class="hidden sm:inline">Mon Espace</span>
+            </a>
+            <a href="/logout" title="Déconnexion" class="text-xs font-semibold text-slate-400 hover:text-red-600 p-1.5 rounded-lg transition">
+              <i data-lucide="log-out" class="w-4 h-4"></i>
+            </a>
+          {% else %}
+            <a href="/login" class="text-xs sm:text-sm font-semibold text-slate-700 hover:text-slate-900 px-2.5 py-1.5 rounded-lg transition">
+              <span>Connexion</span>
+            </a>
+            <a href="/register" class="text-xs sm:text-sm font-extrabold bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-xl shadow-sm transition flex items-center space-x-1">
+              <span>+ Ouvrir Boutique</span>
+            </a>
+          {% endif %}
+        </nav>
+      {% endif %}
     </div>
   </header>
 
@@ -151,14 +191,30 @@
 
   <!-- Footer -->
   <footer class="bg-white border-t border-slate-200 py-6 mt-12 text-center text-xs text-slate-400">
-    <div class="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-      <div>
-        <p class="font-medium text-slate-500">DjassaPay &bull; Le SaaS e-commerce Anti-Lapin en Côte d'Ivoire (Abidjan & Intérieur)</p>
-        <p class="mt-0.5">Compatible Wave CI &bull; Orange Money CI &bull; MTN MoMo CI &bull; Moov Money CI &bull; WhatsApp Cloud</p>
-      </div>
-      <div>
-        <p class="text-[11px] text-slate-400">&copy; DjassaPay. Tous droits réservés.</p>
-      </div>
+    <div class="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+      {% if request and request.url.path.startswith('/shop/') and merchant %}
+        <div class="text-center sm:text-left">
+          <p class="font-bold text-slate-700">Boutique officielle {{ merchant.store_name }} &bull; {{ merchant.city or "Côte d'Ivoire" }}</p>
+          <p class="mt-0.5 text-slate-500">Paiements d'acomptes sécurisés par Wave CI &bull; Orange Money &bull; MTN MoMo</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-[11px] text-emerald-700 font-bold bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+            🔒 Vente Certifiée Anti-Lapin
+          </span>
+        </div>
+      {% else %}
+        <div class="text-center sm:text-left">
+          <p class="font-medium text-slate-500">DjassaPay &bull; Le SaaS e-commerce Anti-Lapin en Côte d'Ivoire (Abidjan & Intérieur)</p>
+          <p class="mt-0.5">Compatible Wave CI &bull; Orange Money CI &bull; MTN MoMo CI &bull; Moov Money CI &bull; WhatsApp Cloud</p>
+        </div>
+        <div class="flex flex-col sm:flex-row items-center gap-2">
+          <a href="mailto:djassapay9@gmail.com" class="inline-flex items-center space-x-1.5 text-xs font-bold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 rounded-xl transition shadow-sm">
+            <i data-lucide="mail" class="w-3.5 h-3.5"></i>
+            <span>djassapay9@gmail.com</span>
+          </a>
+          <p class="text-[11px] text-slate-400">&copy; DjassaPay. Tous droits réservés.</p>
+        </div>
+      {% endif %}
     </div>
   </footer>
 

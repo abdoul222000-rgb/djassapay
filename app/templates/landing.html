@@ -7,9 +7,14 @@
   
   <!-- Hero Section -->
   <div class="text-center max-w-3xl mx-auto">
+    <!-- Logo Officiel DjassaPay -->
+    <div class="mb-6 flex justify-center">
+      <img src="/static/images/djassapay_logo.svg" alt="DjassaPay Logo Officiel" class="h-16 sm:h-20 w-auto">
+    </div>
+
     <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs sm:text-sm font-semibold border border-emerald-200 mb-6 shadow-sm">
       <span class="animate-pulse">🇨🇮</span>
-      <span>Le SaaS e-commerce Anti-Lapin n°1 en Côte d'Ivoire (Abidjan & Intérieur)</span>
+      <span>Disponible sur toute l'étendue de la Côte d'Ivoire (Abidjan & Toutes les Villes de l'Intérieur)</span>
     </div>
 
     <h1 class="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight leading-tight">
@@ -20,7 +25,7 @@
     </h1>
 
     <p class="mt-5 text-base sm:text-lg text-slate-600 leading-relaxed">
-      Finies les courses de coursier payées dans le vide ! Vos clientes valident leur commande en payant l'acompte de livraison par <strong>Wave CI</strong>, <strong>Orange Money</strong>, <strong>MTN MoMo</strong> ou <strong>Moov Money</strong>. Dès que l'acompte est réglé, le bordereau livreur moto est généré en 1 clic.
+      Finies les courses de coursier payées dans le vide ! Vos clientes valident leur commande en payant l'acompte de livraison par <strong>Wave CI</strong>, <strong>Orange Money</strong>, <strong>MTN MoMo</strong> ou <strong>Moov Money</strong>. Dès que l'acompte est réglé, la livraison moto locale ou l'expédition colis en gare est lancée en toute sérénité.
     </p>
 
     <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -42,7 +47,7 @@
       <span class="flex items-center"><i data-lucide="check-circle" class="w-4 h-4 text-emerald-500 mr-1.5"></i> Wave CI Direct</span>
       <span class="flex items-center"><i data-lucide="check-circle" class="w-4 h-4 text-emerald-500 mr-1.5"></i> Orange Money & MTN MoMo</span>
       <span class="flex items-center"><i data-lucide="check-circle" class="w-4 h-4 text-emerald-500 mr-1.5"></i> Moov Money CI</span>
-      <span class="flex items-center"><i data-lucide="check-circle" class="w-4 h-4 text-emerald-500 mr-1.5"></i> 33 Communes Couvertes</span>
+      <span class="flex items-center"><i data-lucide="check-circle" class="w-4 h-4 text-emerald-500 mr-1.5"></i> 100% Côte d'Ivoire (Abidjan & Intérieur)</span>
     </div>
   </div>
 
@@ -64,7 +69,7 @@
       </div>
       <h3 class="font-bold text-slate-900 text-lg">Le Verrou Anti-Lapin</h3>
       <p class="mt-2 text-sm text-slate-600 leading-relaxed">
-        Le client paie l'acompte (frais de course moto) directement sur votre compte avant l'expédition. S'il a payé, il est là à 100% !
+        Le client paie l'acompte (frais de livraison moto ou transport colis) directement sur votre compte avant l'expédition. S'il a payé, il est là à 100% !
       </p>
     </div>
 
@@ -72,9 +77,9 @@
       <div class="w-12 h-12 rounded-2xl bg-sky-100 text-sky-600 flex items-center justify-center font-bold text-xl mb-4">
         🏍️
       </div>
-      <h3 class="font-bold text-slate-900 text-lg">Feuille de Route Livreur</h3>
+      <h3 class="font-bold text-slate-900 text-lg">Livreurs Moto & Colis Gare</h3>
       <p class="mt-2 text-sm text-slate-600 leading-relaxed">
-        Fini les notes vocales interminables. Votre coursier reçoit un bordereau propre avec l'adresse, repères, bouton d'appel et montant cash à encaisser.
+        Fini les notes vocales interminables. Votre coursier ou transporteur reçoit un bordereau avec la ville, l'adresse, repères, bouton d'appel et montant cash à encaisser.
       </p>
     </div>
   </div>
@@ -104,7 +109,13 @@
           {% if product.is_video %}
             <video src="{{ product.image_url }}" autoplay loop muted playsinline class="w-full h-full object-cover group-hover:scale-105 transition"></video>
           {% else %}
-            <img src="{{ product.image_url or 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80' }}" alt="{{ product.title }}" class="w-full h-full object-cover group-hover:scale-105 transition" loading="lazy">
+            <img 
+              src="{{ product.image_url or '/static/images/product_placeholder.svg' }}" 
+              alt="{{ product.title }}" 
+              class="w-full h-full object-cover group-hover:scale-105 transition" 
+              loading="lazy"
+              onerror="this.onerror=null; this.src='/static/images/product_placeholder.svg';"
+            >
           {% endif %}
           <span class="absolute top-2 left-2 bg-slate-900/80 text-white text-[9px] font-bold px-2 py-0.5 rounded-md">
             {{ product.merchant.city or 'Abidjan' }}
@@ -196,6 +207,19 @@
         </a>
       </div>
     </div>
+  </div>
+
+  <!-- Contact Officiel & Support DjassaPay -->
+  <div class="mt-12 text-center py-6 px-4 rounded-3xl bg-white border border-slate-200/80 shadow-sm max-w-xl mx-auto">
+    <div class="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 mb-2 shadow-inner">
+      <i data-lucide="mail" class="w-6 h-6"></i>
+    </div>
+    <h3 class="text-sm sm:text-base font-bold text-slate-900">Une question ou besoin d'assistance ?</h3>
+    <p class="text-xs text-slate-500 mt-0.5">Contact officiel du support DjassaPay Côte d'Ivoire :</p>
+    <a href="mailto:djassapay9@gmail.com" class="mt-2.5 inline-flex items-center space-x-2 text-base sm:text-lg font-black text-emerald-600 hover:text-emerald-700 hover:underline">
+      <span>djassapay9@gmail.com</span>
+      <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+    </a>
   </div>
 
 </div>

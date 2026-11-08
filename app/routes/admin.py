@@ -121,6 +121,8 @@ async def update_admin_payouts(
     founder_name: str = Form(...),
     founder_pin: str = Form("7788"),
     founder_wave_number: str = Form(""),
+    founder_wave_account_number: str = Form("CI 94 95 29 42"),
+    founder_wave_b2b_id: str = Form("M_ci_OunaDzCXM0MS"),
     founder_orange_money_number: str = Form(""),
     founder_mtn_momo_number: str = Form(""),
     founder_moov_money_number: str = Form(""),
@@ -135,6 +137,8 @@ async def update_admin_payouts(
     settings.FOUNDER_NAME = founder_name
     settings.FOUNDER_PIN = founder_pin.strip() or "7788"
     settings.FOUNDER_WAVE_NUMBER = founder_wave_number
+    settings.FOUNDER_WAVE_ACCOUNT_NUMBER = founder_wave_account_number.strip()
+    settings.FOUNDER_WAVE_B2B_ID = founder_wave_b2b_id.strip()
     settings.FOUNDER_ORANGE_MONEY_NUMBER = founder_orange_money_number
     settings.FOUNDER_MTN_MOMO_NUMBER = founder_mtn_momo_number
     settings.FOUNDER_MOOV_MONEY_NUMBER = founder_moov_money_number
@@ -159,6 +163,9 @@ FOUNDER_PASSWORD={settings.FOUNDER_PASSWORD}
 # 2. Vos Numéros Directs de Réception Côte d'Ivoire (Pour recevoir l'argent)
 FOUNDER_NAME={founder_name}
 FOUNDER_WAVE_NUMBER={founder_wave_number}
+FOUNDER_WAVE_ACCOUNT_NUMBER={founder_wave_account_number}
+FOUNDER_WAVE_B2B_ID={founder_wave_b2b_id}
+FOUNDER_WAVE_BUSINESS_NAME=Djassapay
 FOUNDER_ORANGE_MONEY_NUMBER={founder_orange_money_number}
 FOUNDER_MTN_MOMO_NUMBER={founder_mtn_momo_number}
 FOUNDER_MOOV_MONEY_NUMBER={founder_moov_money_number}

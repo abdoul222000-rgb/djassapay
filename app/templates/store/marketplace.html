@@ -20,12 +20,12 @@
         </span>
       </h1>
       <p class="mt-3 text-xs sm:text-sm text-slate-300 leading-relaxed max-w-xl">
-        Découvrez les articles publiés par les boutiques certifiées de Côte d'Ivoire. Bloquez votre livraison avec votre acompte <strong>Wave CI</strong> ou <strong>MTN MoMo</strong>, et réglez le solde cash à l'arrivée du coursier moto !
+        Découvrez les articles publiés par les boutiques certifiées de Côte d'Ivoire. Bloquez votre livraison avec votre acompte <strong>Wave CI</strong>, <strong>Orange Money</strong> ou <strong>MTN MoMo</strong>, et réglez le solde cash à la livraison ou réception du colis !
       </p>
 
       <div class="mt-5 flex flex-wrap gap-2 text-[11px] text-slate-300">
         <span class="bg-white/10 px-2.5 py-1 rounded-lg flex items-center"><i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400 mr-1"></i> Acompte Protégé</span>
-        <span class="bg-white/10 px-2.5 py-1 rounded-lg flex items-center"><i data-lucide="bike" class="w-3.5 h-3.5 text-sky-400 mr-1"></i> Livraison 33 Communes</span>
+        <span class="bg-white/10 px-2.5 py-1 rounded-lg flex items-center"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-sky-400 mr-1"></i> Partout en Côte d'Ivoire</span>
         <span class="bg-white/10 px-2.5 py-1 rounded-lg flex items-center"><i data-lucide="check-circle" class="w-3.5 h-3.5 text-amber-400 mr-1"></i> Vendeurs Réels Vérifiés</span>
       </div>
     </div>
@@ -124,17 +124,19 @@
       <!-- Image / Vidéo Produit -->
       <a href="/shop/{{ product.merchant.store_slug }}/product/{{ product.id }}" class="block aspect-square bg-slate-100 relative overflow-hidden">
         {% if product.is_video %}
-          <video src="{{ product.image_url }}" autoplay loop muted playsinline class="w-full h-full object-cover group-hover:scale-105 transition duration-300"></video>
+          <video src="{{ product.image_url }}" autoplay loop muted playsinline class="w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='block';"></video>
+          <img src="/static/images/product_placeholder.svg" style="display:none;" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" alt="{{ product.title }}">
           <span class="absolute bottom-2 left-2 bg-slate-950/80 text-white text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-sm flex items-center space-x-1">
             <i data-lucide="play" class="w-2.5 h-2.5"></i>
             <span>Vidéo</span>
           </span>
         {% else %}
           <img 
-            src="{{ product.image_url or 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80' }}" 
+            src="{{ product.image_url or '/static/images/product_placeholder.svg' }}" 
             alt="{{ product.title }}" 
             class="w-full h-full object-cover group-hover:scale-105 transition duration-300"
             loading="lazy"
+            onerror="this.onerror=null; this.src='/static/images/product_placeholder.svg';"
           >
         {% endif %}
 
