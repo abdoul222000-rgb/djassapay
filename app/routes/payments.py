@@ -94,15 +94,39 @@ async def confirm_simulated_payment(
 
 @router.post("/payments/webhook/wave")
 async def wave_webhook(request: Request, db: Session = Depends(get_db)):
-    """Webhook pour recevoir les confirmations réelles de l'API Wave."""
+    """
+    Webhook officiel Wave : Reçoit les confirmations réelles 24h/24 en toute autonomie.
+    - Valide les acomptes de commande client.
+    - Valide et active instantanément les abonnements PRO des vendeurs !
+    """
     try:
         data = await request.json()
-        order_number = data.get("data", {}).get("client_reference")
-        if order_number:
-            order = db.query(Order).filter(Order.order_number == order_number).first()
-            if order:
-                PaymentService.mark_deposit_as_paid(order, db, transaction_ref=data.get("id"))
-                return JSONResponse({"status": "success"})
+        client_ref = data.get("data", {}).get("client_reference", "")
+        
+        if client_ref:
+            # 1. CAS ABONNEMENT PRO / BUSINESS MARCHANT (ex: SUB-15-PRO-1794182900)
+            if client_ref.startswith("SUB-"):
+                parts = client_ref.split("-")
+                merchant_id = int(parts[1])
+                target_plan = parts[2] if len(parts) > 2 else "PRO"
+                
+                merchant = db.query(Merchant).filter(Merchant.id == merchant_id).first()
+                if merchant:
+                    merchant.subscription_plan = target_plan
+                    merchant.subscription_status = "ACTIVE"
+                    paid_amt = int(data.get("data", {}).get("amount", 9900))
+                    merchant.subscription_paid_amount = (merchant.subscription_paid_amount or 0) + paid_amt
+                    db.commit()
+                    print(f"[Wave Webhook Autonome] Abonnement {target_plan} validé automatiquement pour {merchant.store_name} !")
+                    return JSONResponse({"status": "success", "message": "Subscription activated"})
+
+            # 2. CAS ACOMPTE ANTI-LAPIN COMMANDE CLIENT
+            else:
+                order = db.query(Order).filter(Order.order_number == client_ref).first()
+                if order:
+                    PaymentService.mark_deposit_as_paid(order, db, transaction_ref=data.get("id"))
+                    print(f"[Wave Webhook Autonome] Acompte de commande {order.order_number} validé !")
+                    return JSONResponse({"status": "success"})
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=400)
     return JSONResponse({"status": "ignored"})
