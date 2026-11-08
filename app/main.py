@@ -91,6 +91,14 @@ def startup_populate_data():
             founder_merchant.logo_url = "/static/images/djassapay_icon.svg"
             db.commit()
 
+        # S'assurer que Pav-225 shop est bien en mode gratuit STARTER (annulation test)
+        for p_m in db.query(Merchant).all():
+            if "pav" in (p_m.store_name or "").lower() or "pav" in (p_m.store_slug or "").lower():
+                p_m.subscription_plan = "STARTER"
+                p_m.subscription_status = "FREE"
+                p_m.subscription_paid_amount = 0
+        db.commit()
+
         # 1. Migration automatique schéma PostgreSQL : s'assurer que image_url et logo_url sont TEXT (support Base64 illimité)
         try:
             from sqlalchemy import text

@@ -179,3 +179,26 @@ WAVE_WEBHOOK_SECRET={wave_webhook_secret}
         f.write(env_content)
 
     return RedirectResponse(url="/admin/payouts?saved=1", status_code=303)
+
+@router.post("/admin/merchants/{merchant_id}/change-plan")
+async def admin_change_merchant_plan(
+    merchant_id: int,
+    request: Request,
+    plan: str = Form("STARTER"),
+    db: Session = Depends(get_db)
+):
+    """Permet au Fondateur de rétrograder en STARTER ou valider un passage en PRO."""
+    if not is_founder_authenticated(request):
+        return RedirectResponse(url="/admin/login", status_code=303)
+
+    merchant = db.query(Merchant).filter(Merchant.id == merchant_id).first()
+    if merchant:
+        merchant.subscription_plan = plan.upper()
+        if plan.upper() == "STARTER":
+            merchant.subscription_status = "FREE"
+            merchant.subscription_paid_amount = 0
+        else:
+            merchant.subscription_status = "ACTIVE"
+        db.commit()
+    return RedirectResponse(url="/admin/payouts?plan_updated=1", status_code=303)
+

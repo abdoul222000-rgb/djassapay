@@ -464,16 +464,20 @@ async def confirm_subscription(
     request: Request,
     plan: str = Form("PRO"),
     amount: int = Form(9900),
+    transaction_ref: str = Form(""),
     db: Session = Depends(get_db)
 ):
-    """Valide l'activation du forfait Pro / Business pour le marchand."""
+    """
+    Enregistre la demande d'activation d'abonnement.
+    Le statut reste 'PENDING_VERIFICATION' jusqu'à validation par le Fondateur 
+    après vérification effective des 9 900 FCFA sur son compte Wave Business !
+    """
     merchant = get_current_merchant(db, request)
     if not merchant:
         return RedirectResponse(url="/login?unauthorized=1", status_code=303)
 
-    merchant.subscription_plan = plan.upper()
-    merchant.subscription_status = "ACTIVE"
-    merchant.subscription_paid_amount += amount
+    # Protection anti-fraude : ne PAS donner le mode PRO tant que le Fondateur n'a pas confirmé l'argent sur son Wave
+    merchant.subscription_status = "PENDING_VERIFICATION"
     db.commit()
 
-    return RedirectResponse(url="/merchant/subscription?upgraded=1", status_code=303)
+    return RedirectResponse(url="/merchant/subscription?pending=1", status_code=303)
