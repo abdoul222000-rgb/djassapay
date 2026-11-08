@@ -96,6 +96,50 @@ class PaymentService:
         }
 
     @staticmethod
+    def initiate_subscription_wave_payment(merchant, plan: str = "PRO", amount: int = 9900) -> dict:
+        """
+        Génère une session officielle Wave Checkout pour un abonnement SaaS.
+        Dès validation par le marchand dans Wave, le Webhook Wave notifie DjassaPay
+        et active automatiquement le mode PRO en toute autonomie 24h/24 !
+        """
+        import time
+        ref = f"SUB-{merchant.id}-{plan.upper()}-{int(time.time())}"
+        
+        if settings.WAVE_API_KEY:
+            try:
+                url = "https://api.wave.com/v1/checkout/sessions"
+                headers = {
+                    "Authorization": f"Bearer {settings.WAVE_API_KEY.strip()}",
+                    "Content-Type": "application/json"
+                }
+                payload = {
+                    "amount": str(amount),
+                    "currency": "XOF",
+                    "error_url": f"{settings.BASE_URL}/merchant/subscription?error=payment_failed",
+                    "success_url": f"{settings.BASE_URL}/merchant/subscription?success=1",
+                    "client_reference": ref
+                }
+                with httpx.Client(timeout=10.0) as client:
+                    resp = client.post(url, json=payload, headers=headers)
+                    if resp.status_code in [200, 201]:
+                        wave_data = resp.json()
+                        wave_launch_url = wave_data.get("wave_launch_url")
+                        if wave_launch_url:
+                            return {
+                                "payment_url": wave_launch_url,
+                                "reference": ref,
+                                "is_automated": True
+                            }
+            except Exception as e:
+                print(f"[Wave Subscription Checkout API Error] {e}")
+
+        return {
+            "payment_url": None,
+            "reference": ref,
+            "is_automated": False
+        }
+
+    @staticmethod
     def mark_deposit_as_paid(order: Order, db, transaction_ref: str = None):
         """
         Valide l'encaissement de l'acompte Anti-Lapin et déverrouille l'expédition.

@@ -13,6 +13,7 @@ from app.database import get_db
 from app.config import settings
 from app.models import Merchant, Product, DeliveryZone, Order, PaymentStatusEnum, DeliveryStatusEnum
 from app.services.whatsapp_service import generate_rider_dispatch_whatsapp
+from app.services.payment_service import PaymentService
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
@@ -450,6 +451,12 @@ async def upgrade_subscription(
 
     amount = 9900 if plan == "PRO" else 19900
     
+    # Intégration 100% Autonome : si la clé API Wave est présente, redirection Wave Checkout officielle !
+    if payment_method == "WAVE" and settings.WAVE_API_KEY:
+        wave_session = PaymentService.initiate_subscription_wave_payment(merchant, plan=plan, amount=amount)
+        if wave_session.get("payment_url"):
+            return RedirectResponse(url=wave_session["payment_url"], status_code=303)
+
     return templates.TemplateResponse("payments/subscription_pay.html", {
         "request": request,
         "merchant": merchant,
