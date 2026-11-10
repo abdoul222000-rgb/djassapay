@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lead Details - CallCatch AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased">
+
+    <!-- Top Navbar -->
+    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50 px-6 py-4">
+        <div class="max-w-5xl mx-auto flex items-center justify-between">
+            <a href="/dashboard" class="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition">
+                <i class="fa-solid fa-arrow-left"></i> <span data-i18n="back_dashboard">Back to Dashboard</span>
+            </a>
+
+            <div class="flex items-center gap-4">
+                <div class="text-xs text-slate-400 font-mono">
+                    <span data-i18n="caller_label">Caller:</span> <span class="text-emerald-400 font-bold">{{ call.caller_phone }}</span>
+                </div>
+
+                <!-- LANGUAGE TOGGLE BUTTON (FR / EN) -->
+                <button id="langToggleBtn" onclick="toggleLanguage()" 
+                    class="flex items-center gap-2 bg-gradient-to-r from-slate-800 to-slate-700 hover:from-slate-700 hover:to-slate-600 border border-slate-600 px-3 py-1.5 rounded-xl text-xs font-bold transition shadow-md hover:scale-105 cursor-pointer">
+                    <span id="langFlag">🇫🇷</span>
+                    <span id="langLabel" class="text-slate-100">FR</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-6 py-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+            <!-- Left Col: Lead Information Summary -->
+            <div class="space-y-5">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4" data-i18n="caller_info_title">Caller Information</h3>
+                    
+                    <div class="space-y-3 text-sm">
+                        <div>
+                            <div class="text-xs text-slate-500" data-i18n="label_name">Name</div>
+                            <div class="text-white font-semibold">{{ call.caller_name or "Homeowner" }}</div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-slate-500" data-i18n="label_phone">Phone Number</div>
+                            <div class="text-cyan-400 font-mono">{{ call.caller_phone }}</div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-slate-500" data-i18n="label_time">Missed Call Received</div>
+                            <div class="text-slate-300 text-xs">{{ call.call_time.strftime("%b %d, %Y - %I:%M %p") }}</div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-slate-500" data-i18n="label_urgency">Urgency Level</div>
+                            {% if call.urgency_level == 'HIGH' %}
+                            <span class="inline-block mt-1 text-xs font-bold px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                                🚨 <span data-i18n="badge_urgent">Urgent Emergency</span>
+                            </span>
+                            {% else %}
+                            <span class="inline-block mt-1 text-xs font-medium px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300">
+                                <span data-i18n="badge_normal">Normal Job</span>
+                            </span>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <div class="text-xs text-slate-500" data-i18n="label_value">Estimated Job Value</div>
+                            <div class="text-emerald-400 font-bold text-lg">${{ "{:,.2f}".format(call.estimated_revenue_saved) }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Job Summary card -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2" data-i18n="job_summary_title">AI Job Summary</h3>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        {{ call.job_summary or "Homeowner reached out after missed call." }}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Right Col: Live SMS Chat Thread (REMAINS IN ENGLISH FOR CLIENT CONVERSATION) -->
+            <div class="md:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl shadow-xl flex flex-col h-[600px] overflow-hidden">
+                <!-- Chat Header -->
+                <div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/60">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span class="text-sm font-bold text-white" data-i18n="chat_thread_title">Live SMS Thread</span>
+                    </div>
+                    <span class="text-xs text-slate-400 font-mono">Via Twilio</span>
+                </div>
+
+                <!-- Chat Messages Scroll Area -->
+                <div class="flex-1 p-5 overflow-y-auto space-y-4">
+                    {% for msg in call.messages %}
+                        {% if msg.direction == 'OUTBOUND' %}
+                        <!-- Outbound (AI / Contractor) Message -->
+                        <div class="flex flex-col items-end">
+                            <div class="bg-emerald-600 text-white rounded-2xl rounded-tr-none px-4 py-3 max-w-sm text-sm shadow-md">
+                                {{ msg.body }}
+                            </div>
+                            <span class="text-[10px] text-slate-500 mt-1 font-mono">
+                                CallCatch AI • {{ msg.created_at.strftime("%I:%M %p") }}
+                            </span>
+                        </div>
+                        {% else %}
+                        <!-- Inbound (US Caller) Message -->
+                        <div class="flex flex-col items-start">
+                            <div class="bg-slate-800 text-slate-100 rounded-2xl rounded-tl-none px-4 py-3 max-w-sm text-sm border border-slate-700">
+                                {{ msg.body }}
+                            </div>
+                            <span class="text-[10px] text-slate-500 mt-1 font-mono">
+                                <span data-i18n="homeowner_sender">Homeowner</span> • {{ msg.created_at.strftime("%I:%M %p") }}
+                            </span>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+                <!-- Manual Reply Form -->
+                <form action="/leads/{{ call.id }}/reply" method="POST" class="p-4 border-t border-slate-800 bg-slate-950 flex gap-2">
+                    <input type="text" name="message" id="manualInput" placeholder="Type a message to take over from AI..." required
+                        class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500">
+                    <button type="submit" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-5 py-2 rounded-xl text-sm transition">
+                        <i class="fa-solid fa-paper-plane mr-1"></i> <span data-i18n="btn_send">Send</span>
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- MOTEUR DE TRADUCTION BILINGUE FR / EN -->
+    <script>
+        const translations = {
+            en: {
+                back_dashboard: "Back to Dashboard",
+                caller_label: "Caller:",
+                caller_info_title: "Caller Information",
+                label_name: "Name",
+                label_phone: "Phone Number",
+                label_time: "Missed Call Received",
+                label_urgency: "Urgency Level",
+                badge_urgent: "Urgent Emergency",
+                badge_normal: "Normal Job",
+                label_value: "Estimated Job Value",
+                job_summary_title: "AI Job Summary",
+                chat_thread_title: "Live SMS Thread",
+                homeowner_sender: "Homeowner",
+                input_placeholder: "Type a message to take over from AI...",
+                btn_send: "Send"
+            },
+            fr: {
+                back_dashboard: "Retour au Tableau de Bord",
+                caller_label: "Appelant :",
+                caller_info_title: "Informations sur l'Appelant",
+                label_name: "Nom",
+                label_phone: "Numéro de Téléphone",
+                label_time: "Appel Manqué Reçu le",
+                label_urgency: "Niveau d'Urgence",
+                badge_urgent: "Dépannage Urgent",
+                badge_normal: "Intervention Normale",
+                label_value: "Valeur Estimée du Chantier",
+                job_summary_title: "Résumé du Chantier (IA)",
+                chat_thread_title: "Fil de Discussion SMS en Direct",
+                homeowner_sender: "Client US",
+                input_placeholder: "Écrivez un message pour prendre le relais de l'IA...",
+                btn_send: "Envoyer"
+            }
+        };
+
+        let currentLang = localStorage.getItem('callcatch_lang') || 'en';
+
+        function updateUI(lang) {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang] && translations[lang][key]) {
+                    el.textContent = translations[lang][key];
+                }
+            });
+
+            // Input placeholder
+            const input = document.getElementById('manualInput');
+            if (input && translations[lang]['input_placeholder']) {
+                input.placeholder = translations[lang]['input_placeholder'];
+            }
+
+            // Bouton toggle
+            const flag = document.getElementById('langFlag');
+            const label = document.getElementById('langLabel');
+            if (lang === 'fr') {
+                flag.textContent = '🇺🇸';
+                label.textContent = 'EN';
+            } else {
+                flag.textContent = '🇫🇷';
+                label.textContent = 'FR';
+            }
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'en' ? 'fr' : 'en';
+            localStorage.setItem('callcatch_lang', currentLang);
+            updateUI(currentLang);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateUI(currentLang);
+        });
+    </script>
+</body>
+</html>

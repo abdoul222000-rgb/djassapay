@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Founder Command Center - CallCatch AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-amber-500 selection:text-slate-950">
+
+    <!-- Top Executive Header -->
+    <header class="border-b border-amber-500/20 bg-slate-900/90 backdrop-blur sticky top-0 z-50 px-4 sm:px-8 py-4">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-300 flex items-center justify-center text-slate-950 font-black text-xl shadow-lg shadow-amber-500/20">
+                    <i class="fa-solid fa-crown"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="font-extrabold text-lg sm:text-xl text-white tracking-tight">
+                            CallCatch <span class="text-amber-400">Founder</span>
+                        </h1>
+                        <span class="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                            Master Admin
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-400 hidden sm:block" data-i18n="founder_tagline">SaaS Performance, MRR & Global Subscribers</p>
+                </div>
+            </div>
+
+            <!-- Controls (Lang & Logout) -->
+            <div class="flex items-center gap-2 sm:gap-4">
+                <!-- Payout Destination Badge -->
+                <div class="hidden lg:flex items-center gap-2 bg-slate-800/80 border border-slate-700 px-3 py-1.5 rounded-xl text-xs font-mono text-slate-300">
+                    <i class="fa-solid fa-building-columns text-emerald-400"></i>
+                    <span>Payout: <strong class="text-white">Lead Bank (US) ••••9479</strong></span>
+                </div>
+
+                <!-- Language Toggle Button -->
+                <button id="langToggleBtn" onclick="toggleLanguage()" 
+                    class="flex items-center gap-1.5 sm:gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition shadow hover:scale-105 cursor-pointer">
+                    <span id="langFlag">🇫🇷</span>
+                    <span id="langLabel" class="text-slate-100">FR</span>
+                </button>
+
+                <!-- Logout Button -->
+                <a href="/founder/logout" 
+                    class="flex items-center gap-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 px-3 py-1.5 rounded-xl text-xs font-semibold transition"
+                    title="Sign Out">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    <span class="hidden sm:inline" data-i18n="btn_founder_logout">Lock Portal</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-8 py-6 sm:py-8">
+
+        <!-- Revenue Overview Hero Banner -->
+        <div class="bg-gradient-to-r from-amber-950/50 via-slate-900 to-emerald-950/40 border border-amber-500/30 rounded-3xl p-6 sm:p-8 mb-8 shadow-2xl relative overflow-hidden">
+            <div class="absolute -right-12 -bottom-12 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+                <div>
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold uppercase tracking-wider mb-3">
+                        <i class="fa-solid fa-sack-dollar"></i> <span data-i18n="mrr_badge">Monthly Recurring Revenue (MRR)</span>
+                    </div>
+                    <div class="flex items-baseline gap-3">
+                        <h2 class="text-3xl sm:text-5xl font-black text-white tracking-tight">
+                            ${{ "{:,.2f}".format(total_mrr) }}
+                        </h2>
+                        <span class="text-emerald-400 text-sm font-bold flex items-center gap-1">
+                            <i class="fa-solid fa-arrow-trend-up"></i> +100% active
+                        </span>
+                    </div>
+                    <p class="text-xs sm:text-sm text-slate-400 mt-2">
+                        <span data-i18n="arr_projection">Annual Run-Rate (ARR) projected:</span>
+                        <strong class="text-amber-400 font-mono">${{ "{:,.2f}".format(total_mrr * 12) }} / year</strong>
+                    </p>
+                </div>
+
+                <!-- Fast Actions -->
+                <div class="flex flex-wrap gap-2.5">
+                    <a href="/register" target="_blank" class="bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-slate-950 font-black px-4 py-2.5 rounded-xl text-xs shadow-lg shadow-amber-500/20 transition flex items-center gap-2">
+                        <i class="fa-solid fa-user-plus"></i> <span data-i18n="btn_add_client">Add US Contractor</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4 Key Performance Cards -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 mb-8">
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5">
+                <div class="flex items-center justify-between text-slate-400 mb-2">
+                    <span class="text-[11px] sm:text-xs font-semibold uppercase tracking-wider" data-i18n="kpi_subscribers">Total Contractors</span>
+                    <i class="fa-solid fa-users-gear text-amber-400 text-sm"></i>
+                </div>
+                <div class="text-2xl sm:text-3xl font-extrabold text-white">{{ total_contractors }}</div>
+                <div class="text-[11px] text-slate-500 mt-1" data-i18n="kpi_subscribers_sub">Subscribed artisans</div>
+            </div>
+
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5">
+                <div class="flex items-center justify-between text-slate-400 mb-2">
+                    <span class="text-[11px] sm:text-xs font-semibold uppercase tracking-wider" data-i18n="kpi_mrr_per_client">Plan Price / User</span>
+                    <i class="fa-solid fa-tag text-emerald-400 text-sm"></i>
+                </div>
+                <div class="text-2xl sm:text-3xl font-extrabold text-emerald-400">$99.00</div>
+                <div class="text-[11px] text-slate-500 mt-1" data-i18n="kpi_mrr_per_client_sub">Charged monthly (USD)</div>
+            </div>
+
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5">
+                <div class="flex items-center justify-between text-slate-400 mb-2">
+                    <span class="text-[11px] sm:text-xs font-semibold uppercase tracking-wider" data-i18n="kpi_calls_caught">Total Calls Caught</span>
+                    <i class="fa-solid fa-phone-arrow-down-left text-cyan-400 text-sm"></i>
+                </div>
+                <div class="text-2xl sm:text-3xl font-extrabold text-cyan-400">{{ total_calls_processed }}</div>
+                <div class="text-[11px] text-slate-500 mt-1" data-i18n="kpi_calls_caught_sub">Across all clients</div>
+            </div>
+
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5">
+                <div class="flex items-center justify-between text-slate-400 mb-2">
+                    <span class="text-[11px] sm:text-xs font-semibold uppercase tracking-wider" data-i18n="kpi_security_status">Security Shield</span>
+                    <i class="fa-solid fa-shield-halved text-purple-400 text-sm"></i>
+                </div>
+                <div class="text-base sm:text-xl font-bold text-emerald-400 flex items-center gap-1.5 mt-1 sm:mt-0">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    256-bit Encrypted
+                </div>
+                <div class="text-[11px] text-slate-500 mt-1" data-i18n="kpi_security_sub">Anti-Tampering Active</div>
+            </div>
+        </div>
+
+        <!-- Contractors Management Section -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl">
+            <div class="p-4 sm:p-6 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                    <h3 class="text-base sm:text-lg font-bold text-white" data-i18n="subscribers_title">Registered US Contractors</h3>
+                    <p class="text-xs text-slate-400" data-i18n="subscribers_subtitle">Breakdown of subscribers and revenue delivered to your account</p>
+                </div>
+                <span class="self-start sm:self-auto text-xs bg-slate-800 border border-slate-700 px-3 py-1 rounded-full text-slate-300 font-mono">
+                    {{ contractors|length }} <span data-i18n="active_accounts_label">Active accounts</span>
+                </span>
+            </div>
+
+            <!-- DESKTOP TABLE VIEW (Visible on tablet/desktop) -->
+            <div class="hidden md:block overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-950/60 text-slate-400 text-xs uppercase tracking-wider border-b border-slate-800">
+                            <th class="py-4 px-6" data-i18n="col_contractor">Contractor & Company</th>
+                            <th class="py-4 px-6" data-i18n="col_trade">Trade / Industry</th>
+                            <th class="py-4 px-6" data-i18n="col_assigned_phone">Virtual Twilio Number</th>
+                            <th class="py-4 px-6" data-i18n="col_monthly_revenue">Revenue For Founder</th>
+                            <th class="py-4 px-6" data-i18n="col_calls">Calls Caught</th>
+                            <th class="py-4 px-6 text-right" data-i18n="col_actions">Master Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800 text-sm">
+                        {% for c in contractors %}
+                        <tr class="hover:bg-slate-800/40 transition">
+                            <td class="py-4 px-6">
+                                <div class="font-bold text-white">{{ c.business_name }}</div>
+                                <div class="text-xs text-slate-400 flex items-center gap-2 mt-0.5">
+                                    <span><i class="fa-solid fa-user-tie text-slate-500"></i> {{ c.owner_name }}</span>
+                                    <span>•</span>
+                                    <span class="font-mono text-slate-400">{{ c.email }}</span>
+                                </div>
+                            </td>
+                            <td class="py-4 px-6">
+                                <span class="inline-block text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-800 text-slate-200 border border-slate-700">
+                                    {{ c.business_type }}
+                                </span>
+                            </td>
+                            <td class="py-4 px-6 font-mono text-xs text-cyan-400">
+                                {{ c.twilio_phone_number }}
+                            </td>
+                            <td class="py-4 px-6 font-bold text-emerald-400 font-mono">
+                                +${{ "{:,.2f}".format(c.monthly_plan_price) }} / mo
+                            </td>
+                            <td class="py-4 px-6 font-bold text-white">
+                                {{ c.calls|length }} <span class="text-xs font-normal text-slate-400" data-i18n="calls_unit">calls</span>
+                            </td>
+                            <td class="py-4 px-6 text-right">
+                                <a href="/founder/switch-to/{{ c.id }}" class="inline-flex items-center gap-1.5 text-xs font-bold text-amber-400 hover:text-amber-300 bg-amber-500/10 border border-amber-500/30 hover:border-amber-500 px-3 py-1.5 rounded-xl transition">
+                                    <i class="fa-solid fa-eye"></i> <span data-i18n="btn_inspect">Inspect Dashboard</span>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- MOBILE CARDS VIEW (Visible only on smartphones) -->
+            <div class="md:hidden divide-y divide-slate-800 p-3 space-y-3">
+                {% for c in contractors %}
+                <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-3">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <div class="font-bold text-white text-base">{{ c.business_name }}</div>
+                            <div class="text-xs text-slate-400 mt-0.5">{{ c.owner_name }} • <span class="font-mono">{{ c.email }}</span></div>
+                        </div>
+                        <span class="text-xs font-bold px-2 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-mono">
+                            +${{ "{:,.2f}".format(c.monthly_plan_price) }}
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-slate-900">
+                        <div>
+                            <span class="text-slate-500 text-[10px] uppercase block" data-i18n="mobile_trade">Trade</span>
+                            <span class="text-slate-200 font-medium">{{ c.business_type }}</span>
+                        </div>
+                        <div>
+                            <span class="text-slate-500 text-[10px] uppercase block" data-i18n="mobile_calls">Calls Caught</span>
+                            <span class="text-white font-bold">{{ c.calls|length }}</span>
+                        </div>
+                    </div>
+
+                    <div class="pt-1 flex items-center justify-between text-xs font-mono text-cyan-400 border-t border-slate-900">
+                        <span>Twilio: {{ c.twilio_phone_number }}</span>
+                        <a href="/founder/switch-to/{{ c.id }}" class="text-amber-400 font-bold hover:underline flex items-center gap-1">
+                            <span data-i18n="mobile_view">Inspect</span> <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MOTEUR DE TRADUCTION BILINGUE FR / EN -->
+    <script>
+        const translations = {
+            en: {
+                founder_tagline: "SaaS Performance, MRR & Global Subscribers",
+                btn_founder_logout: "Lock Portal",
+                mrr_badge: "Monthly Recurring Revenue (MRR)",
+                arr_projection: "Annual Run-Rate (ARR) projected:",
+                btn_add_client: "Add US Contractor",
+                kpi_subscribers: "Total Contractors",
+                kpi_subscribers_sub: "Subscribed artisans",
+                kpi_mrr_per_client: "Plan Price / User",
+                kpi_mrr_per_client_sub: "Charged monthly (USD)",
+                kpi_calls_caught: "Total Calls Caught",
+                kpi_calls_caught_sub: "Across all clients",
+                kpi_security_status: "Security Shield",
+                kpi_security_sub: "Anti-Tampering Active",
+                subscribers_title: "Registered US Contractors",
+                subscribers_subtitle: "Breakdown of subscribers and revenue delivered to your account",
+                active_accounts_label: "Active accounts",
+                col_contractor: "Contractor & Company",
+                col_trade: "Trade / Industry",
+                col_assigned_phone: "Virtual Twilio Number",
+                col_monthly_revenue: "Revenue For Founder",
+                col_calls: "Calls Caught",
+                col_actions: "Master Action",
+                btn_inspect: "Inspect Dashboard",
+                calls_unit: "calls",
+                mobile_trade: "Trade",
+                mobile_calls: "Calls Caught",
+                mobile_view: "Inspect"
+            },
+            fr: {
+                founder_tagline: "Performances SaaS, Revenus Récurrents & Abonnés",
+                btn_founder_logout: "Verrouiller le Portail",
+                mrr_badge: "Revenus Récurrents Mensuels (MRR)",
+                arr_projection: "Projection Annuelle (ARR) :",
+                btn_add_client: "Ajouter un Artisan US",
+                kpi_subscribers: "Total Artisans Abonnés",
+                kpi_subscribers_sub: "Clients américains actifs",
+                kpi_mrr_per_client: "Prix de l'Abonnement",
+                kpi_mrr_per_client_sub: "Facturé chaque mois (USD)",
+                kpi_calls_caught: "Appels Manqués Interceptés",
+                kpi_calls_caught_sub: "Sur l'ensemble des clients",
+                kpi_security_status: "Bouclier de Sécurité",
+                kpi_security_sub: "Protection Anti-Piratage Active",
+                subscribers_title: "Artisans Américains Abonnés",
+                subscribers_subtitle: "Détail de vos clients et du chiffre d'affaires reversé sur votre compte",
+                active_accounts_label: "Comptes actifs",
+                col_contractor: "Artisan & Entreprise",
+                col_trade: "Corps de Métier",
+                col_assigned_phone: "Numéro Virtuel Twilio",
+                col_monthly_revenue: "Revenu Versé au Fondateur",
+                col_calls: "Appels Sauvegardés",
+                col_actions: "Action Maître",
+                btn_inspect: "Inspecter le Dashboard",
+                calls_unit: "appels",
+                mobile_trade: "Métier",
+                mobile_calls: "Appels Sauvegardés",
+                mobile_view: "Voir"
+            }
+        };
+
+        let currentLang = localStorage.getItem('callcatch_lang') || 'en';
+
+        function updateUI(lang) {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang] && translations[lang][key]) {
+                    el.textContent = translations[lang][key];
+                }
+            });
+            const flag = document.getElementById('langFlag');
+            const label = document.getElementById('langLabel');
+            if (lang === 'fr') {
+                flag.textContent = '🇺🇸';
+                label.textContent = 'EN';
+            } else {
+                flag.textContent = '🇫🇷';
+                label.textContent = 'FR';
+            }
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'en' ? 'fr' : 'en';
+            localStorage.setItem('callcatch_lang', currentLang);
+            updateUI(currentLang);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateUI(currentLang);
+        });
+    </script>
+</body>
+</html>

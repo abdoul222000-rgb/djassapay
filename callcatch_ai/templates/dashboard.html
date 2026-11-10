@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CallCatch AI - Missed Call Recovery Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased">
+
+    <!-- Top Navigation Bar -->
+    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50 px-6 py-4">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-cyan-500 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-emerald-500/20">
+                    <i class="fa-solid fa-phone-arrow-down-left"></i>
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-xl tracking-tight bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
+                        CallCatch <span class="text-emerald-400">AI</span>
+                    </h1>
+                    <p class="text-xs text-slate-400" data-i18n="tagline">Autonomous Missed Call Revenue Recovery</p>
+                </div>
+            </div>
+
+            <!-- Right Controls: Language Switcher & Contractor Info -->
+            <div class="flex items-center gap-3 sm:gap-4">
+                <!-- Contractor Info (Desktop) -->
+                <div class="hidden md:flex flex-col text-right">
+                    <span class="text-sm font-semibold text-slate-200">{{ contractor.business_name }}</span>
+                    <span class="text-xs text-emerald-400 font-mono flex items-center gap-1 justify-end">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span data-i18n="ai_status">AI Dispatcher Active</span>
+                    </span>
+                </div>
+
+                <!-- Twilio US Number Badge -->
+                <div class="hidden sm:block bg-slate-800 border border-slate-700 px-3 py-1.5 rounded-lg text-xs font-mono text-slate-300">
+                    Twilio: <span class="text-cyan-400">{{ contractor.twilio_phone_number }}</span>
+                </div>
+
+                <!-- LANGUAGE TOGGLE BUTTON (FR / EN) -->
+                <button id="langToggleBtn" onclick="toggleLanguage()" 
+                    class="flex items-center gap-2 bg-gradient-to-r from-slate-800 to-slate-700 hover:from-slate-700 hover:to-slate-600 border border-slate-600 px-3 py-1.5 rounded-xl text-xs font-bold transition shadow-md hover:scale-105 cursor-pointer">
+                    <span id="langFlag">🇫🇷</span>
+                    <span id="langLabel" class="text-slate-100">FR</span>
+                </button>
+
+                <!-- LOGOUT BUTTON -->
+                <a href="/logout" 
+                    class="flex items-center gap-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 px-3 py-1.5 rounded-xl text-xs font-semibold transition"
+                    title="Logout">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    <span class="hidden sm:inline" data-i18n="logout_btn">Logout</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 py-8">
+
+        <!-- Revenue Banner / Value Proof -->
+        <div class="bg-gradient-to-r from-emerald-950/60 via-slate-900 to-cyan-950/60 border border-emerald-500/30 rounded-2xl p-6 sm:p-8 mb-8 shadow-2xl relative overflow-hidden">
+            <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+                <div>
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold uppercase tracking-wider mb-3">
+                        <i class="fa-solid fa-bolt"></i> <span data-i18n="revenue_badge">Live Revenue Protection</span>
+                    </div>
+                    <h2 class="text-3xl sm:text-4xl font-black text-white tracking-tight">
+                        ${{ "{:,.2f}".format(total_revenue_saved) }}
+                    </h2>
+                    <p class="text-sm text-slate-400 mt-1">
+                        <span data-i18n="revenue_desc_prefix">Estimated revenue saved from</span>
+                        <span class="text-white font-semibold">{{ calls|length }} <span data-i18n="calls_caught_count">caught missed calls</span></span>
+                        <span data-i18n="revenue_desc_suffix">that would have called your competitors.</span>
+                    </p>
+                </div>
+
+                <!-- Live Test Simulation Button -->
+                <form action="/api/demo/simulate-missed-call" method="POST" class="flex-shrink-0">
+                    <button type="submit" class="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold px-5 py-3 rounded-xl shadow-lg shadow-emerald-500/25 transition-all transform hover:scale-[1.02] flex items-center gap-2 text-sm">
+                        <i class="fa-solid fa-phone-slash"></i> <span data-i18n="btn_simulate">Simulate US Missed Call (Demo)</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 4 Stat Metric Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+            <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-5">
+                <div class="flex items-center justify-between text-slate-400 mb-2">
+                    <span class="text-xs font-semibold uppercase tracking-wider" data-i18n="stat_caught">Missed Calls Caught</span>
+                    <i class="fa-solid fa-phone-volume text-cyan-400"></i>
+                </div>
+                <div class="text-3xl font-extrabold text-white">{{ stats.total_calls }}</div>
+                <div class="text-xs text-slate-500 mt-1" data-i18n="stat_caught_sub">100% replied via SMS</div>
+            </div>
+
+            <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-5">
+                <div class="flex items-center justify-between text-slate-400 mb-2">
+                    <span class="text-xs font-semibold uppercase tracking-wider" data-i18n="stat_time">Avg. Response Time</span>
+                    <i class="fa-solid fa-stopwatch text-emerald-400"></i>
+                </div>
+                <div class="text-3xl font-extrabold text-emerald-400">2.8s</div>
+                <div class="text-xs text-slate-500 mt-1" data-i18n="stat_time_sub">Before homeowner calls competitor</div>
+            </div>
+
+            <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-5">
+                <div class="flex items-center justify-between text-slate-400 mb-2">
+                    <span class="text-xs font-semibold uppercase tracking-wider" data-i18n="stat_booked">Appointments Booked</span>
+                    <i class="fa-solid fa-calendar-check text-purple-400"></i>
+                </div>
+                <div class="text-3xl font-extrabold text-white">{{ stats.booked_appointments }}</div>
+                <div class="text-xs text-slate-500 mt-1" data-i18n="stat_booked_sub">Directly added to schedule</div>
+            </div>
+
+            <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-5">
+                <div class="flex items-center justify-between text-slate-400 mb-2">
+                    <span class="text-xs font-semibold uppercase tracking-wider" data-i18n="stat_roi">Monthly ROI</span>
+                    <i class="fa-solid fa-chart-line text-amber-400"></i>
+                </div>
+                <div class="text-3xl font-extrabold text-amber-400">{{ stats.roi_multiplier }}x</div>
+                <div class="text-xs text-slate-500 mt-1">
+                    <span data-i18n="stat_roi_sub">On your</span> ${{ contractor.monthly_plan_price }}/<span data-i18n="month_unit">mo plan</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Caught Leads Table -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+            <div class="p-6 border-b border-slate-800 flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-bold text-white" data-i18n="table_title">Live Recovered Phone Leads</h3>
+                    <p class="text-xs text-slate-400" data-i18n="table_subtitle">Homeowners intercepted in real-time by CallCatch AI</p>
+                </div>
+                <span class="text-xs bg-slate-800 border border-slate-700 px-3 py-1 rounded-full text-slate-400" data-i18n="table_badge">
+                    Real-time updates
+                </span>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-950/60 text-slate-400 text-xs uppercase tracking-wider border-b border-slate-800">
+                            <th class="py-4 px-6" data-i18n="th_caller">Homeowner / Caller</th>
+                            <th class="py-4 px-6" data-i18n="th_time">Missed Call Time</th>
+                            <th class="py-4 px-6" data-i18n="th_urgency">Urgency</th>
+                            <th class="py-4 px-6" data-i18n="th_summary">AI Job Summary</th>
+                            <th class="py-4 px-6" data-i18n="th_status">Status</th>
+                            <th class="py-4 px-6 text-right" data-i18n="th_actions">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800 text-sm">
+                        {% if not calls %}
+                        <tr>
+                            <td colspan="6" class="py-12 text-center text-slate-500">
+                                <i class="fa-solid fa-headset text-4xl mb-3 block text-slate-600"></i>
+                                <span data-i18n="empty_state">No missed calls yet. Click "Simulate US Missed Call" above to see CallCatch AI in action!</span>
+                            </td>
+                        </tr>
+                        {% endif %}
+
+                        {% for call in calls %}
+                        <tr class="hover:bg-slate-800/40 transition">
+                            <td class="py-4 px-6 font-medium text-slate-200">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-300">
+                                        {{ call.caller_name[0] if call.caller_name else '?' }}
+                                    </div>
+                                    <div>
+                                        <div class="text-white font-semibold">{{ call.caller_name or "Unknown Homeowner" }}</div>
+                                        <div class="text-xs font-mono text-slate-400">{{ call.caller_phone }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="py-4 px-6 text-slate-400 text-xs">
+                                {{ call.call_time.strftime("%b %d, %Y - %I:%M %p") }}
+                            </td>
+                            <td class="py-4 px-6">
+                                {% if call.urgency_level == 'HIGH' %}
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span> 
+                                    <span data-i18n="urgency_high">Emergency</span>
+                                </span>
+                                {% else %}
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-800 text-slate-300 border border-slate-700">
+                                    <span data-i18n="urgency_normal">Normal</span>
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td class="py-4 px-6 text-slate-300 max-w-xs truncate text-xs">
+                                <!-- Le résumé SMS reste fidèle à la langue des clients US -->
+                                {{ call.job_summary or "Instant missed call text-back sent." }}
+                            </td>
+                            <td class="py-4 px-6">
+                                {% if call.status == 'APPOINTMENT_BOOKED' %}
+                                <span class="text-xs font-bold text-purple-400 bg-purple-950/60 border border-purple-500/40 px-2.5 py-1 rounded-full">
+                                    📅 <span data-i18n="status_booked">Booked</span>
+                                </span>
+                                {% elif call.status == 'TEXT_SENT' %}
+                                <span class="text-xs font-medium text-cyan-400 bg-cyan-950/50 border border-cyan-500/30 px-2.5 py-1 rounded-full">
+                                    💬 <span data-i18n="status_text_sent">Text Sent</span>
+                                </span>
+                                {% else %}
+                                <span class="text-xs font-medium text-emerald-400 bg-emerald-950/50 border border-emerald-500/30 px-2.5 py-1 rounded-full">
+                                    {{ call.status }}
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td class="py-4 px-6 text-right">
+                                <a href="/leads/{{ call.id }}" class="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-400 hover:text-emerald-300 bg-emerald-950/40 border border-emerald-500/30 hover:border-emerald-500 px-3 py-1.5 rounded-lg transition">
+                                    <i class="fa-regular fa-comment-dots"></i> 
+                                    <span data-i18n="action_view_chat">View Chat</span> ({{ call.messages|length }})
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer with Founder Portal Link -->
+    <footer class="mt-12 py-6 border-t border-slate-900 text-center text-xs text-slate-600 flex flex-col sm:flex-row items-center justify-between max-w-7xl mx-auto px-6 gap-2">
+        <div>&copy; 2026 CallCatch AI • Autonomous Revenue Protection for US Home Services</div>
+        <a href="/founder/login" class="text-slate-600 hover:text-amber-400 transition flex items-center gap-1 font-mono text-[11px]">
+            <i class="fa-solid fa-lock text-[10px]"></i> Founder Portal
+        </a>
+    </footer>
+
+    <!-- MOTEUR DE TRADUCTION BILINGUE FR / EN -->
+    <script>
+        const translations = {
+            en: {
+                tagline: "Autonomous Missed Call Revenue Recovery",
+                ai_status: "AI Dispatcher Active",
+                revenue_badge: "Live Revenue Protection",
+                revenue_desc_prefix: "Estimated revenue saved from",
+                calls_caught_count: "caught missed calls",
+                revenue_desc_suffix: "that would have called your competitors.",
+                btn_simulate: "Simulate US Missed Call (Demo)",
+                stat_caught: "Missed Calls Caught",
+                stat_caught_sub: "100% replied via SMS",
+                stat_time: "Avg. Response Time",
+                stat_time_sub: "Before homeowner calls competitor",
+                stat_booked: "Appointments Booked",
+                stat_booked_sub: "Directly added to schedule",
+                stat_roi: "Monthly ROI",
+                stat_roi_sub: "On your",
+                month_unit: "mo plan",
+                table_title: "Live Recovered Phone Leads",
+                table_subtitle: "Homeowners intercepted in real-time by CallCatch AI",
+                table_badge: "Real-time updates",
+                th_caller: "Homeowner / Caller",
+                th_time: "Missed Call Time",
+                th_urgency: "Urgency",
+                th_summary: "AI Job Summary",
+                th_status: "Status",
+                th_actions: "Actions",
+                empty_state: "No missed calls yet. Click 'Simulate US Missed Call' above to see CallCatch AI in action!",
+                urgency_high: "Emergency",
+                urgency_normal: "Normal",
+                status_booked: "Booked",
+                status_text_sent: "Text Sent",
+                action_view_chat: "View Chat",
+                logout_btn: "Logout"
+            },
+            fr: {
+                tagline: "Récupération Autonome de Revenus sur Appels Manqués",
+                ai_status: "Dispatcheur IA Actif",
+                revenue_badge: "Protection de Revenus en Direct",
+                revenue_desc_prefix: "Chiffre d'affaires estimé sauvé sur",
+                calls_caught_count: "appels manqués interceptés",
+                revenue_desc_suffix: "qui auraient contacté vos concurrents.",
+                btn_simulate: "Simuler un Appel Manqué US (Démo)",
+                stat_caught: "Appels Manqués Interceptés",
+                stat_caught_sub: "100 % répondus par SMS",
+                stat_time: "Temps de Réponse Moyen",
+                stat_time_sub: "Avant que le client n'appelle un rival",
+                stat_booked: "Rendez-vous Confirmés",
+                stat_booked_sub: "Directement ajoutés au planning",
+                stat_roi: "Retour sur Investissement (ROI)",
+                stat_roi_sub: "Sur votre abonnement à",
+                month_unit: "mois",
+                table_title: "Leads Téléphoniques Sauvegardés en Direct",
+                table_subtitle: "Propriétaires interceptés en temps réel par CallCatch AI",
+                table_badge: "Mises à jour en temps réel",
+                th_caller: "Client / Appelant",
+                th_time: "Date & Heure de l'Appel",
+                th_urgency: "Urgence",
+                th_summary: "Résumé du Chantier (IA)",
+                th_status: "Statut",
+                th_actions: "Actions",
+                empty_state: "Aucun appel manqué pour le moment. Cliquez sur 'Simuler un Appel Manqué US' ci-dessus !",
+                urgency_high: "Urgence / Dépannage",
+                urgency_normal: "Normal",
+                status_booked: "Confirmé",
+                status_text_sent: "SMS Envoyé",
+                action_view_chat: "Voir le Chat",
+                logout_btn: "Déconnexion"
+            }
+        };
+
+        let currentLang = localStorage.getItem('callcatch_lang') || 'en';
+
+        function updateUI(lang) {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang] && translations[lang][key]) {
+                    el.textContent = translations[lang][key];
+                }
+            });
+
+            // Bouton toggle
+            const flag = document.getElementById('langFlag');
+            const label = document.getElementById('langLabel');
+            if (lang === 'fr') {
+                flag.textContent = '🇺🇸';
+                label.textContent = 'EN';
+            } else {
+                flag.textContent = '🇫🇷';
+                label.textContent = 'FR';
+            }
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'en' ? 'fr' : 'en';
+            localStorage.setItem('callcatch_lang', currentLang);
+            updateUI(currentLang);
+        }
+
+        // Initialisation immédiate au chargement
+        document.addEventListener('DOMContentLoaded', () => {
+            updateUI(currentLang);
+        });
+    </script>
+</body>
+</html>

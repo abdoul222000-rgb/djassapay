@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Login - CallCatch AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between font-sans antialiased">
+
+    <!-- Header with Language Toggle -->
+    <header class="p-6 flex items-center justify-between max-w-6xl mx-auto w-full">
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-500 to-cyan-500 flex items-center justify-center text-white font-black shadow-lg shadow-emerald-500/20">
+                <i class="fa-solid fa-phone-arrow-down-left"></i>
+            </div>
+            <span class="font-extrabold text-lg text-white">CallCatch <span class="text-emerald-400">AI</span></span>
+        </div>
+
+        <!-- Language Switcher Button -->
+        <button id="langToggleBtn" onclick="toggleLanguage()" 
+            class="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 px-3 py-1.5 rounded-xl text-xs font-bold transition shadow-md hover:scale-105 cursor-pointer">
+            <span id="langFlag">🇫🇷</span>
+            <span id="langLabel" class="text-slate-100">FR</span>
+        </button>
+    </header>
+
+    <!-- Login Card -->
+    <main class="flex-1 flex items-center justify-center px-4 py-8">
+        <div class="w-full max-w-md bg-slate-900/90 border border-slate-800 rounded-3xl p-8 shadow-2xl relative overflow-hidden backdrop-blur">
+            <div class="absolute -top-12 -right-12 w-40 h-40 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none"></div>
+
+            <div class="text-center mb-6">
+                <h2 class="text-2xl font-black text-white tracking-tight" data-i18n="login_title">Contractor Login</h2>
+                <p class="text-xs text-slate-400 mt-1" data-i18n="login_subtitle">Access your private missed call recovery dashboard</p>
+            </div>
+
+            {% if error %}
+            <div class="mb-5 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-center gap-2">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span>{{ error }}</span>
+            </div>
+            {% endif %}
+
+            <form action="/login" method="POST" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5" data-i18n="email_label">
+                        Email Address
+                    </label>
+                    <div class="relative">
+                        <i class="fa-regular fa-envelope absolute left-3.5 top-3 text-slate-500 text-sm"></i>
+                        <input type="email" name="email" value="{{ email or '' }}" required placeholder="mike@lonestarplumbing.com"
+                            class="w-full bg-slate-950 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5" data-i18n="password_label">
+                        Password
+                    </label>
+                    <div class="relative">
+                        <i class="fa-solid fa-lock absolute left-3.5 top-3 text-slate-500 text-sm"></i>
+                        <input type="password" name="password" required placeholder="••••••••"
+                            class="w-full bg-slate-950 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+
+                <!-- Demo quick fill hint -->
+                <div class="p-3 bg-slate-950/80 rounded-xl border border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
+                    <div>
+                        <span class="text-emerald-400 font-semibold" data-i18n="demo_account">Demo account:</span> 
+                        <span class="font-mono">mike@lonestarplumbing.com</span> / <span class="font-mono">password123</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold py-3 rounded-xl shadow-lg shadow-emerald-500/25 transition transform hover:scale-[1.01] text-sm">
+                    <span data-i18n="btn_login">Sign In to Dashboard</span> <i class="fa-solid fa-arrow-right ml-1"></i>
+                </button>
+            </form>
+
+            <div class="mt-6 text-center text-xs text-slate-400 border-t border-slate-800/80 pt-5">
+                <span data-i18n="no_account">New contractor?</span>
+                <a href="/register" class="text-emerald-400 hover:text-emerald-300 font-semibold ml-1" data-i18n="link_register">
+                    Create an account (Start Free Trial)
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <footer class="p-6 text-center text-xs text-slate-600">
+        &copy; 2026 CallCatch AI • Autonomous Revenue Recovery for US Contractors
+    </footer>
+
+    <!-- Translation script -->
+    <script>
+        const translations = {
+            en: {
+                login_title: "Contractor Login",
+                login_subtitle: "Access your private missed call recovery dashboard",
+                email_label: "Email Address",
+                password_label: "Password",
+                demo_account: "Demo account:",
+                btn_login: "Sign In to Dashboard",
+                no_account: "New contractor?",
+                link_register: "Create an account (Start Free Trial)"
+            },
+            fr: {
+                login_title: "Connexion Artisan",
+                login_subtitle: "Accédez à votre tableau de bord privé d'appels manqués",
+                email_label: "Adresse Email",
+                password_label: "Mot de Passe",
+                demo_account: "Compte démo :",
+                btn_login: "Se Connecter au Dashboard",
+                no_account: "Nouvel artisan ?",
+                link_register: "Créer un compte (Essai Gratuit)"
+            }
+        };
+
+        let currentLang = localStorage.getItem('callcatch_lang') || 'en';
+
+        function updateUI(lang) {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang] && translations[lang][key]) {
+                    el.textContent = translations[lang][key];
+                }
+            });
+            const flag = document.getElementById('langFlag');
+            const label = document.getElementById('langLabel');
+            if (lang === 'fr') {
+                flag.textContent = '🇺🇸';
+                label.textContent = 'EN';
+            } else {
+                flag.textContent = '🇫🇷';
+                label.textContent = 'FR';
+            }
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'en' ? 'fr' : 'en';
+            localStorage.setItem('callcatch_lang', currentLang);
+            updateUI(currentLang);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateUI(currentLang);
+        });
+    </script>
+</body>
+</html>
