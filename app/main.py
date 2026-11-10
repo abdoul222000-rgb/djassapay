@@ -1,4 +1,6 @@
 import os
+import asyncio
+from datetime import datetime, timedelta
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, FileResponse
@@ -11,6 +13,15 @@ from app.models import Merchant, DeliveryZone, Product
 
 # Création des tables de la base de données
 Base.metadata.create_all(bind=engine)
+
+# Migration dynamique sécurisée : s'assurer que last_pro_reminder_at existe
+with engine.connect() as conn:
+    try:
+        from sqlalchemy import text
+        conn.execute(text("ALTER TABLE merchants ADD COLUMN last_pro_reminder_at TIMESTAMP;"))
+        conn.commit()
+    except Exception:
+        pass
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -43,8 +54,8 @@ app.include_router(admin.router)
 app.include_router(whatsapp.router)
 
 @app.on_event("startup")
-def startup_populate_data():
-    """Initialise le compte marchand officiel et supprime toute boutique démo."""
+async def startup_populate_data():
+    """Initialise le compte marchand officiel, les schémas et le worker de relance automatique PRO."""
     db = SessionLocal()
     try:
         from app.routes.auth import ALL_CI_ZONES
@@ -104,8 +115,9 @@ def startup_populate_data():
             from sqlalchemy import text
             db.execute(text("ALTER TABLE products ALTER COLUMN image_url TYPE TEXT;"))
             db.execute(text("ALTER TABLE merchants ALTER COLUMN logo_url TYPE TEXT;"))
+            db.execute(text("ALTER TABLE merchants ADD COLUMN IF NOT EXISTS last_pro_reminder_at TIMESTAMP;"))
             db.commit()
-            print("[Database Migration] products.image_url et merchants.logo_url vérifiés/convertis en TEXT.")
+            print("[Database Migration] Schémas vérifiés et mis à jour avec succès.")
         except Exception as e:
             db.rollback()
 
@@ -180,6 +192,72 @@ def startup_populate_data():
         db.commit()
     finally:
         db.close()
+
+    # Lancement du worker autonome de relance PRO (tous les 2 jours)
+    asyncio.create_task(pro_reminder_cron_worker())
+
+# ==============================================================
+# AUTOMATISATION RELANCE PRO TOUS LES 2 JOURS (PILOTE AUTOMATIQUE)
+# ==============================================================
+async def run_pro_reminders_cycle() -> int:
+    """
+    Vérifie toutes les boutiques en mode STARTER (gratuit).
+    Envoie un message WhatsApp automatique à chaque vendeur qui n'a pas encore reçu de relance depuis 2 jours (48h).
+    S'arrête automatiquement dès que le vendeur prend un abonnement PRO !
+    """
+    from app.services.whatsapp_service import generate_pro_upgrade_reminder_message, send_whatsapp_cloud_message
+    db = SessionLocal()
+    sent_count = 0
+    try:
+        now = datetime.utcnow()
+        cutoff = now - timedelta(days=2)
+        
+        # Sélectionner tous les vendeurs encore en mode STARTER
+        merchants = db.query(Merchant).filter(Merchant.subscription_plan == "STARTER").all()
+        
+        for m in merchants:
+            # Ne pas envoyer au compte Fondateur officiel
+            if m.phone == settings.FOUNDER_PHONE or m.store_slug == "djassapay":
+                continue
+            
+            # Envoyer si jamais relancé OU si le dernier rappel date d'au moins 2 jours (48h)
+            if m.last_pro_reminder_at is None or m.last_pro_reminder_at <= cutoff:
+                msg = generate_pro_upgrade_reminder_message(m)
+                await send_whatsapp_cloud_message(m.phone, msg)
+                m.last_pro_reminder_at = now
+                db.commit()
+                sent_count += 1
+                print(f"[Relance PRO 48h] WhatsApp envoyé avec succès à {m.store_name} ({m.phone})")
+                
+        return sent_count
+    except Exception as e:
+        print(f"[Relance PRO Error] {e}")
+        db.rollback()
+        return sent_count
+    finally:
+        db.close()
+
+async def pro_reminder_cron_worker():
+    """
+    Worker d'arrière-plan autonome 24h/24 :
+    Vérifie toutes les 4 heures si des relances PRO (tous les 2 jours) doivent être envoyées.
+    """
+    await asyncio.sleep(15) # Pause initiale au démarrage du serveur
+    while True:
+        try:
+            count = await run_pro_reminders_cycle()
+            if count > 0:
+                print(f"[Worker PRO Reminder] Cycle terminé : {count} vendeurs relancés avec succès !")
+        except Exception as e:
+            print(f"[Worker PRO Reminder Error] {e}")
+        await asyncio.sleep(14400) # Vérifie toutes les 4 heures
+
+@app.get("/api/cron/remind-pro-merchants")
+async def cron_remind_pro_merchants():
+    """Endpoint pour déclenchement externe (cron-job.org / UptimeRobot / Webhook)."""
+    count = await run_pro_reminders_cycle()
+    return {"status": "success", "reminders_sent": count}
+
 
 # ==============================================================
 # SEO & INDEXATION GOOGLE (ROBOTS.TXT & SITEMAP.XML)

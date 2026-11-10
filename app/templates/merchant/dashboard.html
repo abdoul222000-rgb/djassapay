@@ -64,6 +64,27 @@
     </div>
   </div>
 
+  {% if merchant.subscription_plan == 'STARTER' %}
+  <!-- Bannière Promotionnelle Forfait PRO pour les Vendeurs Gratuits -->
+  <div class="mt-6 p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-amber-500 via-amber-600 to-emerald-600 text-white shadow-xl relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div class="space-y-1.5 max-w-2xl">
+      <div class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-slate-950/30 text-amber-200 text-[11px] font-black uppercase tracking-wider">
+        <span>⭐ BOOST VENTES & SÉCURITÉ ANTI-LAPIN</span>
+      </div>
+      <h3 class="text-lg sm:text-xl font-black text-white">Ajoutez plus de 20 articles & évitez 100% des faux clients !</h3>
+      <p class="text-xs text-amber-50 leading-relaxed">
+        Partagez le lien de votre boutique sur vos statuts WhatsApp, groupes de vente et TikTok. Vos clients versent obligatoirement l'acompte Wave avant l'envoi : <strong>fini les livraisons payées dans le vide !</strong>
+      </p>
+    </div>
+    <div class="shrink-0">
+      <a href="/merchant/subscription" class="px-5 py-3 rounded-2xl bg-slate-950 hover:bg-slate-900 text-amber-300 font-black text-xs shadow-lg transition flex items-center justify-center space-x-2">
+        <i data-lucide="crown" class="w-4 h-4 text-amber-400"></i>
+        <span>Passer au Forfait PRO (9 900 F)</span>
+      </a>
+    </div>
+  </div>
+  {% endif %}
+
   <!-- Bloc Partage & Copie du Lien Boutique pour le Vendeur -->
   <div class="mt-6 bg-gradient-to-r from-slate-900 via-slate-800 to-emerald-950 rounded-3xl p-5 sm:p-6 text-white shadow-xl relative overflow-hidden" 
        x-data="{

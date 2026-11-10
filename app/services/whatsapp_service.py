@@ -182,3 +182,31 @@ def generate_rider_dispatch_whatsapp(order, merchant, rider_phone: str = "") -> 
     if phone:
         return f"https://wa.me/{phone}?text={encoded}"
     return f"https://wa.me/?text={encoded}"
+
+def generate_pro_upgrade_reminder_message(merchant) -> str:
+    """Génère le message WhatsApp officiel invitant le commerçant à passer au Plan PRO."""
+    store_url = f"{settings.BASE_URL}/store/{merchant.store_slug}"
+    sub_url = f"{settings.BASE_URL}/merchant/subscription"
+    
+    return (
+        f"🚨 *BOOSTEZ VOTRE BOUTIQUE DJASSAPAY !* 🚀\n\n"
+        f"Bonjour *{merchant.name}* ({merchant.store_name}) !\n\n"
+        f"Vous utilisez actuellement le *Forfait Gratuit* sur votre boutique.\n\n"
+        f"💡 *Pourquoi passer au Forfait PRO dès aujourd'hui ?*\n\n"
+        f"1️⃣ *Ajoutez plus de 20 articles* : Ne soyez plus limité, exposez l'intégralité de votre catalogue en haute définition !\n"
+        f"2️⃣ *Partagez votre lien boutique* partout : sur vos statuts WhatsApp, vos groupes WhatsApp de vente, TikTok, Facebook et Instagram.\n"
+        f"3️⃣ *Renvoyez vos clients directement sur votre boutique en ligne* pour centraliser vos ventes en 1 clic.\n"
+        f"4️⃣ *Évitez 100% des faux clients et fausses commandes !* Grâce à l'acompte Wave obligatoire avant le départ du livreur, fini les livraisons dans le vide et les lapins en Côte d'Ivoire !\n\n"
+        f"🔗 *Votre boutique :* {store_url}\n"
+        f"⚡ *Activez votre Plan PRO (9 900 FCFA / mois) en 1 clic :*\n"
+        f"{sub_url}\n\n"
+        f"Faites décoller votre commerce en toute sérénité avec DjassaPay ! 🇨🇮"
+    )
+
+def generate_pro_upgrade_wa_link(merchant) -> str:
+    """Génère le lien direct 1-clic wa.me pour envoyer la relance WhatsApp au marchand."""
+    msg = generate_pro_upgrade_reminder_message(merchant)
+    phone = merchant.whatsapp_phone_clean
+    encoded = urllib.parse.quote(msg)
+    return f"https://wa.me/{phone}?text={encoded}"
+
