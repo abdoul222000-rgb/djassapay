@@ -42,6 +42,7 @@ class Merchant(Base):
     subscription_plan = Column(String(50), default="STARTER") # STARTER (Gratuit), PRO (9 900 F), BUSINESS (19 900 F)
     subscription_status = Column(String(50), default="ACTIVE")
     subscription_paid_amount = Column(Integer, default=0)
+    last_pro_reminder_at = Column(DateTime, nullable=True) # Date du dernier rappel PRO envoyé (relance tous les 2 jours)
     
     # Numéros de réception directe (Côte d'Ivoire)
     wave_number = Column(String(30), nullable=True)

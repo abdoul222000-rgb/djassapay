@@ -35,6 +35,18 @@
   </div>
   {% endif %}
 
+  {% if request.query_params.get('reminders_sent') %}
+  <div class="mt-4 p-4 rounded-2xl bg-amber-100 border border-amber-300 text-amber-950 text-xs font-bold flex items-center space-x-2">
+    <span>📢 Campagne envoyée avec succès : {{ request.query_params.get('reminders_sent') }} vendeurs STARTER ont reçu la relance WhatsApp pour passer au Forfait PRO !</span>
+  </div>
+  {% endif %}
+
+  {% if request.query_params.get('plan_updated') %}
+  <div class="mt-4 p-4 rounded-2xl bg-emerald-100 border border-emerald-300 text-emerald-900 text-xs font-bold flex items-center space-x-2">
+    <span>✅ Le forfait de la boutique a été mis à jour avec succès !</span>
+  </div>
+  {% endif %}
+
   <!-- Indicateur de Mode Réel Côte d'Ivoire -->
   <div class="mt-6 p-4 rounded-3xl border bg-emerald-50 border-emerald-200 text-emerald-900 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
     <div class="flex items-center space-x-3">
@@ -249,6 +261,31 @@
 
   </div>
 
+  <!-- Bloc Automatisation Relance PRO (Tous les 2 jours) -->
+  <div class="mt-8 bg-gradient-to-r from-slate-900 via-slate-800 to-amber-950 rounded-3xl p-6 text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-5 border border-amber-500/30">
+    <div class="space-y-1.5 max-w-2xl">
+      <div class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-amber-400 text-slate-950 text-[10px] font-black uppercase tracking-wider">
+        <span>🤖 PILOTE AUTOMATIQUE 48H ACTIF</span>
+      </div>
+      <h3 class="text-lg sm:text-xl font-black text-white">Relance Automatique Forfait PRO (Tous les 2 jours)</h3>
+      <p class="text-xs text-slate-300 leading-relaxed">
+        Le robot DjassaPay vérifie les boutiques en continu. Chaque vendeur en mode Gratuit reçoit une notification WhatsApp automatique tous les 2 jours lui expliquant l'importance de passer au Plan PRO : <strong>débloquer +20 articles, partager son lien boutique et éliminer 100% des faux clients</strong>. Dès qu'un vendeur s'abonne, les relances s'arrêtent pour lui !
+      </p>
+      <div class="text-[11px] text-amber-300 font-semibold pt-1">
+        📊 Actuellement : <strong>{{ starter_count or 0 }} boutiques</strong> en attente d'abonnement PRO.
+      </div>
+    </div>
+    
+    <div class="shrink-0">
+      <form action="/admin/reminders/send-pro-batch" method="POST" onsubmit="return confirm('Envoyer immédiatement la relance WhatsApp à tous les vendeurs STARTER ?')">
+        <button type="submit" class="w-full sm:w-auto px-5 py-3.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-black text-xs rounded-2xl shadow-lg shadow-amber-500/20 transition transform active:scale-95 flex items-center justify-center space-x-2 cursor-pointer">
+          <i data-lucide="send" class="w-4 h-4"></i>
+          <span>Lancer la Relance Maintenant</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
   <!-- Liste des Boutiques Inscrites & Abonnements -->
   <div class="mt-8 bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
     <div class="p-5 border-b border-slate-100 flex items-center justify-between">
@@ -272,6 +309,17 @@
             {% endif %}
           </div>
           <p class="text-slate-500 mt-0.5">Propriétaire : {{ m.name }} &bull; WhatsApp : <span class="font-mono font-bold">{{ m.phone }}</span></p>
+          {% if m.subscription_plan == 'STARTER' and m.phone != settings.FOUNDER_PHONE %}
+          <div class="mt-1 flex items-center space-x-2">
+            <span class="text-[10px] text-slate-400">
+              {% if m.last_pro_reminder_at %}
+                Dernière relance auto : {{ m.last_pro_reminder_at.strftime('%d/%m/%Y à %H:%M') }}
+              {% else %}
+                En attente du prochain cycle auto
+              {% endif %}
+            </span>
+          </div>
+          {% endif %}
         </div>
 
         <div class="flex items-center space-x-3 text-right">
@@ -279,6 +327,16 @@
             <span class="text-slate-400 block text-[10px] uppercase font-bold">Abonnement payé</span>
             <span class="font-black text-sm text-emerald-600">{{ "{:,}".format(m.subscription_paid_amount or 0) }} FCFA</span>
           </div>
+
+          <!-- Relance WhatsApp 1-Clic Vendeur -->
+          {% if m.subscription_plan == 'STARTER' and m.phone != settings.FOUNDER_PHONE %}
+          <div>
+            <a href="{{ generate_pro_upgrade_wa_link(m) }}" target="_blank" class="px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-[11px] shadow-xs transition flex items-center space-x-1 shrink-0">
+              <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
+              <span>Relancer sur WhatsApp</span>
+            </a>
+          </div>
+          {% endif %}
 
           <!-- Actions Fondateur sur le plan -->
           <div>

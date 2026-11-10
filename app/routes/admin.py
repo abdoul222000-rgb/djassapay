@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.config import settings
 from app.models import Merchant, Order, PaymentStatusEnum
+from app.services.whatsapp_service import generate_pro_upgrade_wa_link
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
@@ -105,14 +106,18 @@ async def admin_payouts_page(request: Request, db: Session = Depends(get_db)):
     
     total_founder_earnings = total_subscriptions + platform_commissions
 
+    starter_count = sum(1 for m in merchants if m.subscription_plan == "STARTER" and m.phone != settings.FOUNDER_PHONE)
+
     return templates.TemplateResponse("admin/payouts.html", {
         "request": request,
         "settings": settings,
         "merchants": merchants,
+        "starter_count": starter_count,
         "total_subscriptions": total_subscriptions,
         "total_sales_volume": total_sales_volume,
         "platform_commissions": platform_commissions,
-        "total_founder_earnings": total_founder_earnings
+        "total_founder_earnings": total_founder_earnings,
+        "generate_pro_upgrade_wa_link": generate_pro_upgrade_wa_link
     })
 
 @router.post("/admin/payouts")
@@ -201,4 +206,15 @@ async def admin_change_merchant_plan(
             merchant.subscription_status = "ACTIVE"
         db.commit()
     return RedirectResponse(url="/admin/payouts?plan_updated=1", status_code=303)
+
+@router.post("/admin/reminders/send-pro-batch")
+async def admin_send_pro_reminders_batch(request: Request, db: Session = Depends(get_db)):
+    """Permet au Fondateur de déclencher immédiatement la relance PRO à toutes les boutiques STARTER."""
+    if not is_founder_authenticated(request):
+        return RedirectResponse(url="/admin/login", status_code=303)
+
+    from app.main import run_pro_reminders_cycle
+    count = await run_pro_reminders_cycle()
+    return RedirectResponse(url=f"/admin/payouts?reminders_sent={count}", status_code=303)
+
 
