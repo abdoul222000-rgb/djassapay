@@ -198,7 +198,7 @@ def generate_pro_upgrade_reminder_message(merchant) -> str:
         f"3️⃣ *Renvoyez vos clients directement sur votre boutique en ligne* pour centraliser vos ventes en 1 clic.\n"
         f"4️⃣ *Évitez 100% des faux clients et fausses commandes !* Grâce à l'acompte Wave obligatoire avant le départ du livreur, fini les livraisons dans le vide et les lapins en Côte d'Ivoire !\n\n"
         f"🔗 *Votre boutique :* {store_url}\n"
-        f"⚡ *Activez votre Plan PRO (9 900 FCFA / mois) en 1 clic :*\n"
+        f"⚡ *Activez votre Plan PRO (6 750 FCFA / mois) en 1 clic :*\n"
         f"{sub_url}\n\n"
         f"Faites décoller votre commerce en toute sérénité avec DjassaPay ! 🇨🇮"
     )

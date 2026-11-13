@@ -449,7 +449,7 @@ async def upgrade_subscription(
     if not merchant:
         return RedirectResponse(url="/login?unauthorized=1", status_code=303)
 
-    amount = 9900 if plan == "PRO" else 19900
+    amount = 6750 if plan == "PRO" else 19900
     
     # Intégration 100% Autonome : si la clé API Wave est présente, redirection Wave Checkout officielle !
     if payment_method == "WAVE" and settings.WAVE_API_KEY:
@@ -470,14 +470,14 @@ async def upgrade_subscription(
 async def confirm_subscription(
     request: Request,
     plan: str = Form("PRO"),
-    amount: int = Form(9900),
+    amount: int = Form(6750),
     transaction_ref: str = Form(""),
     db: Session = Depends(get_db)
 ):
     """
     Enregistre la demande d'activation d'abonnement.
     Le statut reste 'PENDING_VERIFICATION' jusqu'à validation par le Fondateur 
-    après vérification effective des 9 900 FCFA sur son compte Wave Business !
+    après vérification effective des 6 750 FCFA sur son compte Wave Business !
     """
     merchant = get_current_merchant(db, request)
     if not merchant:

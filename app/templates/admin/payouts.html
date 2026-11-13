@@ -83,7 +83,7 @@
       <div class="text-2xl font-black text-slate-900 mt-1">
         {{ "{:,}".format(total_subscriptions) }} <span class="text-xs font-bold text-slate-500">FCFA</span>
       </div>
-      <span class="text-[10px] text-slate-400 mt-1 block">Forfaits Pro 9 900 FCFA</span>
+      <span class="text-[10px] text-slate-400 mt-1 block">Forfaits Pro 6 750 FCFA</span>
     </div>
 
     <!-- Commissions Plateforme -->
@@ -348,7 +348,7 @@
               </button>
             </form>
             {% else %}
-            <form action="/admin/merchants/{{ m.id }}/change-plan" method="POST" onsubmit="return confirm('Valider et passer cette boutique en PRO (9 900 FCFA reçu) ?')">
+            <form action="/admin/merchants/{{ m.id }}/change-plan" method="POST" onsubmit="return confirm('Valider et passer cette boutique en PRO (6 750 FCFA reçu) ?')">
               <input type="hidden" name="plan" value="PRO">
               <button type="submit" class="px-2.5 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-extrabold text-[11px] border border-emerald-200 shadow-xs transition">
                 Passer en PRO ⭐

@@ -114,7 +114,7 @@ async def wave_webhook(request: Request, db: Session = Depends(get_db)):
                 if merchant:
                     merchant.subscription_plan = target_plan
                     merchant.subscription_status = "ACTIVE"
-                    paid_amt = int(data.get("data", {}).get("amount", 9900))
+                    paid_amt = int(data.get("data", {}).get("amount", 6750))
                     merchant.subscription_paid_amount = (merchant.subscription_paid_amount or 0) + paid_amt
                     db.commit()
                     print(f"[Wave Webhook Autonome] Abonnement {target_plan} validé automatiquement pour {merchant.store_name} !")

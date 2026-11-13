@@ -47,7 +47,7 @@ L'application démarre sur : **`http://localhost:8000`**
 | 🛒 **Vitrine Démo (Dakar)** | `http://localhost:8000/shop/dakar-kicks` | Boutique sneakers à Dakar |
 | 🏍️ **Hub des Coursiers** | `http://localhost:8000/delivery` | Liste de toutes les courses en attente |
 | 📊 **Tableau de Bord Marchand**| `http://localhost:8000/merchant/dashboard` | Gestion des commandes et métriques |
-| 👑 **Mon Abonnement SaaS** | `http://localhost:8000/merchant/subscription` | Passage au Plan Pro (9 900 FCFA / mois) |
+| 👑 **Mon Abonnement SaaS** | `http://localhost:8000/merchant/subscription` | Passage au Plan Pro (6 750 FCFA / mois) |
 
 ---
 
@@ -63,6 +63,6 @@ L'application démarre sur : **`http://localhost:8000`**
 ---
 
 ## 💰 Modèle de Monétisation
-1. **Abonnement mensuel :** 9 900 FCFA / mois par boutique.
+1. **Abonnement mensuel :** 6 750 FCFA / mois par boutique.
 2. **Micro-commission :** 1% sur chaque acompte/transaction encaissé.
 3. **Packs WhatsApp / SMS :** Notifications automatiques aux clients.

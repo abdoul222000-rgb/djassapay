@@ -39,7 +39,7 @@ class Merchant(Base):
     pin_code = Column(String(10), default="1234") # Code PIN 4 chiffres pour connexion mobile rapide
     
     # Abonnement SaaS (Monétisation de la plateforme)
-    subscription_plan = Column(String(50), default="STARTER") # STARTER (Gratuit), PRO (9 900 F), BUSINESS (19 900 F)
+    subscription_plan = Column(String(50), default="STARTER") # STARTER (Gratuit), PRO (6 750 F), BUSINESS (19 900 F)
     subscription_status = Column(String(50), default="ACTIVE")
     subscription_paid_amount = Column(Integer, default=0)
     last_pro_reminder_at = Column(DateTime, nullable=True) # Date du dernier rappel PRO envoyé (relance tous les 2 jours)

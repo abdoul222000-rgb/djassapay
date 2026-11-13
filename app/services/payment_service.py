@@ -96,7 +96,7 @@ class PaymentService:
         }
 
     @staticmethod
-    def initiate_subscription_wave_payment(merchant, plan: str = "PRO", amount: int = 9900) -> dict:
+    def initiate_subscription_wave_payment(merchant, plan: str = "PRO", amount: int = 6750) -> dict:
         """
         Génère une session officielle Wave Checkout pour un abonnement SaaS.
         Dès validation par le marchand dans Wave, le Webhook Wave notifie DjassaPay
