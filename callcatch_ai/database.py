@@ -61,6 +61,10 @@ class Contractor(Base):
     subscription_active = Column(Boolean, default=True)
     monthly_plan_price = Column(Float, default=99.0) # 99$/mois
     
+    # Intégration Whop (Merchant of Record)
+    whop_membership_id = Column(String(100), nullable=True, index=True)
+    whop_plan_id = Column(String(100), nullable=True)
+    
     created_at = Column(DateTime, default=datetime.utcnow)
 
     # Relations
@@ -118,6 +122,22 @@ class SMSMessage(Base):
 
 def init_db():
     Base.metadata.create_all(bind=engine)
+    
+    # Migration automatique et sécurisée des colonnes pour éviter tout crash
+    try:
+        with engine.connect() as conn:
+            if "sqlite" in str(settings.CALLCATCH_DATABASE_URL):
+                cursor = conn.connection.cursor()
+                cursor.execute("PRAGMA table_info(contractors)")
+                existing_cols = [col[1] for col in cursor.fetchall()]
+                if "whop_membership_id" not in existing_cols:
+                    cursor.execute("ALTER TABLE contractors ADD COLUMN whop_membership_id VARCHAR(100)")
+                if "whop_plan_id" not in existing_cols:
+                    cursor.execute("ALTER TABLE contractors ADD COLUMN whop_plan_id VARCHAR(100)")
+                conn.connection.commit()
+    except Exception:
+        pass
+
     db = SessionLocal()
     try:
         # Créer le compte artisan de démonstration (Mike le plombier) s'il n'existe pas

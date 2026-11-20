@@ -19,7 +19,7 @@ from .security import (
 from .services.twilio_service import send_sms_via_twilio
 from .services.ai_agent import process_inbound_sms_with_ai
 
-app = FastAPI(title=settings.APP_NAME)
+app = FastAPI(title="CallCatch AI")
 
 # 1. Protection Globale : Injection des en-têtes de sécurité bancaires
 app.add_middleware(SecurityHeadersMiddleware)
@@ -567,3 +567,65 @@ async def simulate_missed_call(
     db.commit()
 
     return RedirectResponse(url="/dashboard", status_code=303)
+
+
+# ==============================================================================
+# INTÉGRATION WHOP (MERCHANT OF RECORD & PAIEMENTS SAAS)
+# ==============================================================================
+
+@app.post("/api/webhook/whop")
+async def whop_webhook(request: Request, db: Session = Depends(get_db)):
+    """
+    Webhook Whop pour activation et gestion automatique des abonnements SaaS CallCatch AI.
+    Événements Whop supportés :
+    - membership.went_valid / payment.succeeded : Activation immédiate du compte artisan
+    - membership.went_invalid / membership.cancelled : Désactivation
+    """
+    try:
+        payload = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON payload")
+
+    action = payload.get("action", "")
+    data = payload.get("data", {})
+
+    email = data.get("email") or data.get("user_email")
+    if not email and isinstance(data.get("user"), dict):
+        email = data["user"].get("email")
+
+    membership_id = data.get("id") or data.get("membership_id")
+    plan_id = data.get("plan_id")
+
+    if not email:
+        return {"status": "ignored", "reason": "No email found in Whop payload"}
+
+    contractor = db.query(Contractor).filter(Contractor.email == email.strip().lower()).first()
+
+    if not contractor:
+        return {"status": "user_not_found", "email": email, "event": action}
+
+    if action in ["membership.went_valid", "payment.succeeded"]:
+        contractor.subscription_active = True
+        contractor.whop_membership_id = str(membership_id) if membership_id else None
+        contractor.whop_plan_id = str(plan_id) if plan_id else None
+        db.commit()
+        return {"status": "success", "event": action, "contractor": contractor.email, "subscription_active": True}
+
+    elif action in ["membership.went_invalid", "membership.cancelled"]:
+        contractor.subscription_active = False
+        db.commit()
+        return {"status": "success", "event": action, "contractor": contractor.email, "subscription_active": False}
+
+    return {"status": "received", "event": action}
+
+
+@app.get("/api/health")
+def health_check():
+    """Endpoint de santé pour monitoring Vercel / UptimeRobot"""
+    return {
+        "status": "online",
+        "app": "CallCatch AI",
+        "runtime": "Vercel & Whop Ready",
+        "timestamp": datetime.utcnow().isoformat()
+    }
+

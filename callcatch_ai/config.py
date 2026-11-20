@@ -4,7 +4,17 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     APP_NAME: str = "CallCatch AI"
     CALLCATCH_SECRET_KEY: str = "super-secret-key-callcatch-2026-high-security"
-    CALLCATCH_DATABASE_URL: str = "sqlite:///./callcatch.db"
+    CALLCATCH_DATABASE_URL: str = os.getenv(
+        "CALLCATCH_DATABASE_URL",
+        "sqlite:////tmp/callcatch.db" if os.getenv("VERCEL") else "sqlite:///./callcatch.db"
+    )
+    
+    # Intégration Whop (Merchant of Record & Abonnements Internationaux)
+    WHOP_API_KEY: str = os.getenv("WHOP_API_KEY", "")
+    WHOP_WEBHOOK_SECRET: str = os.getenv("WHOP_WEBHOOK_SECRET", "")
+    WHOP_STARTER_CHECKOUT_URL: str = os.getenv("WHOP_STARTER_CHECKOUT_URL", "")
+    WHOP_PRO_CHECKOUT_URL: str = os.getenv("WHOP_PRO_CHECKOUT_URL", "")
+    WHOP_SCALE_CHECKOUT_URL: str = os.getenv("WHOP_SCALE_CHECKOUT_URL", "")
     
     # Identifiants Maître Fondateur / SuperAdmin (Accès VIP Privé CallCatch)
     CALLCATCH_FOUNDER_EMAIL: str = "abdoul222000@gmail.com"
