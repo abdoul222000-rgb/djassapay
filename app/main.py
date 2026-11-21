@@ -29,20 +29,30 @@ app = FastAPI(
     version="1.0.0"
 )
 
-templates = Jinja2Templates(directory="app/templates")
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+STATIC_DIR = os.path.join(BASE_DIR, "app", "static")
+TEMPLATES_DIR = os.path.join(BASE_DIR, "app", "templates")
+
+templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
 # Création du dossier static s'il n'existe pas
-os.makedirs("app/static", exist_ok=True)
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
+os.makedirs(STATIC_DIR, exist_ok=True)
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 # Routes PWA globales
 @app.get("/manifest.json")
 async def get_manifest():
-    return FileResponse("app/static/manifest.json", media_type="application/manifest+json")
+    manifest_path = os.path.join(STATIC_DIR, "manifest.json")
+    if os.path.exists(manifest_path):
+        return FileResponse(manifest_path, media_type="application/manifest+json")
+    return {"name": "DjassaPay"}
 
 @app.get("/sw.js")
 async def get_service_worker():
-    return FileResponse("app/static/sw.js", media_type="application/javascript")
+    sw_path = os.path.join(STATIC_DIR, "sw.js")
+    if os.path.exists(sw_path):
+        return FileResponse(sw_path, media_type="application/javascript")
+    return ""
 
 # Enregistrement des routes
 app.include_router(store.router)
@@ -193,8 +203,9 @@ async def startup_populate_data():
     finally:
         db.close()
 
-    # Lancement du worker autonome de relance PRO (tous les 2 jours)
-    asyncio.create_task(pro_reminder_cron_worker())
+    # Lancement du worker autonome de relance PRO (tous les 2 jours) si pas en serverless
+    if not os.getenv("VERCEL"):
+        asyncio.create_task(pro_reminder_cron_worker())
 
 # ==============================================================
 # AUTOMATISATION RELANCE PRO TOUS LES 2 JOURS (PILOTE AUTOMATIQUE)
