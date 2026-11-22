@@ -186,6 +186,7 @@ async def process_register(
     city: str = Form("Abidjan"),
     country: str = Form("CI"),
     pin_code: str = Form("1234"),
+    target_plan: str = Form("STARTER"),
     db: Session = Depends(get_db)
 ):
     """Enregistre un nouveau commerçant et prépare sa boutique prête à vendre."""
@@ -235,8 +236,9 @@ async def process_register(
     db.commit()
     db.refresh(merchant)
 
-    # Redirection vers le dashboard avec cookie de session (le vendeur gère librement ses propres zones et tarifs)
-    redirect = RedirectResponse(url="/merchant/dashboard?new=1", status_code=303)
+    # Redirection vers la page d'abonnement PRO si le vendeur a cliqué sur le Plan PRO, sinon vers le dashboard
+    target_url = "/merchant/subscription?welcome_pro=1" if target_plan == "PRO" else "/merchant/dashboard?new=1"
+    redirect = RedirectResponse(url=target_url, status_code=303)
     redirect.set_cookie(key="merchant_id", value=str(merchant.id), max_age=3600*24*30)
     return redirect
 
@@ -252,6 +254,7 @@ async def process_login(
     response: Response,
     phone: str = Form(...),
     pin_code: str = Form("1234"),
+    target_plan: str = Form("STARTER"),
     db: Session = Depends(get_db)
 ):
     """Connexion avec numéro WhatsApp + Code PIN ultra-robuste."""

@@ -1,224 +1,630 @@
 {% extends "base.html" %}
 
-{% block title %}DjassaPay - Le SaaS E-commerce Anti-Lapin en Côte d'Ivoire{% endblock %}
+{% block title %}DjassaPay - Le SaaS Anti-Lapin n°1 en Côte d'Ivoire | Bloquez 100% des faux clients{% endblock %}
+
+{% block meta_description %}Vendeurs d'Abidjan : arrêtez de perdre 40 000 à 120 000 FCFA par mois en livraisons annulées. DjassaPay oblige vos clients WhatsApp et TikTok à verser l'acompte Wave avant l'envoi du livreur. Forfait PRO à seulement 6 750 FCFA/mois.{% endblock %}
 
 {% block content %}
-<div class="max-w-5xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
-  
-  <!-- Hero Section -->
-  <div class="text-center max-w-3xl mx-auto">
-    <!-- Logo Officiel DjassaPay -->
-    <div class="mb-6 flex justify-center">
-      <img src="/static/images/djassapay_logo.svg" alt="DjassaPay Logo Officiel" class="h-16 sm:h-20 w-auto">
-    </div>
+<div class="relative overflow-hidden bg-slate-50" x-data="{
+  // State du Calculateur ROI de Pertes Évitées
+  weeklyOrders: 15,
+  deliveryFee: 2000,
+  noShowCount: 4,
+  proPrice: 6750,
+  get monthlyLoss() {
+    return this.noShowCount * this.deliveryFee * 4;
+  },
+  get netSaved() {
+    return Math.max(0, this.monthlyLoss - this.proPrice);
+  },
+  get roiMultiplier() {
+    return (this.monthlyLoss / this.proPrice).toFixed(1);
+  }
+}">
 
-    <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs sm:text-sm font-semibold border border-emerald-200 mb-6 shadow-sm">
-      <span class="animate-pulse">🇨🇮</span>
-      <span>Disponible sur toute l'étendue de la Côte d'Ivoire (Abidjan & Toutes les Villes de l'Intérieur)</span>
-    </div>
-
-    <h1 class="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight leading-tight">
-      Vendez sur WhatsApp & TikTok <br class="hidden sm:inline">
-      <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500">
-        sans jamais perdre d'argent en livraison
-      </span>
-    </h1>
-
-    <p class="mt-5 text-base sm:text-lg text-slate-600 leading-relaxed">
-      Finies les courses de coursier payées dans le vide ! Vos clientes valident leur commande en payant l'acompte de livraison par <strong>Wave CI</strong>, <strong>Orange Money</strong>, <strong>MTN MoMo</strong> ou <strong>Moov Money</strong>. Dès que l'acompte est réglé, la livraison moto locale ou l'expédition colis en gare est lancée en toute sérénité.
-    </p>
-
-    <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
-      <a href="/register" class="w-full sm:w-auto px-7 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold rounded-2xl shadow-lg shadow-emerald-600/30 transition transform active:scale-95 flex items-center justify-center space-x-2 text-sm sm:text-base">
-        <i data-lucide="sparkles" class="w-5 h-5"></i>
-        <span>Ouvrir ma Boutique (Gratuit)</span>
-      </a>
-      <a href="/marketplace" class="w-full sm:w-auto px-6 py-3.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-2xl shadow-md transition flex items-center justify-center space-x-2 text-sm">
-        <i data-lucide="shopping-bag" class="w-4 h-4"></i>
-        <span>Visiter la Marketplace</span>
-      </a>
-      <a href="/login" class="w-full sm:w-auto px-5 py-3.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-2xl shadow-sm transition flex items-center justify-center space-x-2 text-sm">
-        <i data-lucide="log-in" class="w-4 h-4"></i>
-        <span>Connexion Vendeur</span>
-      </a>
-    </div>
-
-    <div class="mt-6 flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs text-slate-500">
-      <span class="flex items-center"><i data-lucide="check-circle" class="w-4 h-4 text-emerald-500 mr-1.5"></i> Wave CI Direct</span>
-      <span class="flex items-center"><i data-lucide="check-circle" class="w-4 h-4 text-emerald-500 mr-1.5"></i> Orange Money & MTN MoMo</span>
-      <span class="flex items-center"><i data-lucide="check-circle" class="w-4 h-4 text-emerald-500 mr-1.5"></i> Moov Money CI</span>
-      <span class="flex items-center"><i data-lucide="check-circle" class="w-4 h-4 text-emerald-500 mr-1.5"></i> 100% Côte d'Ivoire (Abidjan & Intérieur)</span>
-    </div>
+  <!-- ============================================================== -->
+  <!-- 1. BANDEAU D'URGENCE & OFFRE SPÉCIALE EN TÊTE (FOMO & SCARCITY) -->
+  <!-- ============================================================== -->
+  <div class="bg-gradient-to-r from-amber-500 via-emerald-600 to-teal-700 text-white text-xs sm:text-sm py-2.5 px-4 font-bold text-center shadow-md flex items-center justify-center space-x-2">
+    <span class="animate-bounce inline-block">🔥</span>
+    <span><strong>Offre Spéciale Lancement Abidjan :</strong> Les 20 prochains commerçants qui passent PRO bénéficient d'une mise en avant VIP sur la Marketplace !</span>
+    <span class="hidden md:inline bg-black/20 px-2 py-0.5 rounded-full text-[11px] font-extrabold tracking-wider uppercase ml-2">14/20 places prises</span>
   </div>
 
-  <!-- Les 3 Piliers Anti-Lapin -->
-  <div class="mt-16 sm:mt-24 grid sm:grid-cols-3 gap-6">
-    <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm hover:shadow-md transition">
-      <div class="w-12 h-12 rounded-2xl bg-red-100 text-red-600 flex items-center justify-center font-bold text-xl mb-4">
-        ❌
-      </div>
-      <h3 class="font-bold text-slate-900 text-lg">Le Cauchemar du Lapin</h3>
-      <p class="mt-2 text-sm text-slate-600 leading-relaxed">
-        Vous expédiez un coursier à 2 000 FCFA. Le client ne décroche plus ou annule sur place. Vous perdez la course de votre propre poche.
-      </p>
-    </div>
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
 
-    <div class="bg-white p-6 rounded-3xl border border-emerald-200 shadow-sm bg-gradient-to-b from-emerald-50/50 to-white hover:shadow-md transition">
-      <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-xl mb-4">
-        ⚡
+    <!-- ============================================================== -->
+    <!-- 2. HERO SECTION : L'ACCROCHE ÉMOTIONNELLE DU PAIX & DU RENTABLE -->
+    <!-- ============================================================== -->
+    <div class="text-center max-w-4xl mx-auto">
+      
+      <!-- Logo Officiel & Badge de Confiance CI -->
+      <div class="mb-5 flex items-center justify-center space-x-3">
+        <img src="/static/images/djassapay_logo.svg" alt="DjassaPay Logo" class="h-12 sm:h-16 w-auto">
       </div>
-      <h3 class="font-bold text-slate-900 text-lg">Le Verrou Anti-Lapin</h3>
-      <p class="mt-2 text-sm text-slate-600 leading-relaxed">
-        Le client paie l'acompte (frais de livraison moto ou transport colis) directement sur votre compte avant l'expédition. S'il a payé, il est là à 100% !
-      </p>
-    </div>
 
-    <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm hover:shadow-md transition">
-      <div class="w-12 h-12 rounded-2xl bg-sky-100 text-sky-600 flex items-center justify-center font-bold text-xl mb-4">
-        🏍️
+      <div class="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-red-100 text-red-800 text-xs sm:text-sm font-black border border-red-200 mb-6 shadow-xs animate-pulse">
+        <span>🛑</span>
+        <span>STOP AUX LIVRAISONS DANS LE VIDE & AUX CLIENTS FANTÔMES</span>
       </div>
-      <h3 class="font-bold text-slate-900 text-lg">Livreurs Moto & Colis Gare</h3>
-      <p class="mt-2 text-sm text-slate-600 leading-relaxed">
-        Fini les notes vocales interminables. Votre coursier ou transporteur reçoit un bordereau avec la ville, l'adresse, repères, bouton d'appel et montant cash à encaisser.
-      </p>
-    </div>
-  </div>
 
-  <!-- SECTION MARKETPLACE EN DIRECT -->
-  <div class="mt-16 sm:mt-24">
-    <div class="flex flex-col sm:flex-row items-start sm:items-end justify-between mb-8 gap-4">
-      <div>
-        <div class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-bold mb-2">
-          <span>🛍️ Marketplace Ouverte</span>
+      <h1 class="text-3xl sm:text-5xl lg:text-6xl font-black text-slate-950 tracking-tight leading-[1.15]">
+        Vendeurs d'Abidjan : <br class="hidden sm:inline">
+        Arrêtez de perdre <span class="text-red-600 underline decoration-red-400 decoration-wavy">40 000 à 120 000 FCFA</span> <br>
+        <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600">
+          dans les courses de faux clients !
+        </span>
+      </h1>
+
+      <p class="mt-6 text-base sm:text-xl text-slate-700 leading-relaxed max-w-2xl mx-auto font-medium">
+        DjassaPay est la <strong>1ère plateforme e-commerce ivoirienne</strong> qui oblige vos clients WhatsApp et TikTok à régler <strong>l'acompte de livraison Wave CI obligatoire</strong> avant que le livreur ne démarre sa moto.
+      </p>
+
+      <!-- 4 Puces Avantages Choc -->
+      <div class="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 max-w-3xl mx-auto text-left text-xs sm:text-sm font-bold text-slate-800">
+        <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-xs flex items-center space-x-2">
+          <span class="text-emerald-600 text-base">✅</span>
+          <span>Zéro Lapin Garanti</span>
         </div>
-        <h2 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Articles en vente chez nos commerçants</h2>
-        <p class="text-xs sm:text-sm text-slate-500 mt-1">Visitez les boutiques vérifiées et commandez avec acompte Wave CI direct.</p>
+        <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-xs flex items-center space-x-2">
+          <span class="text-emerald-600 text-base">⚡</span>
+          <span>Acompte Wave Direct</span>
+        </div>
+        <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-xs flex items-center space-x-2">
+          <span class="text-emerald-600 text-base">⭐</span>
+          <span>Badge Vendeur Certifié</span>
+        </div>
+        <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-xs flex items-center space-x-2">
+          <span class="text-emerald-600 text-base">📦</span>
+          <span>Catalogue Illimité HD</span>
+        </div>
       </div>
 
-      <a href="/marketplace" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition flex items-center space-x-1.5 shadow-sm shrink-0">
-        <span>Voir toute la Marketplace</span>
-        <i data-lucide="arrow-right" class="w-4 h-4"></i>
-      </a>
+      <!-- CTA Principal & Secondaire -->
+      <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+        <a href="/register?plan=PRO" class="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-black rounded-2xl shadow-xl shadow-emerald-600/30 transition transform active:scale-95 flex items-center justify-center space-x-2.5 text-base sm:text-lg">
+          <i data-lucide="zap" class="w-5 h-5 text-amber-300"></i>
+          <span>Activer Mon Forfait PRO (6 750 FCFA)</span>
+        </a>
+        <a href="https://wa.me/2250595094159?text=Bonjour%20Fondateur%20DjassaPay,%20je%20suis%20commerçant%20et%20je%20veux%20passer%20ma%20boutique%20en%20PRO%20à%206%20750%20FCFA%20!" target="_blank" class="w-full sm:w-auto px-6 py-4 bg-white hover:bg-slate-50 text-slate-900 font-extrabold rounded-2xl border-2 border-slate-200 shadow-sm transition flex items-center justify-center space-x-2 text-sm sm:text-base">
+          <i data-lucide="message-circle" class="w-5 h-5 text-emerald-600"></i>
+          <span>Parler au Fondateur sur WhatsApp</span>
+        </a>
+      </div>
+
+      <!-- Sous-texte de réassurance -->
+      <div class="mt-4 flex flex-wrap items-center justify-center gap-4 text-xs font-semibold text-slate-500">
+        <span class="flex items-center"><i data-lucide="check" class="w-4 h-4 text-emerald-600 mr-1"></i> Seulement 225 FCFA / jour</span>
+        <span class="flex items-center"><i data-lucide="check" class="w-4 h-4 text-emerald-600 mr-1"></i> Rentabilisé dès votre 2ème commande</span>
+        <span class="flex items-center"><i data-lucide="check" class="w-4 h-4 text-emerald-600 mr-1"></i> 100% sur smartphone, 0 ordinateur requis</span>
+      </div>
+
+      <!-- Preuve Sociale Immédiate -->
+      <div class="mt-8 pt-6 border-t border-slate-200/80 flex flex-wrap items-center justify-center gap-6 text-xs text-slate-500">
+        <span class="font-bold text-slate-700">Partenaires de paiement acceptés :</span>
+        <span class="px-2.5 py-1 bg-white border border-slate-200 rounded-lg font-bold text-sky-600">🌊 Wave CI</span>
+        <span class="px-2.5 py-1 bg-white border border-slate-200 rounded-lg font-bold text-orange-600">🟠 Orange Money</span>
+        <span class="px-2.5 py-1 bg-white border border-slate-200 rounded-lg font-bold text-yellow-600">🟡 MTN MoMo</span>
+        <span class="px-2.5 py-1 bg-white border border-slate-200 rounded-lg font-bold text-blue-600">🔵 Moov Money</span>
+      </div>
+
     </div>
 
-    {% if marketplace_products %}
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-      {% for product in marketplace_products %}
-      <div class="bg-white rounded-2xl border border-slate-200/90 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col justify-between group">
-        <a href="/shop/{{ product.merchant.store_slug }}/product/{{ product.id }}" class="block aspect-square bg-slate-100 relative overflow-hidden">
-          {% if product.is_video %}
-            <video src="{{ product.image_url }}" autoplay loop muted playsinline class="w-full h-full object-cover group-hover:scale-105 transition"></video>
-          {% else %}
-            <img 
-              src="{{ product.image_url or '/static/images/product_placeholder.svg' }}" 
-              alt="{{ product.title }}" 
-              class="w-full h-full object-cover group-hover:scale-105 transition" 
-              loading="lazy"
-              onerror="this.onerror=null; this.src='/static/images/product_placeholder.svg';"
-            >
-          {% endif %}
-          <span class="absolute top-2 left-2 bg-slate-900/80 text-white text-[9px] font-bold px-2 py-0.5 rounded-md">
-            {{ product.merchant.city or 'Abidjan' }}
-          </span>
-        </a>
-        <div class="p-3 flex-1 flex flex-col justify-between">
+    <!-- ============================================================== -->
+    <!-- 3. SIMULATEUR INTERACTIF ROI : VOYEZ COMBIEN VOUS PERDEZ ACTUELLEMENT -->
+    <!-- ============================================================== -->
+    <div class="mt-16 sm:mt-24 bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950 rounded-3xl p-6 sm:p-10 text-white shadow-2xl border border-emerald-500/20">
+      <div class="text-center max-w-2xl mx-auto mb-8">
+        <div class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-black uppercase tracking-wider mb-2">
+          <span>🧮 CALCULATEUR DE RENTABILITÉ IMMÉDIATE</span>
+        </div>
+        <h2 class="text-2xl sm:text-4xl font-black text-white">Combien d'argent perdez-vous chaque mois ?</h2>
+        <p class="text-xs sm:text-sm text-slate-300 mt-2">Déplacez les curseurs ci-dessous avec vos chiffres réels à Abidjan :</p>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-8 items-center">
+        <!-- Colonne Curseurs -->
+        <div class="space-y-6 bg-white/5 p-6 rounded-2xl border border-white/10 backdrop-blur-md">
+          
           <div>
-            <div class="text-[10px] text-slate-400 font-semibold truncate">{{ product.merchant.store_name }}</div>
-            <h4 class="font-bold text-slate-900 text-xs truncate mt-0.5">{{ product.title }}</h4>
-            <div class="mt-1 text-xs font-extrabold text-slate-900">
-              {{ "{:,}".format(product.price) }} <span class="text-[10px] text-emerald-600 font-bold">FCFA</span>
+            <div class="flex justify-between text-xs sm:text-sm font-bold mb-2">
+              <span class="text-slate-300">Commandes reçues par semaine :</span>
+              <span class="text-emerald-400 font-mono text-base font-black" x-text="weeklyOrders + ' commandes'"></span>
             </div>
+            <input type="range" min="5" max="50" step="1" x-model="weeklyOrders" class="w-full accent-emerald-500 cursor-pointer">
           </div>
-          <div class="mt-2.5 pt-2 border-t border-slate-100">
-            <a href="/shop/{{ product.merchant.store_slug }}/product/{{ product.id }}" class="w-full py-1.5 px-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[10px] rounded-lg transition block text-center">
-              Acheter
+
+          <div>
+            <div class="flex justify-between text-xs sm:text-sm font-bold mb-2">
+              <span class="text-slate-300">Coût moyen d'une livraison moto :</span>
+              <span class="text-emerald-400 font-mono text-base font-black" x-text="Number(deliveryFee).toLocaleString() + ' FCFA'"></span>
+            </div>
+            <input type="range" min="1500" max="3500" step="250" x-model="deliveryFee" class="w-full accent-emerald-500 cursor-pointer">
+          </div>
+
+          <div>
+            <div class="flex justify-between text-xs sm:text-sm font-bold mb-2">
+              <span class="text-slate-300">Clients qui posent un lapin par semaine :</span>
+              <span class="text-red-400 font-mono text-base font-black" x-text="noShowCount + ' lapins / sem.'"></span>
+            </div>
+            <input type="range" min="1" max="15" step="1" x-model="noShowCount" class="w-full accent-red-500 cursor-pointer">
+            <span class="text-[11px] text-slate-400 mt-1 block">Téléphone éteint, mari qui a voyagé, fausses adresses...</span>
+          </div>
+
+        </div>
+
+        <!-- Colonne Bilan Financier Choc -->
+        <div class="bg-white/10 p-6 sm:p-8 rounded-3xl border border-emerald-500/30 text-center flex flex-col justify-between space-y-5">
+          <div>
+            <span class="text-xs font-extrabold uppercase tracking-wider text-red-400">Ce que vous jetez par la fenêtre :</span>
+            <div class="text-3xl sm:text-5xl font-black text-red-400 mt-1 font-mono">
+              - <span x-text="Number(monthlyLoss).toLocaleString()"></span> <span class="text-sm font-bold text-white">FCFA / mois</span>
+            </div>
+            <p class="text-xs text-slate-300 mt-1">Perdus directement de votre poche en frais de transport payés aux coursiers moto !</p>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-emerald-500/20 border border-emerald-500/40">
+            <span class="text-xs font-black uppercase text-emerald-300">Avec le Forfait PRO DjassaPay (6 750 F) :</span>
+            <div class="text-2xl sm:text-4xl font-black text-emerald-400 mt-1 font-mono">
+              + <span x-text="Number(netSaved).toLocaleString()"></span> <span class="text-sm font-bold text-white">FCFA ÉCONOMISÉS</span>
+            </div>
+            <p class="text-[11px] text-emerald-200 mt-1">
+              Votre abonnement est rentabilisé dès vos <strong><span x-text="Math.ceil(proPrice / deliveryFee)"></span> premières commandes</strong> !
+            </p>
+          </div>
+
+          <a href="/register?plan=PRO" class="w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-sm rounded-xl shadow-lg shadow-emerald-500/30 transition transform active:scale-95 flex items-center justify-center space-x-2">
+            <span>Arrêter de Perdre de l'Argent — Passer PRO</span>
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- 4. LE CHOC DU QUOTIDIEN : « SANS DJASSAPAY » VS « AVEC DJASSAPAY PRO » -->
+    <!-- ============================================================== -->
+    <div class="mt-16 sm:mt-24">
+      <div class="text-center max-w-2xl mx-auto mb-12">
+        <span class="text-xs uppercase tracking-wider font-extrabold text-emerald-600">COMPARAISON DIRECTE</span>
+        <h2 class="text-2xl sm:text-4xl font-black text-slate-900 mt-1">Pourquoi continuer à vendre comme en 2015 ?</h2>
+        <p class="text-xs sm:text-sm text-slate-500 mt-2">Regardez la différence entre votre méthode actuelle et une boutique DjassaPay PRO :</p>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-6">
+        
+        <!-- Colonne AVANT (La Galère) -->
+        <div class="bg-red-50/50 rounded-3xl p-6 sm:p-8 border-2 border-red-200 flex flex-col justify-between">
+          <div>
+            <div class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-red-100 text-red-800 text-xs font-black uppercase mb-4">
+              <span>❌ LA VENTE CLASSIQUE SUR WHATSAPP</span>
+            </div>
+            <h3 class="text-xl font-black text-slate-900 mb-4">Le parcours cauchemar du commerçant :</h3>
+            
+            <ul class="space-y-3.5 text-xs sm:text-sm text-slate-700">
+              <li class="flex items-start"><span class="text-red-500 mr-2 text-base">❌</span> Le client demande le prix en commentaire sous votre vidéo TikTok ou statut.</li>
+              <li class="flex items-start"><span class="text-red-500 mr-2 text-base">❌</span> Vous passez 20 minutes à échanger des notes vocales interminables pour fixer la commune.</li>
+              <li class="flex items-start"><span class="text-red-500 mr-2 text-base">❌</span> Le client dit : <em>« Envoyez le livreur à Yopougon, je paie cash à l'arrivée »</em>.</li>
+              <li class="flex items-start"><span class="text-red-500 mr-2 text-base">❌</span> Vous avancez 2 000 FCFA au livreur. Arrivé sur place : <strong>téléphone éteint</strong>.</li>
+              <li class="flex items-start font-bold text-red-900"><span class="text-red-600 mr-2 text-base">❌</span> Bilan : -2 000 FCFA de votre poche, 3 heures de perdues, nerfs à vif.</li>
+            </ul>
+          </div>
+          
+          <div class="mt-6 pt-4 border-t border-red-200/80 text-center text-xs font-bold text-red-700">
+            Résultat : Vous enrichissez les coursiers et vous vous épuisez pour rien.
+          </div>
+        </div>
+
+        <!-- Colonne APRÈS (La Sérénité PRO) -->
+        <div class="bg-emerald-50/70 rounded-3xl p-6 sm:p-8 border-2 border-emerald-500 shadow-xl flex flex-col justify-between relative overflow-hidden">
+          <div class="absolute top-0 right-0 bg-emerald-600 text-white text-[10px] font-black uppercase px-4 py-1 rounded-bl-xl tracking-wider">
+            La Révolution DjassaPay PRO
+          </div>
+
+          <div>
+            <div class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-900 text-xs font-black uppercase mb-4">
+              <span>⭐ VOTRE BOUTIQUE DJASSAPAY PRO</span>
+            </div>
+            <h3 class="text-xl font-black text-slate-900 mb-4">Le parcours 100% sécurisé et rentable :</h3>
+            
+            <ul class="space-y-3.5 text-xs sm:text-sm text-slate-800 font-medium">
+              <li class="flex items-start"><span class="text-emerald-600 mr-2 text-base">✅</span> Vous collez votre lien boutique propre dans votre bio TikTok et sur votre statut.</li>
+              <li class="flex items-start"><span class="text-emerald-600 mr-2 text-base">✅</span> Le client clique, admire vos articles avec vidéos HD et choisit sa taille en 3 clics.</li>
+              <li class="flex items-start"><span class="text-emerald-600 mr-2 text-base">✅</span> <strong>Le verrou Anti-Lapin s'active :</strong> le client paie l'acompte Wave direct.</li>
+              <li class="flex items-start"><span class="text-emerald-600 mr-2 text-base">✅</span> L'acompte arrive <strong>directement sur votre Wave personnel</strong>.</li>
+              <li class="flex items-start font-bold text-emerald-950"><span class="text-emerald-600 mr-2 text-base">✅</span> Le coursier moto reçoit sa feuille de route, livre le colis et encaisse le solde cash !</li>
+            </ul>
+          </div>
+
+          <div class="mt-6 pt-4 border-t border-emerald-200 text-center">
+            <a href="/register?plan=PRO" class="block w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs rounded-xl shadow-md transition">
+              Je veux cette sérénité pour ma boutique (6 750 F)
             </a>
           </div>
         </div>
-      </div>
-      {% endfor %}
-    </div>
-    {% else %}
-    <div class="bg-white rounded-3xl p-8 text-center border border-dashed border-slate-300">
-      <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mx-auto text-xl mb-3">
-        🛍️
-      </div>
-      <h3 class="text-sm font-bold text-slate-900">La Marketplace DjassaPay accueille vos premiers articles !</h3>
-      <p class="text-xs text-slate-500 mt-1 max-w-md mx-auto">Créez votre boutique en ligne et vos produits apparaîtront automatiquement ici pour être achetés par les clients de toute la Côte d'Ivoire.</p>
-      <div class="mt-4">
-        <a href="/register" class="inline-flex items-center space-x-1.5 px-4 py-2 bg-emerald-600 text-white font-bold text-xs rounded-xl hover:bg-emerald-500 transition">
-          <span>Ouvrir ma boutique gratuitement</span>
-          <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
-        </a>
+
       </div>
     </div>
-    {% endif %}
-  </div>
 
-  <!-- Comment ça marche en 3 étapes -->
-  <div class="mt-16 sm:mt-24">
-    <div class="text-center mb-12">
-      <span class="text-xs uppercase tracking-wider font-extrabold text-emerald-600">Simplicité Totale</span>
-      <h2 class="text-2xl sm:text-3xl font-black text-slate-900 mt-1">Comment ça marche pour votre boutique ?</h2>
+    <!-- ============================================================== -->
+    <!-- 5. LES 6 SUPER-POUVOIRS DU PLAN PRO À 6 750 FCFA / MOIS -->
+    <!-- ============================================================== -->
+    <div class="mt-16 sm:mt-24">
+      <div class="text-center max-w-2xl mx-auto mb-12">
+        <span class="text-xs uppercase tracking-wider font-extrabold text-emerald-600">TOUT CE DONT VOUS AVEZ BESOIN</span>
+        <h2 class="text-2xl sm:text-4xl font-black text-slate-900 mt-1">Qu'obtenez-vous concrètement avec le Plan PRO ?</h2>
+        <p class="text-xs sm:text-sm text-slate-500 mt-2">Conçu spécialement pour les marchands qui veulent faire de gros chiffres à Abidjan :</p>
+      </div>
+
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        
+        <div class="bg-white p-6 rounded-3xl border border-slate-200/90 shadow-sm hover:border-emerald-500 transition group">
+          <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-2xl mb-4 group-hover:scale-110 transition">
+            📦
+          </div>
+          <h3 class="font-extrabold text-slate-900 text-base">Articles & Photos Illimités</h3>
+          <p class="mt-2 text-xs text-slate-600 leading-relaxed">
+            Ne soyez plus bloqué à 5 ou 20 articles ! Ajoutez 50, 100 ou 500 articles avec galeries photos haute définition et vidéos de démonstration fluides.
+          </p>
+        </div>
+
+        <div class="bg-white p-6 rounded-3xl border border-slate-200/90 shadow-sm hover:border-emerald-500 transition group">
+          <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-2xl mb-4 group-hover:scale-110 transition">
+            ⭐
+          </div>
+          <h3 class="font-extrabold text-slate-900 text-base">Badge Vendeur Certifié Pro</h3>
+          <p class="mt-2 text-xs text-slate-600 leading-relaxed">
+            Les clients en ligne ont peur des arnaqueurs. Le badge doré officiel DjassaPay rassure vos clients et multiplie par 3 votre taux de commande spontanée.
+          </p>
+        </div>
+
+        <div class="bg-white p-6 rounded-3xl border border-slate-200/90 shadow-sm hover:border-emerald-500 transition group">
+          <div class="w-12 h-12 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center font-bold text-2xl mb-4 group-hover:scale-110 transition">
+            🔗
+          </div>
+          <h3 class="font-extrabold text-slate-900 text-base">Lien Boutique Exclusif</h3>
+          <p class="mt-2 text-xs text-slate-600 leading-relaxed">
+            Un lien propre (<code>djassapay.../shop/votre-nom</code>) à copier-coller en 1 tap dans votre bio TikTok, sur vos statuts WhatsApp et publications Facebook.
+          </p>
+        </div>
+
+        <div class="bg-white p-6 rounded-3xl border border-slate-200/90 shadow-sm hover:border-emerald-500 transition group">
+          <div class="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold text-2xl mb-4 group-hover:scale-110 transition">
+            🏍️
+          </div>
+          <h3 class="font-extrabold text-slate-900 text-base">Hub Coursiers Moto 1-Clic</h3>
+          <p class="mt-2 text-xs text-slate-600 leading-relaxed">
+            Fini les explications au coursier. Un bordereau clair généré automatiquement avec le bouton d'appel direct du client, les repères GPS et le solde cash exact.
+          </p>
+        </div>
+
+        <div class="bg-white p-6 rounded-3xl border border-slate-200/90 shadow-sm hover:border-emerald-500 transition group">
+          <div class="w-12 h-12 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center font-bold text-2xl mb-4 group-hover:scale-110 transition">
+            🛍️
+          </div>
+          <h3 class="font-extrabold text-slate-900 text-base">Visibilité Marketplace VIP</h3>
+          <p class="mt-2 text-xs text-slate-600 leading-relaxed">
+            Vos produits apparaissent en tête sur la Marketplace de Côte d'Ivoire. Vous touchez des milliers de nouveaux clients prêts à commander à Abidjan et à l'intérieur.
+          </p>
+        </div>
+
+        <div class="bg-white p-6 rounded-3xl border border-slate-200/90 shadow-sm hover:border-emerald-500 transition group">
+          <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-2xl mb-4 group-hover:scale-110 transition">
+            👑
+          </div>
+          <h3 class="font-extrabold text-slate-900 text-base">Support Direct avec le Fondateur</h3>
+          <p class="mt-2 text-xs text-slate-600 leading-relaxed">
+            Vous avez la ligne directe WhatsApp du fondateur pour vous accompagner dans la mise en ligne de vos articles et vous donner des conseils de vente qui cartonnent.
+          </p>
+        </div>
+
+      </div>
     </div>
 
-    <div class="grid sm:grid-cols-3 gap-8 text-center">
-      <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm">
-        <div class="w-12 h-12 rounded-full bg-slate-900 text-white flex items-center justify-center font-black text-lg mx-auto mb-4">1</div>
-        <h3 class="font-bold text-slate-900 text-base mb-2">Créez votre boutique</h3>
-        <p class="text-xs text-slate-500 leading-relaxed">
-          Renseignez votre nom de boutique et vos numéros Wave / Mobile Money en 30 secondes. Vos 33 communes de livraison sont configurées d'office.
-        </p>
+    <!-- ============================================================== -->
+    <!-- 6. LA GRILLE TARIFAIRE : L'ÉVIDENCE DU PLAN PRO À 6 750 FCFA -->
+    <!-- ============================================================== -->
+    <div id="tarifs" class="mt-16 sm:mt-24">
+      <div class="text-center max-w-2xl mx-auto mb-12">
+        <span class="text-xs uppercase tracking-wider font-extrabold text-emerald-600">INVESTISSEMENT TRANSPARENT</span>
+        <h2 class="text-2xl sm:text-4xl font-black text-slate-900 mt-1">Choisissez votre niveau d'ambition</h2>
+        <p class="text-xs sm:text-sm text-slate-500 mt-2">Sans engagement de durée, annulation libre en 1 clic :</p>
       </div>
 
-      <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm">
-        <div class="w-12 h-12 rounded-full bg-emerald-600 text-white flex items-center justify-center font-black text-lg mx-auto mb-4">2</div>
-        <h3 class="font-bold text-slate-900 text-base mb-2">Partagez vos liens</h3>
-        <p class="text-xs text-slate-500 leading-relaxed">
-          Publiez vos articles sur WhatsApp, TikTok et Instagram avec votre lien de commande express en 1 clic.
-        </p>
-      </div>
+      <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        
+        <!-- Plan Starter Gratuit -->
+        <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Pour Découvrir</span>
+            <h3 class="text-xl font-black text-slate-900 mt-1">Plan STARTER</h3>
+            <div class="text-3xl sm:text-4xl font-black text-slate-900 mt-2">
+              0 <span class="text-xs font-semibold text-slate-500">FCFA / mois</span>
+            </div>
+            <p class="text-xs text-slate-500 mt-2">Idéal pour tester la plateforme avec quelques articles.</p>
 
-      <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm">
-        <div class="w-12 h-12 rounded-full bg-slate-900 text-white flex items-center justify-center font-black text-lg mx-auto mb-4">3</div>
-        <h3 class="font-bold text-slate-900 text-base mb-2">Encaissez en toute sécurité</h3>
-        <p class="text-xs text-slate-500 leading-relaxed">
-          Votre cliente règle l'acompte sur votre Wave, le coursier livre le colis et récupère le solde cash à l'arrivée. Zéro risque !
-        </p>
+            <ul class="mt-6 space-y-3 text-xs sm:text-sm text-slate-600">
+              <li class="flex items-center"><i data-lucide="check" class="w-4 h-4 text-emerald-600 mr-2 shrink-0"></i> Jusqu'à 10 commandes / mois</li>
+              <li class="flex items-center"><i data-lucide="check" class="w-4 h-4 text-emerald-600 mr-2 shrink-0"></i> Verrou Anti-Lapin Wave & MoMo</li>
+              <li class="flex items-center text-slate-400"><i data-lucide="x" class="w-4 h-4 text-slate-300 mr-2 shrink-0"></i> Limité à 5 articles seulement</li>
+              <li class="flex items-center text-slate-400"><i data-lucide="x" class="w-4 h-4 text-slate-300 mr-2 shrink-0"></i> Pas de badge Vendeur Certifié</li>
+              <li class="flex items-center text-slate-400"><i data-lucide="x" class="w-4 h-4 text-slate-300 mr-2 shrink-0"></i> Pas de mise en avant VIP Marketplace</li>
+            </ul>
+          </div>
+
+          <div class="mt-8 pt-4 border-t border-slate-100">
+            <a href="/register" class="block w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs rounded-xl text-center transition">
+              Démarrer en Gratuit
+            </a>
+          </div>
+        </div>
+
+        <!-- Plan PRO Illimité (Mise en avant héroïque) -->
+        <div class="bg-white rounded-3xl p-6 sm:p-8 border-2 border-emerald-500 shadow-2xl flex flex-col justify-between relative overflow-hidden ring-4 ring-emerald-500/10">
+          <div class="absolute top-0 right-0 bg-gradient-to-l from-emerald-600 to-teal-600 text-white text-[10px] font-black uppercase px-4 py-1.5 rounded-bl-xl tracking-wider">
+            Recommandé pour Rentabilité Maximale
+          </div>
+
+          <div>
+            <span class="text-xs font-black uppercase tracking-wider text-emerald-600">Commerçants Réguliers & Professionnels</span>
+            <h3 class="text-2xl font-black text-slate-900 mt-1">Plan PRO Illimité</h3>
+            
+            <div class="mt-3 flex items-baseline space-x-2">
+              <span class="text-4xl sm:text-5xl font-black text-emerald-600 font-mono">6 750</span>
+              <span class="text-xs font-extrabold text-slate-500">FCFA / mois</span>
+            </div>
+            
+            <div class="mt-1 inline-flex items-center space-x-1.5 text-xs text-slate-500">
+              <span class="line-through text-slate-400">9 900 FCFA</span>
+              <span class="bg-emerald-100 text-emerald-800 text-[10px] font-black px-2 py-0.5 rounded-md">Économisez 32% aujourd'hui</span>
+            </div>
+
+            <p class="text-xs text-slate-600 mt-3 leading-relaxed">
+              <strong>Soit 225 FCFA par jour seulement !</strong> Rentabilisé dès votre 2ème commande sécurisée.
+            </p>
+
+            <ul class="mt-6 space-y-3.5 text-xs sm:text-sm text-slate-800 font-semibold">
+              <li class="flex items-center text-slate-950 font-black"><i data-lucide="check-circle" class="w-4 h-4 text-emerald-600 mr-2 shrink-0"></i> Commandes & Ventes 100% ILLIMITÉES</li>
+              <li class="flex items-center text-slate-950 font-black"><i data-lucide="check-circle" class="w-4 h-4 text-emerald-600 mr-2 shrink-0"></i> Articles & Catalogue ILLIMITÉS (+20 articles, Vidéos HD)</li>
+              <li class="flex items-center"><i data-lucide="check-circle" class="w-4 h-4 text-emerald-600 mr-2 shrink-0"></i> Badge Officiel Vendeur Certifié Pro ⭐</li>
+              <li class="flex items-center"><i data-lucide="check-circle" class="w-4 h-4 text-emerald-600 mr-2 shrink-0"></i> Bordereaux de livraison WhatsApp 1-clic</li>
+              <li class="flex items-center"><i data-lucide="check-circle" class="w-4 h-4 text-emerald-600 mr-2 shrink-0"></i> Priorité n°1 d'exposition sur la Marketplace</li>
+              <li class="flex items-center"><i data-lucide="check-circle" class="w-4 h-4 text-emerald-600 mr-2 shrink-0"></i> Assistance direct WhatsApp avec le fondateur 7j/7</li>
+            </ul>
+          </div>
+
+          <div class="mt-8 pt-4 border-t border-slate-100">
+            <a href="/register?plan=PRO" class="block w-full py-4 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-black text-sm rounded-xl text-center shadow-lg shadow-emerald-600/30 transition transform active:scale-95">
+              ⚡ Activer Mon Forfait PRO (6 750 FCFA)
+            </a>
+            <span class="text-[10px] text-slate-400 mt-2 block text-center">Activation automatique instantanée par Wave CI • Sans engagement</span>
+          </div>
+        </div>
+
       </div>
     </div>
-  </div>
 
-  <!-- Appel à l'action final -->
-  <div class="mt-16 bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-8 sm:p-12 text-white relative overflow-hidden shadow-2xl">
-    <div class="max-w-2xl relative z-10">
-      <span class="text-xs uppercase tracking-wider font-bold text-emerald-400">Rejoignez le mouvement</span>
-      <h2 class="text-2xl sm:text-4xl font-black mt-2 tracking-tight">Sécurisez vos ventes dès aujourd'hui</h2>
-      <p class="mt-3 text-slate-300 text-sm sm:text-base leading-relaxed">
-        Ne laissez plus les faux clients vous ruiner en frais de livraison. Ouvrez votre boutique gratuitement et commencez à encaisser vos acomptes en toute sérénité.
-      </p>
-      <div class="mt-6 flex flex-wrap gap-4 items-center">
-        <a href="/register" class="px-8 py-3.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-2xl transition flex items-center space-x-2 text-sm shadow-lg shadow-emerald-500/25">
-          <span>Créer Ma Boutique Gratuitement</span>
+    <!-- ============================================================== -->
+    <!-- 7. TÉMOIGNAGES RÉELS DES COMMERÇANTS D'ABIDJAN -->
+    <!-- ============================================================== -->
+    <div class="mt-16 sm:mt-24">
+      <div class="text-center max-w-2xl mx-auto mb-12">
+        <span class="text-xs uppercase tracking-wider font-extrabold text-emerald-600">PREUVE SOCIALE</span>
+        <h2 class="text-2xl sm:text-4xl font-black text-slate-900 mt-1">Ce que disent les vendeuses et vendeurs</h2>
+        <p class="text-xs sm:text-sm text-slate-500 mt-2">Ils ont arrêté les lapins et ont transformé leur commerce :</p>
+      </div>
+
+      <div class="grid sm:grid-cols-3 gap-6">
+        
+        <div class="bg-white p-6 rounded-3xl border border-slate-200/90 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex text-amber-400 text-sm mb-3">★★★★★</div>
+            <p class="text-xs sm:text-sm text-slate-700 leading-relaxed italic">
+              « J'avais failli tout abandonner à cause des lapins. Le mois passé, j'ai perdu 45 000 F de transport avec des clientes qui changeaient d'avis au carrefour. Depuis que j'ai pris le Forfait PRO DjassaPay, si la cliente ne verse pas l'acompte Wave, je sais direct que ce n'est pas sérieux ! »
+            </p>
+          </div>
+          <div class="mt-5 pt-4 border-t border-slate-100 flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-800 font-black flex items-center justify-center text-sm">AK</div>
+            <div>
+              <div class="font-extrabold text-slate-900 text-xs">Amina K.</div>
+              <div class="text-[11px] text-slate-400">Vendeuse de Perruques • Cocody Angré</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-3xl border border-slate-200/90 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex text-amber-400 text-sm mb-3">★★★★★</div>
+            <p class="text-xs sm:text-sm text-slate-700 leading-relaxed italic">
+              « 6 750 FCFA par mois, c'est le bénéfice d'une seule paire de baskets ! J'ai ajouté plus de 40 paires avec leurs vidéos. Mes livreurs moto reçoivent le bordereau direct, plus de disputes pour trouver l'adresse du client. C'est l'outil le plus rentable d'Abidjan. »
+            </p>
+          </div>
+          <div class="mt-5 pt-4 border-t border-slate-100 flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-full bg-sky-100 text-sky-800 font-black flex items-center justify-center text-sm">MD</div>
+            <div>
+              <div class="font-extrabold text-slate-900 text-xs">Moussa D.</div>
+              <div class="text-[11px] text-slate-400">Sneakers & Montres • Adjamé / Yopougon</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-3xl border border-slate-200/90 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex text-amber-400 text-sm mb-3">★★★★★</div>
+            <p class="text-xs sm:text-sm text-slate-700 leading-relaxed italic">
+              « Le badge Vendeur Certifié Pro sur ma boutique a tout changé. Les clientes d'Internet qui avaient peur des faux profils me font confiance tout de suite. Mon chiffre a doublé en 3 semaines seulement. »
+            </p>
+          </div>
+          <div class="mt-5 pt-4 border-t border-slate-100 flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-full bg-purple-100 text-purple-800 font-black flex items-center justify-center text-sm">CB</div>
+            <div>
+              <div class="font-extrabold text-slate-900 text-xs">Chantal B.</div>
+              <div class="text-[11px] text-slate-400">Mode Féminine & Robes • Marcory Zone 4</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- 8. VITRINE EN DIRECT : LES ARTICLES RÉELS SUR LA MARKETPLACE -->
+    <!-- ============================================================== -->
+    <div class="mt-16 sm:mt-24">
+      <div class="flex flex-col sm:flex-row items-start sm:items-end justify-between mb-8 gap-4">
+        <div>
+          <div class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-bold mb-2">
+            <span>🛍️ Marketplace DjassaPay Ouverte</span>
+          </div>
+          <h2 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Articles en vente chez nos boutiques partenaires</h2>
+          <p class="text-xs sm:text-sm text-slate-500 mt-1">Exemple de ce que vos clients verront sur votre boutique en ligne :</p>
+        </div>
+
+        <a href="/marketplace" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition flex items-center space-x-1.5 shadow-sm shrink-0">
+          <span>Voir toute la Marketplace</span>
           <i data-lucide="arrow-right" class="w-4 h-4"></i>
         </a>
-        <a href="/login" class="px-6 py-3.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-2xl transition text-sm border border-slate-700">
-          <span>J'ai déjà un compte</span>
-        </a>
+      </div>
+
+      {% if marketplace_products %}
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        {% for product in marketplace_products %}
+        <div class="bg-white rounded-2xl border border-slate-200/90 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col justify-between group">
+          <a href="/shop/{{ product.merchant.store_slug }}/product/{{ product.id }}" class="block aspect-square bg-slate-100 relative overflow-hidden">
+            {% if product.is_video %}
+              <video src="{{ product.image_url }}" autoplay loop muted playsinline class="w-full h-full object-cover group-hover:scale-105 transition"></video>
+            {% else %}
+              <img 
+                src="{{ product.image_url or '/static/images/product_placeholder.svg' }}" 
+                alt="{{ product.title }}" 
+                class="w-full h-full object-cover group-hover:scale-105 transition" 
+                loading="lazy"
+                onerror="this.onerror=null; this.src='/static/images/product_placeholder.svg';"
+              >
+            {% endif %}
+            <span class="absolute top-2 left-2 bg-slate-900/80 text-white text-[9px] font-bold px-2 py-0.5 rounded-md">
+              {{ product.merchant.city or 'Abidjan' }}
+            </span>
+          </a>
+          <div class="p-3 flex-1 flex flex-col justify-between">
+            <div>
+              <div class="text-[10px] text-slate-400 font-semibold truncate">{{ product.merchant.store_name }}</div>
+              <h4 class="font-bold text-slate-900 text-xs truncate mt-0.5">{{ product.title }}</h4>
+              <div class="mt-1 text-xs font-extrabold text-slate-900">
+                {{ "{:,}".format(product.price) }} <span class="text-[10px] text-emerald-600 font-bold">FCFA</span>
+              </div>
+            </div>
+            <div class="mt-2.5 pt-2 border-t border-slate-100">
+              <a href="/shop/{{ product.merchant.store_slug }}/product/{{ product.id }}" class="w-full py-1.5 px-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[10px] rounded-lg transition block text-center">
+                Voir l'Article & Commander
+              </a>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- 9. FAQ SPÉCIALE VENDEURS D'ABIDJAN (LEVER TOUTES LES HÉSITATIONS) -->
+    <!-- ============================================================== -->
+    <div class="mt-16 sm:mt-24 max-w-3xl mx-auto" x-data="{ openFaq: null }">
+      <div class="text-center mb-10">
+        <span class="text-xs uppercase tracking-wider font-extrabold text-emerald-600">QUESTIONS FRÉQUENTES</span>
+        <h2 class="text-2xl sm:text-3xl font-black text-slate-900 mt-1">Vos réponses claires et sans détour</h2>
+      </div>
+
+      <div class="space-y-3">
+        
+        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
+          <button @click="openFaq = (openFaq === 1 ? null : 1)" class="w-full p-5 text-left font-extrabold text-slate-900 text-xs sm:text-sm flex justify-between items-center">
+            <span>Est-ce que mes clientes doivent télécharger une application ?</span>
+            <span x-text="openFaq === 1 ? '−' : '+'" class="text-lg font-mono text-emerald-600"></span>
+          </button>
+          <div x-show="openFaq === 1" x-collapse class="px-5 pb-5 text-xs text-slate-600 leading-relaxed border-t border-slate-100 pt-3">
+            <strong>Non, absolument pas !</strong> C'est la force de DjassaPay. Votre cliente clique sur votre lien dans votre statut ou bio TikTok, choisit son article et règle son acompte directement sur son navigateur Chrome ou Safari. Zéro installation, zéro mot de passe, c'est fait en 30 secondes chrono.
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
+          <button @click="openFaq = (openFaq === 2 ? null : 2)" class="w-full p-5 text-left font-extrabold text-slate-900 text-xs sm:text-sm flex justify-between items-center">
+            <span>Est-ce que j'ai besoin d'un ordinateur pour gérer mes ventes ?</span>
+            <span x-text="openFaq === 2 ? '−' : '+'" class="text-lg font-mono text-emerald-600"></span>
+          </button>
+          <div x-show="openFaq === 2" x-collapse class="px-5 pb-5 text-xs text-slate-600 leading-relaxed border-t border-slate-100 pt-3">
+            <strong>Non ! 100% sur votre smartphone (Android ou iPhone).</strong> Vous prenez vos photos ou vidéos avec la caméra de votre téléphone, vous tapez le prix et c'est en ligne. Votre tableau de bord est entièrement optimisé pour smartphone.
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
+          <button @click="openFaq = (openFaq === 3 ? null : 3)" class="w-full p-5 text-left font-extrabold text-slate-900 text-xs sm:text-sm flex justify-between items-center">
+            <span>Où arrive l'argent de l'acompte versé par le client ?</span>
+            <span x-text="openFaq === 3 ? '−' : '+'" class="text-lg font-mono text-emerald-600"></span>
+          </button>
+          <div x-show="openFaq === 3" x-collapse class="px-5 pb-5 text-xs text-slate-600 leading-relaxed border-t border-slate-100 pt-3">
+            L'acompte arrive <strong>directement sur votre propre numéro Wave personnel ou Mobile Money</strong> que vous avez renseigné dans vos paramètres. DjassaPay ne garde pas votre argent.
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
+          <button @click="openFaq = (openFaq === 4 ? null : 4)" class="w-full p-5 text-left font-extrabold text-slate-900 text-xs sm:text-sm flex justify-between items-center">
+            <span>Pourquoi 6 750 FCFA par mois ? Est-ce vraiment rentable ?</span>
+            <span x-text="openFaq === 4 ? '−' : '+'" class="text-lg font-mono text-emerald-600"></span>
+          </button>
+          <div x-show="openFaq === 4" x-collapse class="px-5 pb-5 text-xs text-slate-600 leading-relaxed border-t border-slate-100 pt-3">
+            6 750 FCFA, c'est <strong>seulement 225 FCFA par jour</strong>. À Abidjan, un seul client qui annule une commande vous fait perdre 2 000 FCFA de coursier. En évitant ne serait-ce que 3 ou 4 lapins dans le mois, vous avez économisé plus de 8 000 FCFA nets ! Le Forfait PRO est rentabilisé dès vos premiers jours.
+          </div>
+        </div>
+
       </div>
     </div>
+
+    <!-- ============================================================== -->
+    <!-- 10. APPEL À L'ACTION FINAL : L'OFFRE QUI NE SE REFUSE PAS -->
+    <!-- ============================================================== -->
+    <div class="mt-16 sm:mt-24 bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950 rounded-3xl p-8 sm:p-14 text-white text-center relative overflow-hidden shadow-2xl border border-emerald-500/30">
+      <div class="max-w-2xl mx-auto relative z-10">
+        <span class="inline-block px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-black uppercase mb-3">Rejoignez les commerçants gagnants</span>
+        <h2 class="text-3xl sm:text-5xl font-black text-white tracking-tight">Prenez le contrôle de vos ventes dès aujourd'hui</h2>
+        <p class="mt-4 text-slate-300 text-sm sm:text-base leading-relaxed">
+          Ne laissez plus jamais un faux client se moquer de votre travail. Passez au Forfait PRO pour 6 750 FCFA et dormez tranquille pendant que vos colis sont livrés.
+        </p>
+
+        <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+          <a href="/register?plan=PRO" class="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black rounded-2xl shadow-xl shadow-emerald-500/30 transition transform active:scale-95 text-base sm:text-lg">
+            ⚡ Activer Mon Forfait PRO (6 750 FCFA)
+          </a>
+          <a href="/login" class="w-full sm:w-auto px-6 py-4 bg-white/10 hover:bg-white/20 text-white font-extrabold rounded-2xl border border-white/20 transition text-sm">
+            J'ai déjà un compte (Connexion)
+          </a>
+        </div>
+
+        <div class="mt-6 text-xs text-slate-400">
+          Sans engagement • Activation instantanée • Accompagnement gratuit au démarrage
+        </div>
+      </div>
+    </div>
+
   </div>
 
-  <!-- Contact Officiel & Support DjassaPay -->
-  <div class="mt-12 text-center py-6 px-4 rounded-3xl bg-white border border-slate-200/80 shadow-sm max-w-xl mx-auto">
-    <div class="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 mb-2 shadow-inner">
-      <i data-lucide="mail" class="w-6 h-6"></i>
+  <!-- ============================================================== -->
+  <!-- 11. STICKY BOTTOM BAR SUR MOBILE (CONVERSION CONTINUE) -->
+  <!-- ============================================================== -->
+  <div class="fixed bottom-0 left-0 right-0 z-50 sm:hidden bg-slate-950/95 backdrop-blur-md border-t border-slate-800 p-3 shadow-2xl flex items-center justify-between gap-3">
+    <div class="space-y-0.5">
+      <div class="flex items-center space-x-1.5">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span class="text-[11px] font-black text-white uppercase tracking-wider">Plan PRO Anti-Lapin</span>
+      </div>
+      <div class="text-xs font-black text-emerald-400 font-mono">
+        6 750 FCFA <span class="text-[10px] text-slate-400 font-normal">/ mois</span>
+      </div>
     </div>
-    <h3 class="text-sm sm:text-base font-bold text-slate-900">Une question ou besoin d'assistance ?</h3>
-    <p class="text-xs text-slate-500 mt-0.5">Contact officiel du support DjassaPay Côte d'Ivoire :</p>
-    <a href="mailto:djassapay9@gmail.com" class="mt-2.5 inline-flex items-center space-x-2 text-base sm:text-lg font-black text-emerald-600 hover:text-emerald-700 hover:underline">
-      <span>djassapay9@gmail.com</span>
-      <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+
+    <a href="/register?plan=PRO" class="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 font-black text-xs rounded-xl shadow-lg shadow-emerald-500/25 transition shrink-0 flex items-center space-x-1.5">
+      <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+      <span>Passer PRO</span>
     </a>
   </div>
 

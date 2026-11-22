@@ -14,6 +14,12 @@
     <p class="text-xs text-slate-500">Gérez votre formule DjassaPay et débloquez la puissance maximale de vos ventes.</p>
   </div>
 
+  {% if request.query_params.get('welcome_pro') %}
+  <div class="mt-4 p-4 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 border border-amber-300 text-slate-950 text-xs font-black flex items-center space-x-2 shadow-md animate-pulse">
+    <span>⭐ Félicitations pour l'ouverture de votre boutique ! Activez dès maintenant votre Plan PRO à 6 750 FCFA par Wave pour débloquer votre catalogue illimité et commencer à vendre sans aucun lapin.</span>
+  </div>
+  {% endif %}
+
   {% if request.query_params.get('upgraded') %}
   <div class="mt-4 p-4 rounded-2xl bg-emerald-100 border border-emerald-300 text-emerald-900 text-xs font-bold flex items-center space-x-2">
     <span>🎉 Félicitations ! Votre boutique a été passée au statut <strong>PRO Certifié</strong> avec succès.</span>
