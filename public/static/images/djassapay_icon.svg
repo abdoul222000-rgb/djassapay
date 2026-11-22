@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <defs>
+    <linearGradient id="emeraldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#059669" />
+      <stop offset="100%" stop-color="#10B981" />
+    </linearGradient>
+    <linearGradient id="boltGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE047" />
+      <stop offset="100%" stop-color="#F59E0B" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Fond Carre Arrondi Moderne -->
+  <rect width="100" height="100" rx="24" fill="url(#emeraldGrad)" />
+  
+  <!-- Monogramme D Stylise -->
+  <path d="M 28 22 L 50 22 C 68 22 78 34 78 50 C 78 66 68 78 50 78 L 28 78 Z" 
+        fill="none" stroke="white" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
+  
+  <!-- Eclair Electrique Central Dore -->
+  <path d="M 52 18 L 38 52 L 49 52 L 44 82 L 64 46 L 53 46 Z" 
+        fill="url(#boltGrad)" />
+</svg>

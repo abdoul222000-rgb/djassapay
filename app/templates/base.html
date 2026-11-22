@@ -146,7 +146,23 @@
           {% endif %}
 
           <a href="/" class="flex items-center space-x-2">
-            <img src="/static/images/djassapay_icon.svg" alt="DjassaPay" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl shadow-md shadow-emerald-500/20 shrink-0">
+            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl shadow-md shadow-emerald-500/20 shrink-0 overflow-hidden flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="w-full h-full">
+                <defs>
+                  <linearGradient id="emeraldGradNav" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#059669" />
+                    <stop offset="100%" stop-color="#10B981" />
+                  </linearGradient>
+                  <linearGradient id="boltGradNav" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#FDE047" />
+                    <stop offset="100%" stop-color="#F59E0B" />
+                  </linearGradient>
+                </defs>
+                <rect width="100" height="100" rx="24" fill="url(#emeraldGradNav)" />
+                <path d="M 28 22 L 50 22 C 68 22 78 34 78 50 C 78 66 68 78 50 78 L 28 78 Z" fill="none" stroke="white" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M 52 18 L 38 52 L 49 52 L 44 82 L 64 46 L 53 46 Z" fill="url(#boltGradNav)" />
+              </svg>
+            </div>
             <span class="font-extrabold text-lg sm:text-xl tracking-tight text-slate-900">Djassa<span class="text-emerald-600">Pay</span></span>
           </a>
           <span class="hidden md:inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
