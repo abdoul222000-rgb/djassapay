@@ -1,13 +1,14 @@
 from fastapi import FastAPI, Depends, Request, Form, BackgroundTasks, HTTPException, status
-from fastapi.responses import HTMLResponse, RedirectResponse, Response
+from fastapi.responses import HTMLResponse, RedirectResponse, Response, JSONResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
-from datetime import datetime
+from datetime import datetime, timedelta
 import random
 import os
+import hashlib
 
 from .config import settings
-from .database import engine, get_db, init_db, Contractor, MissedCall, SMSMessage, hash_password, verify_password
+from .database import engine, get_db, init_db, SessionLocal, Contractor, MissedCall, SMSMessage, PageVisit, hash_password, verify_password
 from .security import (
     create_signed_session_cookie, 
     verify_signed_session_cookie, 
@@ -23,6 +24,60 @@ app = FastAPI(title="CallCatch AI")
 
 # 1. Protection Globale : Injection des en-têtes de sécurité bancaires
 app.add_middleware(SecurityHeadersMiddleware)
+
+# 2. Tracking des visites & audience pour l'espace Founder
+@app.middleware("http")
+async def track_visits_middleware(request: Request, call_next):
+    response = await call_next(request)
+    
+    path = request.url.path
+    if (
+        request.method == "GET" 
+        and response.status_code == 200 
+        and not path.startswith(("/static", "/api", "/founder", "/health", "/favicon.ico", "/robots.txt", "/sitemap.xml"))
+    ):
+        try:
+            raw_ref = request.headers.get("referer", "")
+            user_agent = request.headers.get("user-agent", "")
+            client_ip = request.client.host if request.client else "127.0.0.1"
+            
+            # Catégorisation intelligente de la source
+            source = "Direct / WhatsApp"
+            if "linkedin.com" in raw_ref or "lnkd.in" in raw_ref:
+                source = "LinkedIn"
+            elif "producthunt.com" in raw_ref:
+                source = "Product Hunt"
+            elif "alternativeto.net" in raw_ref:
+                source = "AlternativeTo"
+            elif "google." in raw_ref:
+                source = "Google Search"
+            elif "whop.com" in raw_ref:
+                source = "Whop Store"
+            elif raw_ref:
+                source = raw_ref.split("/")[2] if "//" in raw_ref else raw_ref
+            
+            ua_lower = user_agent.lower()
+            device = "Mobile" if any(m in ua_lower for m in ["mobile", "android", "iphone", "ipad"]) else "Desktop"
+            ip_hash = hashlib.sha256(f"{client_ip}-{user_agent[:40]}".encode()).hexdigest()[:16]
+            
+            db = SessionLocal()
+            try:
+                visit = PageVisit(
+                    path=path,
+                    referrer=source,
+                    ip_hash=ip_hash,
+                    device=device,
+                    user_agent=user_agent[:250],
+                    created_at=datetime.utcnow()
+                )
+                db.add(visit)
+                db.commit()
+            finally:
+                db.close()
+        except Exception:
+            pass
+
+    return response
 
 # Initialisation de la base de données
 init_db()
@@ -242,25 +297,142 @@ def founder_login_submit(
         })
 
 
+def compute_analytics(db: Session, period: str = "today", start_date_str: str = None, end_date_str: str = None):
+    now = datetime.utcnow()
+    
+    if period == "yesterday":
+        start_dt = datetime(now.year, now.month, now.day) - timedelta(days=1)
+        end_dt = datetime(now.year, now.month, now.day) - timedelta(seconds=1)
+        period_title = "Hier"
+    elif period == "7d":
+        start_dt = now - timedelta(days=7)
+        end_dt = now
+        period_title = "7 derniers jours"
+    elif period == "30d":
+        start_dt = now - timedelta(days=30)
+        end_dt = now
+        period_title = "30 derniers jours"
+    elif period == "custom" and start_date_str:
+        try:
+            start_dt = datetime.strptime(start_date_str, "%Y-%m-%d")
+            if end_date_str:
+                end_dt = datetime.strptime(end_date_str, "%Y-%m-%d").replace(hour=23, minute=59, second=59)
+            else:
+                end_dt = now
+            period_title = f"{start_dt.strftime('%d/%m/%Y')} au {end_dt.strftime('%d/%m/%Y')}"
+        except Exception:
+            start_dt = datetime(now.year, now.month, now.day)
+            end_dt = now
+            period_title = "Aujourd'hui"
+    else:
+        period = "today"
+        start_dt = datetime(now.year, now.month, now.day)
+        end_dt = now
+        period_title = "Aujourd'hui"
+        
+    query = db.query(PageVisit).filter(PageVisit.created_at >= start_dt, PageVisit.created_at <= end_dt)
+    visits = query.all()
+    
+    total_visits = len(visits)
+    unique_visitors = len(set(v.ip_hash for v in visits if v.ip_hash))
+    
+    # Top Pages
+    page_counts = {}
+    for v in visits:
+        page_counts[v.path] = page_counts.get(v.path, 0) + 1
+    top_pages = [
+        {"path": p, "count": c, "pct": round((c / total_visits * 100), 1) if total_visits else 0}
+        for p, c in sorted(page_counts.items(), key=lambda x: x[1], reverse=True)[:5]
+    ]
+    
+    # Top Referrers / Sources
+    ref_counts = {}
+    for v in visits:
+        ref_counts[v.referrer] = ref_counts.get(v.referrer, 0) + 1
+    top_referrers = [
+        {"source": s, "count": c, "pct": round((c / total_visits * 100), 1) if total_visits else 0}
+        for s, c in sorted(ref_counts.items(), key=lambda x: x[1], reverse=True)[:5]
+    ]
+    
+    # Répartition Devices
+    mobile_count = sum(1 for v in visits if v.device == "Mobile")
+    desktop_count = total_visits - mobile_count
+    mobile_pct = round((mobile_count / total_visits * 100), 1) if total_visits else 0
+    desktop_pct = round((desktop_count / total_visits * 100), 1) if total_visits else 0
+    
+    # Données temporelles pour le graphique
+    if period in ["today", "yesterday"]:
+        chart_labels = ["00h-04h", "04h-08h", "08h-12h", "12h-16h", "16h-20h", "20h-24h"]
+        buckets = [0] * 6
+        for v in visits:
+            idx = min(v.created_at.hour // 4, 5)
+            buckets[idx] += 1
+        chart_data = buckets
+    else:
+        day_map = {}
+        curr = start_dt.date()
+        end_d = end_dt.date()
+        while curr <= end_d:
+            day_map[curr.strftime("%d %b")] = 0
+            curr += timedelta(days=1)
+        for v in visits:
+            d_str = v.created_at.strftime("%d %b")
+            if d_str in day_map:
+                day_map[d_str] += 1
+        chart_labels = list(day_map.keys())
+        chart_data = list(day_map.values())
+        
+    return {
+        "period": period,
+        "period_title": period_title,
+        "start_date": start_dt.strftime("%Y-%m-%d"),
+        "end_date": end_dt.strftime("%Y-%m-%d"),
+        "total_visits": total_visits,
+        "unique_visitors": unique_visitors,
+        "mobile_pct": mobile_pct,
+        "desktop_pct": desktop_pct,
+        "top_pages": top_pages,
+        "top_referrers": top_referrers,
+        "chart_labels": chart_labels,
+        "chart_data": chart_data
+    }
+
+
 @app.get("/founder", response_class=HTMLResponse)
 def founder_dashboard(
     request: Request, 
+    period: str = "today",
+    start_date: str = None,
+    end_date: str = None,
     authorized: bool = Depends(get_current_founder),
     db: Session = Depends(get_db)
 ):
     contractors = db.query(Contractor).order_by(Contractor.created_at.desc()).all()
     
-    # Calcul du chiffre d'affaires récurrent mensuel pour le fondateur
     total_mrr = sum(c.monthly_plan_price for c in contractors if c.subscription_active)
     total_calls_processed = db.query(MissedCall).count()
+    
+    analytics = compute_analytics(db, period=period, start_date_str=start_date, end_date_str=end_date)
 
     return templates.TemplateResponse("founder/dashboard.html", {
         "request": request,
         "contractors": contractors,
         "total_contractors": len(contractors),
         "total_mrr": total_mrr,
-        "total_calls_processed": total_calls_processed
+        "total_calls_processed": total_calls_processed,
+        "analytics": analytics
     })
+
+
+@app.get("/api/founder/analytics")
+def founder_analytics_api(
+    period: str = "today",
+    start_date: str = None,
+    end_date: str = None,
+    authorized: bool = Depends(get_current_founder),
+    db: Session = Depends(get_db)
+):
+    return compute_analytics(db, period=period, start_date_str=start_date, end_date_str=end_date)
 
 
 @app.get("/founder/switch-to/{contractor_id}")

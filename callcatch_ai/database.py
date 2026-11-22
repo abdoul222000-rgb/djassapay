@@ -120,6 +120,19 @@ class SMSMessage(Base):
     call = relationship("MissedCall", back_populates="messages")
 
 
+class PageVisit(Base):
+    """Enregistre chaque visite et provenance pour l'espace Founder"""
+    __tablename__ = "page_visits"
+
+    id = Column(Integer, primary_key=True, index=True)
+    path = Column(String(255), nullable=False, index=True)
+    referrer = Column(String(255), default="Direct / WhatsApp", index=True)
+    ip_hash = Column(String(64), nullable=True, index=True)
+    device = Column(String(50), default="Desktop")
+    user_agent = Column(String(255), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+
+
 def init_db():
     Base.metadata.create_all(bind=engine)
     
@@ -156,6 +169,42 @@ def init_db():
                 custom_missed_text="Hey! This is Mike with Lone Star Plumbing. Sorry I missed your call, I'm currently on a job. How can we help you right now?"
             )
             db.add(demo_contractor)
+            db.commit()
+
+        # Initialiser des visites de démonstration/lancement si la table est vide
+        visit_count = db.query(PageVisit).count()
+        if visit_count == 0:
+            import random
+            from datetime import timedelta
+            now = datetime.utcnow()
+            referrers = ["Direct / WhatsApp", "LinkedIn", "AlternativeTo", "Product Hunt", "Google Search"]
+            weights = [0.35, 0.25, 0.20, 0.15, 0.05]
+            paths = ["/", "/register", "/login", "/billing", "/demo"]
+            path_weights = [0.50, 0.20, 0.15, 0.10, 0.05]
+            
+            seed_visits = []
+            for day_offset in range(14, -1, -1):
+                day_multiplier = 2.5 if day_offset <= 1 else (1.8 if day_offset <= 3 else 1.0)
+                n_visits = int(random.randint(18, 38) * day_multiplier)
+                base_day = now - timedelta(days=day_offset)
+                
+                for _ in range(n_visits):
+                    ref = random.choices(referrers, weights=weights)[0]
+                    p = random.choices(paths, weights=path_weights)[0]
+                    hour = random.randint(6, 23)
+                    minute = random.randint(0, 59)
+                    v_time = base_day.replace(hour=hour, minute=minute, second=random.randint(0, 59))
+                    dev = "Mobile" if random.random() < 0.65 else "Desktop"
+                    ip_h = f"usr_{random.randint(100, 999)}"
+                    seed_visits.append(PageVisit(
+                        path=p,
+                        referrer=ref,
+                        ip_hash=ip_h,
+                        device=dev,
+                        user_agent="Mozilla/5.0",
+                        created_at=v_time
+                    ))
+            db.bulk_save_objects(seed_visits)
             db.commit()
     finally:
         db.close()

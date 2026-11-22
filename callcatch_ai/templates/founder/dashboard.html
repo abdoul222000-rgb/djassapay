@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Founder Command Center - CallCatch AI</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-amber-500 selection:text-slate-950">
@@ -131,6 +132,208 @@
             </div>
         </div>
 
+        <!-- Web Analytics & Audience Tracking Section (Today / Yesterday / 7d / 30d / Custom) -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-7 mb-8 shadow-2xl relative overflow-hidden">
+            <!-- Header with Title and Period Filter Buttons -->
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+                <div>
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold">
+                            <i class="fa-solid fa-chart-line"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h3 class="text-base sm:text-lg font-black text-white tracking-tight" data-i18n="analytics_title">
+                                    Traffic & Audience Analytics
+                                </h3>
+                                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" title="Live Tracking"></span>
+                            </div>
+                            <p class="text-xs text-slate-400" data-i18n="analytics_subtitle">
+                                Monitor real visitors, traffic sources, and conversion funnels in real-time
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Period Filter Pills -->
+                <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                    <button type="button" onclick="setPeriod('today')" id="btn-period-today"
+                        class="period-btn px-3 py-1.5 rounded-xl text-xs font-bold transition border border-cyan-500 bg-cyan-500/20 text-cyan-300 shadow">
+                        <span data-i18n="filter_today">Aujourd'hui</span>
+                    </button>
+                    <button type="button" onclick="setPeriod('yesterday')" id="btn-period-yesterday"
+                        class="period-btn px-3 py-1.5 rounded-xl text-xs font-bold transition border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-slate-300">
+                        <span data-i18n="filter_yesterday">Hier</span>
+                    </button>
+                    <button type="button" onclick="setPeriod('7d')" id="btn-period-7d"
+                        class="period-btn px-3 py-1.5 rounded-xl text-xs font-bold transition border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-slate-300">
+                        <span data-i18n="filter_7d">7 derniers jours</span>
+                    </button>
+                    <button type="button" onclick="setPeriod('30d')" id="btn-period-30d"
+                        class="period-btn px-3 py-1.5 rounded-xl text-xs font-bold transition border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-slate-300">
+                        <span data-i18n="filter_30d">30 derniers jours</span>
+                    </button>
+                    <button type="button" onclick="toggleCustomRange()" id="btn-period-custom"
+                        class="period-btn px-3 py-1.5 rounded-xl text-xs font-bold transition border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-slate-300 flex items-center gap-1.5">
+                        <i class="fa-regular fa-calendar-days text-slate-400"></i>
+                        <span data-i18n="filter_custom">Personnaliser</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Custom Date Range Bar (Collapsible) -->
+            <div id="customDateRangeBox" class="hidden pt-4 pb-2 border-b border-slate-800 flex flex-wrap items-center gap-3">
+                <div class="flex items-center gap-2 text-xs text-slate-300">
+                    <span data-i18n="lbl_from">Du :</span>
+                    <input type="date" id="inputStartDate" value="{{ analytics.start_date }}"
+                        class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-cyan-400">
+                </div>
+                <div class="flex items-center gap-2 text-xs text-slate-300">
+                    <span data-i18n="lbl_to">Au :</span>
+                    <input type="date" id="inputEndDate" value="{{ analytics.end_date }}"
+                        class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-cyan-400">
+                </div>
+                <button type="button" onclick="applyCustomRange()"
+                    class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold px-3 py-1.5 rounded-lg text-xs transition shadow flex items-center gap-1">
+                    <i class="fa-solid fa-filter"></i>
+                    <span data-i18n="btn_apply_filter">Appliquer</span>
+                </button>
+            </div>
+
+            <!-- 4 Analytics Metric Cards -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 my-6">
+                <!-- Total Pageviews -->
+                <div class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-4">
+                    <div class="flex items-center justify-between text-slate-400 text-xs mb-1.5">
+                        <span class="font-semibold uppercase tracking-wider text-[11px]" data-i18n="kpi_total_visits">Total Visites</span>
+                        <i class="fa-solid fa-eye text-cyan-400"></i>
+                    </div>
+                    <div id="val-total-visits" class="text-2xl sm:text-3xl font-black text-white font-mono">
+                        {{ analytics.total_visits }}
+                    </div>
+                    <div class="text-[11px] text-emerald-400 mt-1 flex items-center gap-1">
+                        <i class="fa-solid fa-chart-simple"></i>
+                        <span id="period-display-tag">{{ analytics.period_title }}</span>
+                    </div>
+                </div>
+
+                <!-- Unique Visitors -->
+                <div class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-4">
+                    <div class="flex items-center justify-between text-slate-400 text-xs mb-1.5">
+                        <span class="font-semibold uppercase tracking-wider text-[11px]" data-i18n="kpi_unique_visitors">Visiteurs Uniques</span>
+                        <i class="fa-solid fa-user-check text-indigo-400"></i>
+                    </div>
+                    <div id="val-unique-visitors" class="text-2xl sm:text-3xl font-black text-indigo-400 font-mono">
+                        {{ analytics.unique_visitors }}
+                    </div>
+                    <div class="text-[11px] text-slate-400 mt-1" data-i18n="kpi_unique_sub">IP distinctes tracées</div>
+                </div>
+
+                <!-- Device Breakdown -->
+                <div class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-4">
+                    <div class="flex items-center justify-between text-slate-400 text-xs mb-1.5">
+                        <span class="font-semibold uppercase tracking-wider text-[11px]" data-i18n="kpi_device">Appareils</span>
+                        <i class="fa-solid fa-mobile-screen-button text-emerald-400"></i>
+                    </div>
+                    <div class="flex items-baseline gap-2">
+                        <div id="val-mobile-pct" class="text-xl sm:text-2xl font-black text-emerald-400 font-mono">
+                            {{ analytics.mobile_pct }}%
+                        </div>
+                        <span class="text-xs text-slate-400" data-i18n="kpi_mobile">Mobile</span>
+                    </div>
+                    <div class="text-[11px] text-slate-500 mt-1">
+                        <span id="val-desktop-pct">{{ analytics.desktop_pct }}%</span> <span data-i18n="kpi_desktop">Ordinateur</span>
+                    </div>
+                </div>
+
+                <!-- Top Traffic Channel -->
+                <div class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-4">
+                    <div class="flex items-center justify-between text-slate-400 text-xs mb-1.5">
+                        <span class="font-semibold uppercase tracking-wider text-[11px]" data-i18n="kpi_top_source">Source Principale</span>
+                        <i class="fa-solid fa-bullhorn text-amber-400"></i>
+                    </div>
+                    <div id="val-top-source" class="text-base sm:text-lg font-black text-amber-400 truncate">
+                        {% if analytics.top_referrers %}{{ analytics.top_referrers[0].source }}{% else %}Direct / WhatsApp{% endif %}
+                    </div>
+                    <div id="val-top-source-pct" class="text-[11px] text-slate-400 mt-1">
+                        {% if analytics.top_referrers %}{{ analytics.top_referrers[0].pct }}% du trafic{% else %}100%{% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactive Traffic Chart -->
+            <div class="bg-slate-950/60 border border-slate-800 rounded-2xl p-4 sm:p-6 mb-6">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+                        <i class="fa-solid fa-wave-square text-cyan-400"></i>
+                        <span data-i18n="chart_title">Courbe de Fréquentation des Visites</span>
+                    </span>
+                    <span class="text-xs text-slate-500 font-mono" id="chart-sub-label">Vue dynamique</span>
+                </div>
+                <div class="h-56 sm:h-64 w-full">
+                    <canvas id="analyticsChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Breakdowns: Top Pages & Top Sources -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <!-- Top Pages -->
+                <div class="bg-slate-950/70 border border-slate-800 rounded-2xl p-4 sm:p-5">
+                    <div class="flex items-center justify-between text-xs font-bold text-white mb-3">
+                        <span class="flex items-center gap-1.5">
+                            <i class="fa-solid fa-file-lines text-indigo-400"></i>
+                            <span data-i18n="col_pages">Pages les plus consultées</span>
+                        </span>
+                        <span class="text-[10px] text-slate-500 uppercase">Visites</span>
+                    </div>
+                    <div id="top-pages-container" class="space-y-3">
+                        {% for p in analytics.top_pages %}
+                        <div>
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="font-mono text-slate-200 truncate">{{ p.path }}</span>
+                                <span class="font-bold text-white">{{ p.count }} <span class="text-slate-500 font-normal">({{ p.pct }}%)</span></span>
+                            </div>
+                            <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                                <div class="bg-indigo-500 h-1.5 rounded-full" style="width: {{ p.pct }}%"></div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Top Referrers -->
+                <div class="bg-slate-950/70 border border-slate-800 rounded-2xl p-4 sm:p-5">
+                    <div class="flex items-center justify-between text-xs font-bold text-white mb-3">
+                        <span class="flex items-center gap-1.5">
+                            <i class="fa-solid fa-arrow-up-right-from-square text-cyan-400"></i>
+                            <span data-i18n="col_referrers">Sources & Référents de Trafic</span>
+                        </span>
+                        <span class="text-[10px] text-slate-500 uppercase">Part</span>
+                    </div>
+                    <div id="top-referrers-container" class="space-y-3">
+                        {% for r in analytics.top_referrers %}
+                        <div>
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="text-slate-200 font-medium truncate flex items-center gap-1.5">
+                                    {% if 'LinkedIn' in r.source %}<i class="fa-brands fa-linkedin text-blue-400"></i>
+                                    {% elif 'Product Hunt' in r.source %}<i class="fa-brands fa-product-hunt text-orange-400"></i>
+                                    {% elif 'Google' in r.source %}<i class="fa-brands fa-google text-red-400"></i>
+                                    {% elif 'WhatsApp' in r.source %}<i class="fa-brands fa-whatsapp text-emerald-400"></i>
+                                    {% else %}<i class="fa-solid fa-link text-slate-400"></i>{% endif %}
+                                    {{ r.source }}
+                                </span>
+                                <span class="font-bold text-white">{{ r.count }} <span class="text-slate-500 font-normal">({{ r.pct }}%)</span></span>
+                            </div>
+                            <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                                <div class="bg-cyan-500 h-1.5 rounded-full" style="width: {{ r.pct }}%"></div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Contractors Management Section -->
         <div class="bg-slate-900/90 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl">
             <div class="p-4 sm:p-6 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -247,6 +450,26 @@
                 kpi_calls_caught_sub: "Across all clients",
                 kpi_security_status: "Security Shield",
                 kpi_security_sub: "Anti-Tampering Active",
+                analytics_title: "Traffic & Audience Analytics",
+                analytics_subtitle: "Monitor real visitors, traffic sources, and conversion funnels in real-time",
+                filter_today: "Today",
+                filter_yesterday: "Yesterday",
+                filter_7d: "Last 7 Days",
+                filter_30d: "Last 30 Days",
+                filter_custom: "Custom Range",
+                lbl_from: "From:",
+                lbl_to: "To:",
+                btn_apply_filter: "Apply",
+                kpi_total_visits: "Total Visits",
+                kpi_unique_visitors: "Unique Visitors",
+                kpi_unique_sub: "Tracked distinct devices",
+                kpi_device: "Devices",
+                kpi_mobile: "Mobile",
+                kpi_desktop: "Desktop",
+                kpi_top_source: "Top Traffic Source",
+                chart_title: "Visitor Traffic Curve",
+                col_pages: "Top Visited Pages",
+                col_referrers: "Traffic Sources & Referrers",
                 subscribers_title: "Registered US Contractors",
                 subscribers_subtitle: "Breakdown of subscribers and revenue delivered to your account",
                 active_accounts_label: "Active accounts",
@@ -276,6 +499,26 @@
                 kpi_calls_caught_sub: "Sur l'ensemble des clients",
                 kpi_security_status: "Bouclier de Sécurité",
                 kpi_security_sub: "Protection Anti-Piratage Active",
+                analytics_title: "Statistiques d'Audience & Visites",
+                analytics_subtitle: "Surveillez les visiteurs réels, les provenances et l'audience en temps réel",
+                filter_today: "Aujourd'hui",
+                filter_yesterday: "Hier",
+                filter_7d: "7 derniers jours",
+                filter_30d: "30 derniers jours",
+                filter_custom: "Personnaliser",
+                lbl_from: "Du :",
+                lbl_to: "Au :",
+                btn_apply_filter: "Appliquer",
+                kpi_total_visits: "Total Visites",
+                kpi_unique_visitors: "Visiteurs Uniques",
+                kpi_unique_sub: "Appareils distincts tracés",
+                kpi_device: "Appareils",
+                kpi_mobile: "Mobile",
+                kpi_desktop: "Ordinateur",
+                kpi_top_source: "Source Principale",
+                chart_title: "Courbe de Fréquentation des Visites",
+                col_pages: "Pages les plus consultées",
+                col_referrers: "Sources & Référents de Trafic",
                 subscribers_title: "Artisans Américains Abonnés",
                 subscribers_subtitle: "Détail de vos clients et du chiffre d'affaires reversé sur votre compte",
                 active_accounts_label: "Comptes actifs",
@@ -319,8 +562,184 @@
             updateUI(currentLang);
         }
 
+        // ==========================================
+        // MOTEUR D'ANALYTICS & GRAPHIQUE CHART.JS
+        // ==========================================
+        let analyticsChart = null;
+        let currentPeriod = '{{ analytics.period }}';
+
+        function initChart(labels, data) {
+            const canvas = document.getElementById('analyticsChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            
+            const gradient = ctx.createLinearGradient(0, 0, 0, 240);
+            gradient.addColorStop(0, 'rgba(6, 182, 212, 0.40)');
+            gradient.addColorStop(1, 'rgba(6, 182, 212, 0.0)');
+
+            if (analyticsChart) {
+                analyticsChart.destroy();
+            }
+
+            analyticsChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Visites',
+                        data: data,
+                        borderColor: '#06b6d4',
+                        backgroundColor: gradient,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#06b6d4',
+                        pointBorderColor: '#0f172a',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        tension: 0.35,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#0f172a',
+                            titleColor: '#f8fafc',
+                            bodyColor: '#38bdf8',
+                            borderColor: '#334155',
+                            borderWidth: 1,
+                            padding: 10,
+                            displayColors: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(51, 65, 85, 0.25)' },
+                            ticks: { color: '#94a3b8', font: { size: 10 } }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(51, 65, 85, 0.25)' },
+                            ticks: { color: '#94a3b8', font: { size: 10 }, stepSize: 1 }
+                        }
+                    }
+                }
+            });
+        }
+
+        async function fetchAnalytics(period, startDate, endDate) {
+            let url = `/api/founder/analytics?period=${period}`;
+            if (startDate) url += `&start_date=${startDate}`;
+            if (endDate) url += `&end_date=${endDate}`;
+
+            try {
+                const res = await fetch(url);
+                if (!res.ok) return;
+                const data = await res.json();
+                updateAnalyticsUI(data);
+            } catch (err) {
+                console.error("Failed to load analytics", err);
+            }
+        }
+
+        function updateAnalyticsUI(data) {
+            document.getElementById('val-total-visits').textContent = data.total_visits;
+            document.getElementById('period-display-tag').textContent = data.period_title;
+            document.getElementById('val-unique-visitors').textContent = data.unique_visitors;
+            document.getElementById('val-mobile-pct').textContent = data.mobile_pct + '%';
+            document.getElementById('val-desktop-pct').textContent = data.desktop_pct + '%';
+
+            if (data.top_referrers && data.top_referrers.length > 0) {
+                document.getElementById('val-top-source').textContent = data.top_referrers[0].source;
+                document.getElementById('val-top-source-pct').textContent = data.top_referrers[0].pct + '% du trafic';
+            } else {
+                document.getElementById('val-top-source').textContent = 'Direct / WhatsApp';
+                document.getElementById('val-top-source-pct').textContent = '100%';
+            }
+
+            const pagesContainer = document.getElementById('top-pages-container');
+            if (pagesContainer) {
+                pagesContainer.innerHTML = data.top_pages.map(p => `
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <span class="font-mono text-slate-200 truncate">${p.path}</span>
+                            <span class="font-bold text-white">${p.count} <span class="text-slate-500 font-normal">(${p.pct}%)</span></span>
+                        </div>
+                        <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                            <div class="bg-indigo-500 h-1.5 rounded-full" style="width: ${p.pct}%"></div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            const refContainer = document.getElementById('top-referrers-container');
+            if (refContainer) {
+                refContainer.innerHTML = data.top_referrers.map(r => {
+                    let icon = '<i class="fa-solid fa-link text-slate-400"></i>';
+                    if (r.source.includes('LinkedIn')) icon = '<i class="fa-brands fa-linkedin text-blue-400"></i>';
+                    else if (r.source.includes('Product Hunt')) icon = '<i class="fa-brands fa-product-hunt text-orange-400"></i>';
+                    else if (r.source.includes('Google')) icon = '<i class="fa-brands fa-google text-red-400"></i>';
+                    else if (r.source.includes('WhatsApp')) icon = '<i class="fa-brands fa-whatsapp text-emerald-400"></i>';
+                    
+                    return `
+                        <div>
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="text-slate-200 font-medium truncate flex items-center gap-1.5">
+                                    ${icon} ${r.source}
+                                </span>
+                                <span class="font-bold text-white">${r.count} <span class="text-slate-500 font-normal">(${r.pct}%)</span></span>
+                            </div>
+                            <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                                <div class="bg-cyan-500 h-1.5 rounded-full" style="width: ${r.pct}%"></div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            initChart(data.chart_labels, data.chart_data);
+        }
+
+        function setPeriod(p) {
+            currentPeriod = p;
+            document.querySelectorAll('.period-btn').forEach(btn => {
+                btn.className = "period-btn px-3 py-1.5 rounded-xl text-xs font-bold transition border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-slate-300";
+            });
+            const activeBtn = document.getElementById(`btn-period-${p}`);
+            if (activeBtn) {
+                activeBtn.className = "period-btn px-3 py-1.5 rounded-xl text-xs font-bold transition border border-cyan-500 bg-cyan-500/20 text-cyan-300 shadow";
+            }
+            document.getElementById('customDateRangeBox').classList.add('hidden');
+            fetchAnalytics(p);
+        }
+
+        function toggleCustomRange() {
+            const box = document.getElementById('customDateRangeBox');
+            box.classList.toggle('hidden');
+            document.querySelectorAll('.period-btn').forEach(btn => {
+                btn.className = "period-btn px-3 py-1.5 rounded-xl text-xs font-bold transition border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-slate-300";
+            });
+            document.getElementById('btn-period-custom').className = "period-btn px-3 py-1.5 rounded-xl text-xs font-bold transition border border-cyan-500 bg-cyan-500/20 text-cyan-300 shadow flex items-center gap-1.5";
+        }
+
+        function applyCustomRange() {
+            const start = document.getElementById('inputStartDate').value;
+            const end = document.getElementById('inputEndDate').value;
+            if (start && end) {
+                fetchAnalytics('custom', start, end);
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             updateUI(currentLang);
+            
+            // Initialisation du graphique avec les données initiales du serveur
+            const initialLabels = {{ analytics.chart_labels | tojson }};
+            const initialData = {{ analytics.chart_data | tojson }};
+            initChart(initialLabels, initialData);
         });
     </script>
 </body>
